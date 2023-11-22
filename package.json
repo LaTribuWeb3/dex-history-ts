@@ -25,5 +25,8 @@
         "rimraf": "^4.4.1",
         "ts-node": "^10.9.1",
         "typescript": "^5.2.2"
+    },
+    "dependencies": {
+        "bignumber.js": "^9.1.2"
     }
 }
