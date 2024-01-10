@@ -1,9 +1,6 @@
-import BigNumber from 'bignumber.js';
+import { DATA_DIR } from '../utils/Constants';
 import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils/MonitoringHelper';
-import fs from 'fs';
-import path from 'path';
-import { sleep } from '../utils/Utils';
-
+import * as fs from 'fs';
 /**
  * This is the base worker class
  * It is used to log monitoring
@@ -19,6 +16,10 @@ export abstract class BaseWorker {
 
   async run() {
     try {
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR);
+      }
+
       const start = Date.now();
       await this.SendMonitoringData(MonitoringStatusEnum.RUNNING, Math.round(start / 1000));
 

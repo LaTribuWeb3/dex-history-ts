@@ -4,6 +4,7 @@
     "main": "index.ts",
     "scripts": {
         "start": "ts-node ./src/index.ts",
+        "start:fetchers": "ts-node ./src/runners/FetchersRunner.ts",
         "build": "rimraf ./build && tsc",
         "lint": "eslint . --ext .ts",
         "lintfix": "eslint . --ext .ts --fix",
