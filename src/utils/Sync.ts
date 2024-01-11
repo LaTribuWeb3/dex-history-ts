@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { DATA_DIR } from './Constants';
+import * as Constants from './Constants';
 import { sleep } from './Utils';
 
 interface SyncFilenames {
@@ -13,13 +13,16 @@ const SYNC_FILENAMES: SyncFilenames = {
 
 // Methods used to sync processes using filenames
 function UpdateSyncFile(syncFilename: string, isWorking: boolean): void {
-  const fullFilename = path.join(DATA_DIR, syncFilename);
+  const fullFilename = path.join(Constants.DATA_DIR, syncFilename);
   console.log(`SYNC: setting ${syncFilename} working to ${isWorking}`);
+  if (!fs.existsSync(path.dirname(fullFilename))) {
+    fs.mkdirSync(path.dirname(fullFilename), { recursive: true });
+  }
   fs.writeFileSync(fullFilename, JSON.stringify({ status: isWorking ? 'working' : 'done' }));
 }
 
 function CheckSyncFileStatus(syncFilename: string): string {
-  const fullFilename = path.join(DATA_DIR, syncFilename);
+  const fullFilename = path.join(Constants.DATA_DIR, syncFilename);
   const syncData = JSON.parse(fs.readFileSync(fullFilename, { encoding: 'utf-8' }));
   console.log(`SYNC: CheckSyncFile ${syncFilename} = ${syncData.status}`);
   return syncData.status;
