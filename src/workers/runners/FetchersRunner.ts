@@ -6,8 +6,8 @@ import { UniswapV3Fetcher } from '../fetchers/uniswapv3/UniswapV3Fetcher';
 
 const RUN_EVERY_MINUTES = 60;
 const fetchersToLaunch: BaseWorker[] = [
-  new UniswapV2Fetcher('uniswapv2 fetcher', RUN_EVERY_MINUTES),
-  new UniswapV3Fetcher('uniswapv3 fetcher', RUN_EVERY_MINUTES)
+  new UniswapV2Fetcher(RUN_EVERY_MINUTES),
+  new UniswapV3Fetcher(RUN_EVERY_MINUTES)
 ];
 
 async function FetchersRunner() {

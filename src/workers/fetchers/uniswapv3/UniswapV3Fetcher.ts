@@ -1,8 +1,8 @@
 import { BaseWorker } from '../../BaseWorker';
 
 export class UniswapV3Fetcher extends BaseWorker {
-  constructor(workerName: string, runEveryMinutes: number) {
-    super(workerName, runEveryMinutes);
+  constructor(runEveryMinutes: number) {
+    super("uniswapv3", runEveryMinutes);
   }
 
   runSpecific(): Promise<void> {

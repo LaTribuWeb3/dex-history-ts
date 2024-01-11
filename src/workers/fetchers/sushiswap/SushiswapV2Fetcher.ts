@@ -1,8 +1,8 @@
 import { BaseWorker } from '../../BaseWorker';
 
 export class SushiswapV2Fetcher extends BaseWorker {
-  constructor(workerName: string, runEveryMinutes: number) {
-    super(workerName, runEveryMinutes);
+  constructor(runEveryMinutes: number) {
+    super("sushiswapv2", runEveryMinutes);
   }
 
   runSpecific(): Promise<void> {
