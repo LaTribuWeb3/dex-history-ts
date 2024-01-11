@@ -15,6 +15,12 @@ export abstract class BaseWorker {
     console.log(`worker name: ${this.workerName}`);
   }
 
+  async createDataDirForWorker() {
+    if (!fs.existsSync(path.join(Constants.DATA_DIR, this.workerName))) {
+      fs.mkdirSync(path.join(Constants.DATA_DIR, this.workerName), { recursive: true });
+    }
+  }
+
   /**
    * Asynchronous method representing the main execution logic for a worker task.
    *
@@ -35,11 +41,6 @@ export abstract class BaseWorker {
    */
   async run(): Promise<void> {
     try {
-      // Step 1: Create the worker's data folder if it doesn't exist
-      if (!fs.existsSync(path.join(Constants.DATA_DIR, this.workerName))) {
-        fs.mkdirSync(path.join(Constants.DATA_DIR, this.workerName), { recursive: true });
-      }
-
       // Step 2: Send monitoring data indicating "RUNNING" state
       const start = Date.now();
       await this.SendMonitoringData(MonitoringStatusEnum.RUNNING, Math.round(start / 1000));
