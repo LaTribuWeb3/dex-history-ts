@@ -1,6 +1,7 @@
-import { DATA_DIR } from '../utils/Constants';
+import * as Constants from '../utils/Constants';
 import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils/MonitoringHelper';
 import * as fs from 'fs';
+import * as path from 'path';
 /**
  * This is the base worker class
  * It is used to log monitoring
@@ -14,23 +15,50 @@ export abstract class BaseWorker {
     console.log(`worker name: ${this.workerName}`);
   }
 
-  async run() {
+  /**
+   * Asynchronous method representing the main execution logic for a worker task.
+   *
+   * This method performs the following steps:
+   * 1. Checks if the worker's data folder exists in the Constants.DATA_DIR and creates it if not.
+   * 2. Sends monitoring data indicating that the worker is in the "RUNNING" state.
+   * 3. Logs the start of the specific worker run.
+   * 4. Invokes the `runSpecific` method, which contains the worker's specific logic.
+   * 5. Logs the completion of the specific worker run.
+   * 6. Calculates the duration of the worker run.
+   * 7. Sends monitoring data indicating a "SUCCESS" status with run details.
+   *
+   * If an exception occurs during execution, it is caught and handled as follows:
+   * 1. Error details are logged.
+   * 2. Monitoring data is sent indicating an "ERROR" status with error details.
+   *
+   * @throws {Error} If an exception occurs during execution, it is thrown.
+   */
+  async run(): Promise<void> {
     try {
-      if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR);
+      // Step 1: Create the worker's data folder if it doesn't exist
+      if (!fs.existsSync(path.join(Constants.DATA_DIR, this.workerName))) {
+        fs.mkdirSync(path.join(Constants.DATA_DIR, this.workerName), { recursive: true });
       }
 
+      // Step 2: Send monitoring data indicating "RUNNING" state
       const start = Date.now();
       await this.SendMonitoringData(MonitoringStatusEnum.RUNNING, Math.round(start / 1000));
 
+      // Step 3: Log the start of the specific worker run
       console.log(`${this.workerName}: starting run specific`);
+
+      // Step 4: Execute the worker's specific logic
       await this.runSpecific();
+
+      // Step 5: Log the completion of the specific worker run
       console.log(`${this.workerName}: ending run specific`);
 
+      // Step 6: Calculate duration and send monitoring data for "SUCCESS" status
       const runEndDate = Math.round(Date.now() / 1000);
       const durationSec = runEndDate - Math.round(start / 1000);
       await this.SendMonitoringData(MonitoringStatusEnum.SUCCESS, undefined, runEndDate, durationSec, undefined);
     } catch (err) {
+      // Step 7: Handle exceptions by logging and sending monitoring data for "ERROR" status
       console.error(`${this.workerName}: An exception occurred: ${err}`);
       console.error(err);
       await this.SendMonitoringData(
@@ -40,8 +68,12 @@ export abstract class BaseWorker {
         undefined,
         `An exception occurred: ${err}`
       );
+
+      // Re-throw the exception to notify the caller of the error
+      throw err;
     }
   }
+
 
   abstract runSpecific(): Promise<void>;
 
