@@ -109,3 +109,5 @@ dist
 
 # local script directory
 nocommit/*
+
+src/contracts/types/**
