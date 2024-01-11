@@ -9,12 +9,14 @@
         "lint": "eslint . --ext .ts",
         "lintfix": "eslint . --ext .ts --fix",
         "prettier-format": "prettier --config .prettierrc \"./src/**/*.ts\" --write",
-        "prettier-watch": "onchange \"src/**/*.ts\" -- prettier --write {{changed}}"
+        "prettier-watch": "onchange \"src/**/*.ts\" -- prettier --write {{changed}}",
+        "typechain": "typechain --target ethers-v6 --out-dir src/contracts/types"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "@typechain/ethers-v6": "^0.5.1",
         "@types/node": "^18.19.6",
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
@@ -25,6 +27,7 @@
         "prettier": "^2.8.8",
         "rimraf": "^4.4.1",
         "ts-node": "^10.9.2",
+        "typechain": "^8.3.2",
         "typescript": "^5.3.3"
     },
     "dependencies": {
