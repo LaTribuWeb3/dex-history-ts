@@ -384,13 +384,6 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
     await this.generateUnifiedFileUniv2(endBlock);
   }
 
-  private async fetchPairsForPairKeyFromBlock(pairKey: string, currentBlock: number) {
-    console.log(`${this.workerName}: Start fetching pair ` + pairKey);
-    const fetchResult = await this.FetchHistoryForPair(pairKey, currentBlock, 0);
-    console.log(`${this.workerName}: End fetching pair ` + pairKey);
-    return fetchResult;
-  }
-
   async FetchHistoryForPair(pairKey: string, currentBlock: number, minStartBlock: number) {
     const web3Provider: ethers.JsonRpcProvider = await Web3Utils.getJsonRPCProvider();
 
