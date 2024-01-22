@@ -2,16 +2,40 @@ import * as Constants from '../utils/Constants';
 import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils/MonitoringHelper';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as WorkerConfiguration from './configuration/WorkerConfiguration';
+import { TokenList } from './configuration/TokenData';
+import * as dotenv from 'dotenv';
+import workers from '../../config/workers.json';
+import tokens from '../../config/tokens.json';
+
+dotenv.config();
+
 /**
  * This is the base worker class
  * It is used to log monitoring
  */
-export abstract class BaseWorker {
+export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfiguration> {
   workerName: string;
   runEveryMinutes: number;
+  workerConfiguration: T;
+  tokens: TokenList;
+  lastCallEtherscan: number;
+
+  // Assuming workers is an array of worker configurations
+  protected findWorkerByName(name: string): T {
+    const foundWorker = workers.workers.find((worker) => worker.name === name);
+    if (foundWorker === undefined) {
+      throw new Error('Could not find worker with name: ' + name);
+    }
+    return foundWorker.configuration as T;
+  }
+
   constructor(workerName: string, runEveryMinutes: number) {
+    this.tokens = tokens;
     this.workerName = workerName;
     this.runEveryMinutes = runEveryMinutes;
+    this.workerConfiguration = this.findWorkerByName(workerName);
+    this.lastCallEtherscan = 0;
     console.log(`worker name: ${this.workerName}`);
   }
 
@@ -74,7 +98,6 @@ export abstract class BaseWorker {
       throw err;
     }
   }
-
 
   abstract runSpecific(): Promise<void>;
 

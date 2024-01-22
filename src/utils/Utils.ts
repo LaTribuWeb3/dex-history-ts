@@ -1,16 +1,18 @@
 import BigNumber from 'bignumber.js';
+import * as fs from 'fs';
+import path from 'path';
 
 /**
  * Retries a function n number of times before giving up
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function retry<T extends (...arg0: any[]) => any>(
+export async function retry<T extends (...arg0: any[]) => U, U>(
   fn: T,
   args: Parameters<T>,
   maxTry = 10,
   incrSleepDelay = 10000,
   retryCount = 1
-): Promise<Awaited<ReturnType<T>>> {
+): Promise<Awaited<U>> {
   const currRetry = typeof retryCount === 'number' ? retryCount : 1;
   try {
     const result = await fn(...args);
@@ -41,4 +43,11 @@ export function normalize(amount: string | bigint, decimals: number): number {
 export function roundTo(num: number, dec = 2): number {
   const pow = Math.pow(10, dec);
   return Math.round((num + Number.EPSILON) * pow) / pow;
+}
+
+export function writeContentToFile(syncFilename: string, content: string) {
+  if (!fs.existsSync(path.dirname(syncFilename))) {
+    fs.mkdirSync(path.dirname(syncFilename), { recursive: true });
+  }
+  fs.writeFileSync(syncFilename, content);
 }

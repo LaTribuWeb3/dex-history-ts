@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Constants from './Constants';
-import { sleep } from './Utils';
+import { sleep, writeContentToFile } from './Utils';
 
 interface SyncFilenames {
   FETCHERS_LAUNCHER: string;
@@ -13,12 +13,13 @@ const SYNC_FILENAMES: SyncFilenames = {
 
 // Methods used to sync processes using filenames
 function UpdateSyncFile(syncFilename: string, isWorking: boolean): void {
-  const fullFilename = path.join(Constants.DATA_DIR, syncFilename);
+  const content = JSON.stringify({ status: isWorking ? 'working' : 'done' });
+
   console.log(`SYNC: setting ${syncFilename} working to ${isWorking}`);
-  if (!fs.existsSync(path.dirname(fullFilename))) {
-    fs.mkdirSync(path.dirname(fullFilename), { recursive: true });
-  }
-  fs.writeFileSync(fullFilename, JSON.stringify({ status: isWorking ? 'working' : 'done' }));
+
+  const fullFilename = path.join(Constants.DATA_DIR, syncFilename);
+
+  writeContentToFile(fullFilename, content);
 }
 
 function CheckSyncFileStatus(syncFilename: string): string {
@@ -38,4 +39,4 @@ async function WaitUntilDone(syncFilename: string): Promise<void> {
   }
 }
 
-export { SYNC_FILENAMES, UpdateSyncFile, WaitUntilDone };
+export { SYNC_FILENAMES, UpdateSyncFile, WaitUntilDone, writeContentToFile };

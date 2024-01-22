@@ -1,0 +1,26 @@
+{
+  "workers": [
+    {
+      "name": "uniswapv2",
+      "configuration": {
+        "address": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+        "pairs": [
+          {
+            "name": "AAVE-USDC",
+            "startBlock": 11116836
+          },
+          {
+            "name": "AAVE-WETH",
+            "startBlock": 16462922
+          }
+        ]
+      }
+    },
+    {
+      "name": "curvefetcher",
+      "configuration": {
+        "address": "0x"
+      }
+    }
+  ]
+}
