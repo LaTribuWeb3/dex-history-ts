@@ -12,6 +12,132 @@
           {
             "name": "AAVE-WETH",
             "startBlock": 16462922
+          },
+          {
+            "name": "BAT-DAI"
+          },
+          {
+            "name": "BAT-USDC"
+          },
+          {
+            "name": "BAT-WETH"
+          },
+          {
+            "name": "COMP-WETH"
+          },
+          {
+            "name": "DAI-AAVE"
+          },
+          {
+            "name": "DAI-COMP"
+          },
+          {
+            "name": "DAI-MKR"
+          },
+          {
+            "name": "DAI-USDC"
+          },
+          {
+            "name": "DAI-USDT"
+          },
+          {
+            "name": "DAI-WETH"
+          },
+          {
+            "name": "DAI-ZRX"
+          },
+          {
+            "name": "FEI-USDC"
+          },
+          {
+            "name": "FEI-WETH"
+          },
+          {
+            "name": "LINK-DAI"
+          },
+          {
+            "name": "LINK-USDC"
+          },
+          {
+            "name": "LINK-WETH"
+          },
+          {
+            "name": "MANA-WETH"
+          },
+          {
+            "name": "MKR-USDC"
+          },
+          {
+            "name": "MKR-WETH"
+          },
+          {
+            "name": "SNX-WETH"
+          },
+          {
+            "name": "sUSD-WETH"
+          },
+          {
+            "name": "SUSHI-USDC"
+          },
+          {
+            "name": "SUSHI-WETH"
+          },
+          {
+            "name": "TUSD-USDC"
+          },
+          {
+            "name": "TUSD-WETH"
+          },
+          {
+            "name": "UNI-DAI"
+          },
+          {
+            "name": "UNI-USDC"
+          },
+          {
+            "name": "UNI-WETH"
+          },
+          {
+            "name": "USDC-COMP"
+          },
+          {
+            "name": "USDC-USDT"
+          },
+          {
+            "name": "USDC-WETH"
+          },
+          {
+            "name": "USDC-ZRX"
+          },
+          {
+            "name": "USDP-WETH"
+          },
+          {
+            "name": "WBTC-DAI"
+          },
+          {
+            "name": "WBTC-USDC"
+          },
+          {
+            "name": "WBTC-USDT"
+          },
+          {
+            "name": "WBTC-WETH"
+          },
+          {
+            "name": "WETH-USDT"
+          },
+          {
+            "name": "WETH-ZRX"
+          },
+          {
+            "name": "YFI-WETH"
+          },
+          {
+            "name": "stETH-WETH"
+          },
+          {
+            "name": "HarryPotterObamaSonic10Inu-WETH"
           }
         ]
       }
