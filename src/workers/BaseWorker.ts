@@ -27,7 +27,7 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
     if (foundWorker === undefined) {
       throw new Error('Could not find worker with name: ' + name);
     }
-    return foundWorker.configuration as T;
+    return foundWorker.configuration as unknown as T;
   }
 
   constructor(workerName: string, runEveryMinutes: number) {

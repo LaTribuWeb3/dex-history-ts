@@ -1,4 +1,5 @@
 {
+  "directoryStructureVersion": 0,
   "workers": [
     {
       "name": "uniswapv2",

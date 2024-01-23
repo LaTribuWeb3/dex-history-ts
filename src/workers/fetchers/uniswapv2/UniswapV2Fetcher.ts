@@ -13,7 +13,7 @@ import { readLastLine } from '../../configuration/Helper';
 import axios, { AxiosResponse } from 'axios';
 import {
   UniSwapV2WorkerConfiguration,
-  generateCSVFolderPath,
+  getAllPreComputed,
   generatePriceCSVFilePath,
   generateRawCSVFilePath,
   generateUnifiedCSVFilePath,
@@ -80,15 +80,12 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
    * @param oldestBlockToKeep - The oldest block number to keep in the files.
    */
   truncateUnifiedFiles(platform: string, oldestBlockToKeep: number): void {
-    const dirPath: string = generateCSVFolderPath('computed', 'uniswapv2');
-    const allUnifiedFilesForDirectory: string[] = fs
-      .readdirSync(dirPath)
-      .filter((file) => file.endsWith('unified-data.csv'));
+    const allUnifiedFilesForDirectory: string[] = getAllPreComputed(platform);
 
     for (const unifiedFileToProcess of allUnifiedFilesForDirectory) {
       console.log(`truncateUnifiedFiles: working on ${unifiedFileToProcess}`);
       const linesToKeep: string[] = ['blocknumber,price,slippagemap\n'];
-      const linesToProcess: string[] = fs.readFileSync(path.join(dirPath, unifiedFileToProcess), 'utf-8').split('\n');
+      const linesToProcess: string[] = fs.readFileSync(unifiedFileToProcess, 'utf-8').split('\n'); // To put in the helper with a condition as well
       let deletedLines = 0;
 
       for (let i = 1; i < linesToProcess.length - 1; i++) {
@@ -108,13 +105,13 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
         continue;
       }
 
-      const stagingFilepath: string = path.join(dirPath, unifiedFileToProcess + '-staging');
+      const stagingFilepath: string = unifiedFileToProcess + '-staging';
       fs.writeFileSync(stagingFilepath, linesToKeep.join(''));
       console.log(
         `truncateUnifiedFiles: ${unifiedFileToProcess} will be truncated from ${linesToProcess.length} to ${linesToKeep.length} lines`
       );
       // Adjust the retrySync function as per your project's implementation.
-      fs.renameSync(stagingFilepath, path.join(dirPath, unifiedFileToProcess));
+      fs.renameSync(stagingFilepath, unifiedFileToProcess);
     }
   }
 
