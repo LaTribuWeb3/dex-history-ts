@@ -22,11 +22,17 @@ function UpdateSyncFile(syncFilename: string, isWorking: boolean): void {
   writeContentToFile(fullFilename, content);
 }
 
-function CheckSyncFileStatus(syncFilename: string): string {
-  const fullFilename = path.join(Constants.DATA_DIR, syncFilename);
-  const syncData = JSON.parse(fs.readFileSync(fullFilename, { encoding: 'utf-8' }));
-  console.log(`SYNC: CheckSyncFile ${syncFilename} = ${syncData.status}`);
-  return syncData.status;
+function CheckSyncFileStatus(syncFilename: string): string | undefined {
+  try {
+    const fullFilename = path.join(Constants.DATA_DIR, syncFilename);
+    const syncData = JSON.parse(fs.readFileSync(fullFilename, { encoding: 'utf-8' }));
+    console.log(`SYNC: CheckSyncFile ${syncFilename} = ${syncData.status}`);
+    if ('status' in syncData) return syncData.status;
+    else return undefined;
+  } catch (e) {
+    console.log('Parsing of status file failed with ' + e);
+    return undefined;
+  }
 }
 
 async function WaitUntilDone(syncFilename: string): Promise<void> {
@@ -39,4 +45,19 @@ async function WaitUntilDone(syncFilename: string): Promise<void> {
   }
 }
 
-export { SYNC_FILENAMES, UpdateSyncFile, WaitUntilDone, writeContentToFile };
+async function WaitForStatusInFileBeforeContinuing(file: string, expectedStatus: string, closure: () => any) {
+  if (CheckSyncFileStatus(file) == expectedStatus) closure();
+
+  fs.watch('data/' + file, () => {
+    if (CheckSyncFileStatus(file) == expectedStatus) closure();
+  });
+}
+
+export {
+  SYNC_FILENAMES,
+  UpdateSyncFile,
+  WaitUntilDone,
+  writeContentToFile,
+  CheckSyncFileStatus,
+  WaitForStatusInFileBeforeContinuing
+};
