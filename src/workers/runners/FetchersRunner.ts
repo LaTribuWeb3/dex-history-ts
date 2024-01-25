@@ -3,12 +3,13 @@ import { sleep } from '../../utils/Utils';
 import { BaseWorker } from '../BaseWorker';
 import { WorkerConfiguration } from '../configuration/WorkerConfiguration';
 import { UniswapV2Fetcher } from '../fetchers/uniswapv2/UniswapV2Fetcher';
+import Config from '../../../config/config.json';
 
 const RUN_EVERY_MINUTES = 60;
 const fetchersToLaunch: BaseWorker<WorkerConfiguration>[] = [new UniswapV2Fetcher(RUN_EVERY_MINUTES)];
 
 async function FetchersRunner() {
-  WaitForStatusInFileBeforeContinuing(SYNC_FILENAMES.FETCHERS_LAUNCHER, 'done', startMainLoop);
+  WaitForStatusInFileBeforeContinuing(Config.externalLockFile, 'done', startMainLoop);
 }
 
 async function startMainLoop() {

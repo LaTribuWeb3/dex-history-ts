@@ -22,10 +22,13 @@ function UpdateSyncFile(syncFilename: string, isWorking: boolean): void {
   writeContentToFile(fullFilename, content);
 }
 
+function CheckSyncFileStatusInData(syncFilename: string): string | undefined {
+  return CheckSyncFileStatus(path.join(Constants.DATA_DIR, syncFilename));
+}
+
 function CheckSyncFileStatus(syncFilename: string): string | undefined {
   try {
-    const fullFilename = path.join(Constants.DATA_DIR, syncFilename);
-    const syncData = JSON.parse(fs.readFileSync(fullFilename, { encoding: 'utf-8' }));
+    const syncData = JSON.parse(fs.readFileSync(syncFilename, { encoding: 'utf-8' }));
     console.log(`SYNC: CheckSyncFile ${syncFilename} = ${syncData.status}`);
     if ('status' in syncData) return syncData.status;
     else return undefined;
@@ -36,28 +39,21 @@ function CheckSyncFileStatus(syncFilename: string): string | undefined {
 }
 
 async function WaitUntilDone(syncFilename: string): Promise<void> {
-  let status = CheckSyncFileStatus(syncFilename);
+  let status = CheckSyncFileStatusInData(syncFilename);
 
   while (status !== 'done') {
     console.log(`Waiting for ${syncFilename} to be done`);
     await sleep(5000);
-    status = CheckSyncFileStatus(syncFilename);
+    status = CheckSyncFileStatusInData(syncFilename);
   }
 }
 
 async function WaitForStatusInFileBeforeContinuing(file: string, expectedStatus: string, closure: () => any) {
   if (CheckSyncFileStatus(file) == expectedStatus) closure();
 
-  fs.watch('data/' + file, () => {
+  fs.watch(file, () => {
     if (CheckSyncFileStatus(file) == expectedStatus) closure();
   });
 }
 
-export {
-  SYNC_FILENAMES,
-  UpdateSyncFile,
-  WaitUntilDone,
-  writeContentToFile,
-  CheckSyncFileStatus,
-  WaitForStatusInFileBeforeContinuing
-};
+export { SYNC_FILENAMES, UpdateSyncFile, WaitUntilDone, writeContentToFile, WaitForStatusInFileBeforeContinuing };

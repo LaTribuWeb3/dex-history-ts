@@ -1,3 +1,4 @@
 {
-  "directoryStructureVersion": 0
+  "directoryStructureVersion": 0,
+  "externalLockFile": "#PATH TO EXTERNAL LOCK FILE#"
 }
