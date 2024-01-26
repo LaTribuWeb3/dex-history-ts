@@ -11,7 +11,7 @@ async function FetchersRunner() {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const start = Date.now();
-    WaitUntilDone(SYNC_FILENAMES.FETCHERS_LAUNCHER);
+    await WaitUntilDone(SYNC_FILENAMES.FETCHERS_LAUNCHER);
     UpdateSyncFile(SYNC_FILENAMES.FETCHERS_LAUNCHER, true);
     for (const fetcherToLaunch of fetchersToLaunch) {
       console.log(`Starting fetcher ${fetcherToLaunch.workerName}`);
@@ -21,6 +21,7 @@ async function FetchersRunner() {
           break;
         } catch (error) {
           const errorMsg = `An exception occurred: ${error}`;
+          await sleep(5000);
           console.log(errorMsg);
         }
       }
