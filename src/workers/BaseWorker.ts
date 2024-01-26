@@ -19,7 +19,6 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
   runEveryMinutes: number;
   workerConfiguration: T;
   tokens: TokenList;
-  lastCallEtherscan: number;
 
   // Assuming workers is an array of worker configurations
   protected findWorkerByName(name: string): T {
@@ -35,7 +34,6 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
     this.workerName = workerName;
     this.runEveryMinutes = runEveryMinutes;
     this.workerConfiguration = this.findWorkerByName(workerName);
-    this.lastCallEtherscan = 0;
     console.log(`worker name: ${this.workerName}`);
   }
 

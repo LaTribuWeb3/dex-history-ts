@@ -2,6 +2,8 @@ import * as ethers from 'ethers';
 import { retry, sleep } from './Utils';
 import axios, { AxiosResponse } from 'axios';
 
+let lastCallEtherscan = 0;
+
 /**
  * Get the contract creation blocknumber using etherscan api
  * WILL ONLY WORK ON MAINNET
@@ -9,42 +11,52 @@ import axios, { AxiosResponse } from 'axios';
  * @returns {Promise<number>} blocknumber where the contract was created
  */
 export async function GetContractCreationBlockNumber(contractAddress: string, workerName: string): Promise<number> {
-  let lastCallEtherscan = 0;
   const web3Provider = getJsonRPCProvider();
   console.log(`${workerName}: fetching data for contract ${contractAddress}`);
   const msToWait = 10000 - (Date.now() - lastCallEtherscan);
   if (msToWait > 0) {
-    console.log(`${workerName}: Sleeping ${msToWait} before calling etherscan`);
+    console.log(`${workerName}: Sleeping ${msToWait} ms before calling etherscan`);
     await sleep(msToWait);
   }
   // call etherscan to get the tx receipt of contract creation
-  const etherscanUrl = `https://api.etherscan.io/api?module=contract&action=getcontractcreation&contractaddresses=${contractAddress}&apikey=${process.env.ETHERSCAN_API_KEY}`;
-  const etherscanResponse = await retry(axios.get, [etherscanUrl]);
+  const txHash = await retry(getTxHashFromEtherscan, [contractAddress]);
   lastCallEtherscan = Date.now();
+  const nullableTransactionReceipt = await web3Provider.getTransactionReceipt(txHash);
 
-  const receipt: ethers.ethers.TransactionReceipt = await getReceiptOrCrash(await web3Provider, etherscanResponse);
-  // console.log(receipt);
-  console.log(`${workerName}: returning blocknumber: ${receipt.blockNumber}`);
-  return receipt.blockNumber;
-}
-
-export async function getJsonRPCProvider(): Promise<ethers.JsonRpcProvider> {
-  for (let i = 0; i < 10; i++) {
-    try {
-      return new ethers.JsonRpcProvider(process.env.RPC_URL);
-    } catch (e) {
-      console.log('Could not open JSON RPC because ' + e);
-      await sleep(1 ** i * 1000);
-    }
+  if (nullableTransactionReceipt == null) {
+    throw new Error('Transaction receipt for etherscan is null');
   }
-  throw new Error('Could not instantiate JSON RPC');
+  console.log(`${workerName}: returning blocknumber: ${nullableTransactionReceipt.blockNumber}`);
+  return nullableTransactionReceipt.blockNumber;
 }
 
-export async function getReceiptOrCrash(
-  web3Provider: ethers.ethers.JsonRpcProvider,
-  etherscanResponse: any
-): Promise<ethers.ethers.TransactionReceipt> {
-  const nullableTransactionReceipt = await web3Provider.getTransactionReceipt(etherscanResponse.data.result[0].txHash);
-  if (nullableTransactionReceipt == null) throw new Error('Transaction receipt for etherscan is null');
-  return nullableTransactionReceipt;
+async function getTxHashFromEtherscan(contractAddress: string): Promise<string> {
+  const etherscanUrl = `https://api.etherscan.io/api?module=contract&action=getcontractcreation&contractaddresses=${contractAddress}&apikey=${process.env.ETHERSCAN_API_KEY}`;
+  const etherscanResponse = await axios.get(etherscanUrl);
+
+  if (etherscanResponse.data.message == 'NOTOK') {
+    throw new Error(`getTxHashFromEtherscan: Error: ${etherscanResponse.data.result}`);
+  } else if (etherscanResponse.data.result[0].txHash) {
+    return etherscanResponse.data.result[0].txHash;
+  } else {
+    throw new Error('`getTxHashFromEtherscan: unknown error');
+  }
+}
+
+export function getJsonRPCProvider(): ethers.JsonRpcProvider {
+  if (!process.env.RPC_URL) {
+    throw new Error('Cannot find RPC_URL in env');
+  }
+
+  return new ethers.JsonRpcProvider(process.env.RPC_URL);
+}
+
+export async function getBlocknumberForTimestamp(timestamp: number): Promise<number> {
+  const resp = await axios.get(`https://coins.llama.fi/block/ethereum/${timestamp}`);
+
+  if (!resp.data.height) {
+    throw Error('No data height in defi lama response');
+  } else {
+    return resp.data.height as number;
+  }
 }

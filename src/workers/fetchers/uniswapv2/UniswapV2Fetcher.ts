@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as Constants from '../../../utils/Constants';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import * as Sync from '../../../utils/Sync';
-import { normalize, sleep } from '../../../utils/Utils';
+import { normalize, retry, sleep } from '../../../utils/Utils';
 import { UniswapV2Factory__factory } from '../../../contracts/types/factories/UniswapV2Factory__factory';
 import { UniswapV2Pair__factory } from '../../../contracts/types/factories/UniswapV2Pair__factory';
 import * as Helper from '../../configuration/Helper';
@@ -70,7 +70,8 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
       }
     }
 
-    const blockLastYear = await this.getBlocknumberForTimestamp(Math.round(Date.now() / 1000) - 365 * 24 * 60 * 60);
+    const timestampLastYear = Math.round(Date.now() / 1000) - 365 * 24 * 60 * 60; // in seconds
+    const blockLastYear = await retry(Web3Utils.getBlocknumberForTimestamp, [timestampLastYear]);
     this.truncateUnifiedFiles('uniswapv2', blockLastYear);
   }
 
@@ -113,44 +114,6 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
       // Adjust the retrySync function as per your project's implementation.
       fs.renameSync(stagingFilepath, unifiedFileToProcess);
     }
-  }
-
-  /**
-   * Get block closest to a given timestamp, using the DeFiLama API.
-   * Retries up to 10 times if needed.
-   * @param timestamp - The timestamp in seconds.
-   * @returns A promise that resolves to the block number.
-   */
-  async getBlocknumberForTimestamp(timestamp: number): Promise<number> {
-    const retryLimit = 10;
-    let attempts = 0;
-    let defiLamaResp: AxiosResponse;
-
-    while (attempts < retryLimit) {
-      try {
-        defiLamaResp = await axios.get(`https://coins.llama.fi/block/ethereum/${timestamp}`);
-
-        if (!defiLamaResp.data.height) {
-          throw Error('No data height in defi lama response');
-        }
-
-        const blockNumber: number = defiLamaResp.data.height;
-        console.log(`${this.workerName}: At timestamp ${timestamp}, block: ${blockNumber}`);
-        return blockNumber;
-      } catch (error) {
-        console.error(
-          `${this.workerName}: Error fetching block number for timestamp ${timestamp} on attempt ${attempts + 1}`
-        );
-        if (attempts === retryLimit - 1) {
-          throw error;
-        }
-      }
-      attempts++;
-
-      await sleep(1000);
-    }
-
-    throw Error('No response from defi lama');
   }
 
   async createUnifiedFileForPair(endBlock: number, fromSymbol: string, toSymbol: string) {
@@ -333,7 +296,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
   }
 
   async runSpecific(): Promise<void> {
-    const web3Provider: ethers.JsonRpcProvider = await Web3Utils.getJsonRPCProvider();
+    const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
 
     this.createDataDirForWorker();
 
@@ -427,35 +390,15 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
     }
 
     if (!startBlock) {
-      let tries = 0;
-      const max_tries = 5;
+      const deployBlockNumber: number = await retry(Web3Utils.GetContractCreationBlockNumber, [
+        pairAddress,
+        this.workerName
+      ]);
 
-      while (tries < max_tries) {
-        try {
-          const deployBlockNumber = await Web3Utils.GetContractCreationBlockNumber(pairAddress, this.workerName);
-          if (!deployBlockNumber) {
-            throw new Error('Deploy block is null when getting the pair address creation block');
-          }
-          startBlock = deployBlockNumber + 100_000; // leave 100k blocks ~2 weeks after pool creation because many pools starts with weird data
-          break;
-        } catch (e) {
-          console.log(
-            'Error while fetching contract ' + pairAddress + ' for pair ' + token0Symbol + '-' + token1Symbol
-          );
-          console.log(e);
-          tries++;
-          console.log(
-            'Waiting ' + 2 ** tries + ' secondes before retrying... (' + (max_tries - tries) + ' tries left)'
-          );
-          await sleep(2 ** tries * 1000);
-        }
+      if (!deployBlockNumber) {
+        throw new Error('Deploy block is null when getting the pair address creation block');
       }
-
-      if (tries == max_tries) {
-        console.log(
-          'Too many errors while fetching contract creation block number for ' + pairAddress + '. Skipping this pair.'
-        );
-      }
+      startBlock = deployBlockNumber + 100_000; // leave 100k blocks ~2 weeks after pool creation because many pools starts with weird data
     }
 
     if (startBlock < minStartBlock) {
