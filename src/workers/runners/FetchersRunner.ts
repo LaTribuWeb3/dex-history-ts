@@ -2,10 +2,14 @@ import { SYNC_FILENAMES, UpdateSyncFile, WaitUntilDone } from '../../utils/Sync'
 import { sleep } from '../../utils/Utils';
 import { BaseWorker } from '../BaseWorker';
 import { WorkerConfiguration } from '../configuration/WorkerConfiguration';
+import { SushiswapV2Fetcher } from '../fetchers/sushiswap/SushiswapV2Fetcher';
 import { UniswapV2Fetcher } from '../fetchers/uniswapv2/UniswapV2Fetcher';
 
 const RUN_EVERY_MINUTES = 60;
-const fetchersToLaunch: BaseWorker<WorkerConfiguration>[] = [new UniswapV2Fetcher(RUN_EVERY_MINUTES)];
+const fetchersToLaunch: BaseWorker<WorkerConfiguration>[] = [
+  new UniswapV2Fetcher(RUN_EVERY_MINUTES),
+  new SushiswapV2Fetcher(RUN_EVERY_MINUTES)
+];
 
 async function FetchersRunner() {
   // eslint-disable-next-line no-constant-condition

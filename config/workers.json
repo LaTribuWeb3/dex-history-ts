@@ -1,146 +1,157 @@
 {
-  "workers": [
-    {
-      "name": "uniswapv2",
-      "configuration": {
-        "address": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
-        "pairs": [
-          {
-            "name": "AAVE-USDC",
-            "startBlock": 11116836
-          },
-          {
-            "name": "AAVE-WETH",
-            "startBlock": 16462922
-          },
-          {
-            "name": "BAT-DAI"
-          },
-          {
-            "name": "BAT-USDC"
-          },
-          {
-            "name": "BAT-WETH"
-          },
-          {
-            "name": "COMP-WETH"
-          },
-          {
-            "name": "DAI-AAVE"
-          },
-          {
-            "name": "DAI-COMP"
-          },
-          {
-            "name": "DAI-MKR"
-          },
-          {
-            "name": "DAI-USDC"
-          },
-          {
-            "name": "DAI-USDT"
-          },
-          {
-            "name": "DAI-WETH"
-          },
-          {
-            "name": "DAI-ZRX"
-          },
-          {
-            "name": "FEI-USDC"
-          },
-          {
-            "name": "FEI-WETH"
-          },
-          {
-            "name": "LINK-DAI"
-          },
-          {
-            "name": "LINK-USDC"
-          },
-          {
-            "name": "LINK-WETH"
-          },
-          {
-            "name": "MANA-WETH"
-          },
-          {
-            "name": "MKR-USDC"
-          },
-          {
-            "name": "MKR-WETH"
-          },
-          {
-            "name": "SNX-WETH"
-          },
-          {
-            "name": "sUSD-WETH"
-          },
-          {
-            "name": "SUSHI-USDC"
-          },
-          {
-            "name": "SUSHI-WETH"
-          },
-          {
-            "name": "TUSD-USDC"
-          },
-          {
-            "name": "TUSD-WETH"
-          },
-          {
-            "name": "UNI-DAI"
-          },
-          {
-            "name": "UNI-USDC"
-          },
-          {
-            "name": "UNI-WETH"
-          },
-          {
-            "name": "USDC-COMP"
-          },
-          {
-            "name": "USDC-USDT"
-          },
-          {
-            "name": "USDC-WETH"
-          },
-          {
-            "name": "USDC-ZRX"
-          },
-          {
-            "name": "USDP-WETH"
-          },
-          {
-            "name": "WBTC-DAI"
-          },
-          {
-            "name": "WBTC-USDC"
-          },
-          {
-            "name": "WBTC-USDT"
-          },
-          {
-            "name": "WBTC-WETH"
-          },
-          {
-            "name": "WETH-USDT"
-          },
-          {
-            "name": "WETH-ZRX"
-          },
-          {
-            "name": "YFI-WETH"
-          },
-          {
-            "name": "stETH-WETH"
-          },
-          {
-            "name": "HarryPotterObamaSonic10Inu-WETH"
-          }
-        ]
-      }
-    }
-  ]
+	"workers": [
+		{
+			"name": "uniswapv2",
+			"configuration": {
+				"address": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+				"pairs": [
+					{
+						"name": "AAVE-USDC",
+						"startBlock": 11116836
+					},
+					{
+						"name": "AAVE-WETH",
+						"startBlock": 16462922
+					},
+					{
+						"name": "BAT-DAI"
+					},
+					{
+						"name": "BAT-USDC"
+					},
+					{
+						"name": "BAT-WETH"
+					},
+					{
+						"name": "COMP-WETH"
+					},
+					{
+						"name": "DAI-AAVE"
+					},
+					{
+						"name": "DAI-COMP"
+					},
+					{
+						"name": "DAI-MKR"
+					},
+					{
+						"name": "DAI-USDC"
+					},
+					{
+						"name": "DAI-USDT"
+					},
+					{
+						"name": "DAI-WETH"
+					},
+					{
+						"name": "DAI-ZRX"
+					},
+					{
+						"name": "FEI-USDC"
+					},
+					{
+						"name": "FEI-WETH"
+					},
+					{
+						"name": "LINK-DAI"
+					},
+					{
+						"name": "LINK-USDC"
+					},
+					{
+						"name": "LINK-WETH"
+					},
+					{
+						"name": "MANA-WETH"
+					},
+					{
+						"name": "MKR-USDC"
+					},
+					{
+						"name": "MKR-WETH"
+					},
+					{
+						"name": "SNX-WETH"
+					},
+					{
+						"name": "sUSD-WETH"
+					},
+					{
+						"name": "SUSHI-USDC"
+					},
+					{
+						"name": "SUSHI-WETH"
+					},
+					{
+						"name": "TUSD-USDC"
+					},
+					{
+						"name": "TUSD-WETH"
+					},
+					{
+						"name": "UNI-DAI"
+					},
+					{
+						"name": "UNI-USDC"
+					},
+					{
+						"name": "UNI-WETH"
+					},
+					{
+						"name": "USDC-COMP"
+					},
+					{
+						"name": "USDC-USDT"
+					},
+					{
+						"name": "USDC-WETH"
+					},
+					{
+						"name": "USDC-ZRX"
+					},
+					{
+						"name": "USDP-WETH"
+					},
+					{
+						"name": "WBTC-DAI"
+					},
+					{
+						"name": "WBTC-USDC"
+					},
+					{
+						"name": "WBTC-USDT"
+					},
+					{
+						"name": "WBTC-WETH"
+					},
+					{
+						"name": "WETH-USDT"
+					},
+					{
+						"name": "WETH-ZRX"
+					},
+					{
+						"name": "YFI-WETH"
+					},
+					{
+						"name": "stETH-WETH"
+					},
+					{
+						"name": "HarryPotterObamaSonic10Inu-WETH"
+					}
+				]
+			}
+		},
+		{
+			"name": "sushiswapv2",
+			"configuration": {
+				"address": "0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac",
+				"pairs": [
+					{
+						"name": "UNI-WETH"
+					}
+				]
+			}
+		}
+	]
 }

@@ -39,6 +39,7 @@ async function getTxHashFromEtherscan(contractAddress: string): Promise<string> 
   } else if (etherscanResponse.data.result[0].txHash) {
     return etherscanResponse.data.result[0].txHash;
   } else {
+    console.error(etherscanResponse);
     throw new Error('`getTxHashFromEtherscan: unknown error');
   }
 }

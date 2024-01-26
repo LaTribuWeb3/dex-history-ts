@@ -1,12 +1,9 @@
 import { BaseWorker } from '../../BaseWorker';
 import { SushiSwapV2WorkerConfiguration } from '../../configuration/WorkerConfiguration';
+import { UniswapV2Fetcher } from '../uniswapv2/UniswapV2Fetcher';
 
-export class SushiswapV2Fetcher extends BaseWorker<SushiSwapV2WorkerConfiguration> {
+export class SushiswapV2Fetcher extends UniswapV2Fetcher {
   constructor(runEveryMinutes: number) {
-    super('sushiswapv2', runEveryMinutes);
-  }
-
-  runSpecific(): Promise<void> {
-    throw new Error('Method not implemented.');
+    super(runEveryMinutes, 'sushiswapv2');
   }
 }

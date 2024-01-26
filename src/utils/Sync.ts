@@ -2,14 +2,22 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as Constants from './Constants';
 import { sleep, writeContentToFile } from './Utils';
-import Config from '../../config/config.json';
+
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+let externalLockFile = process.env.EXTERNAL_LOCK_FILE;
+
+if (!externalLockFile) {
+  externalLockFile = path.join(process.cwd(), 'data', 'fetchers-launcher');
+}
 
 interface SyncFilenames {
   FETCHERS_LAUNCHER: string;
 }
 
 const SYNC_FILENAMES: SyncFilenames = {
-  FETCHERS_LAUNCHER: Config.externalLockFile
+  FETCHERS_LAUNCHER: externalLockFile
 };
 
 // Methods used to sync processes using filenames
@@ -35,6 +43,10 @@ function CheckSyncFileStatusInData(syncFilename: string): string | undefined {
 
 function CheckSyncFileStatus(syncFilename: string): string | undefined {
   try {
+    if (!fs.existsSync(syncFilename)) {
+      return 'done';
+    }
+
     const syncData = JSON.parse(fs.readFileSync(syncFilename, { encoding: 'utf-8' }));
     console.log(`SYNC: CheckSyncFile ${syncFilename} = ${syncData.status}`);
     if ('status' in syncData) return syncData.status;

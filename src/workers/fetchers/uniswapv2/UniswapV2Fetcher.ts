@@ -4,13 +4,12 @@ import * as fs from 'fs';
 import * as Constants from '../../../utils/Constants';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import * as Sync from '../../../utils/Sync';
-import { normalize, retry, sleep } from '../../../utils/Utils';
+import { normalize, retry } from '../../../utils/Utils';
 import { UniswapV2Factory__factory } from '../../../contracts/types/factories/UniswapV2Factory__factory';
 import { UniswapV2Pair__factory } from '../../../contracts/types/factories/UniswapV2Pair__factory';
 import * as Helper from '../../configuration/Helper';
 import path, { dirname } from 'path';
 import { readLastLine } from '../../configuration/Helper';
-import axios, { AxiosResponse } from 'axios';
 import {
   UniSwapV2WorkerConfiguration,
   getAllPreComputed,
@@ -19,280 +18,11 @@ import {
   generateUnifiedCSVFilePath,
   listAllExistingRawPairs
 } from '../../configuration/WorkerConfiguration';
+import { ComputeLiquidityXYKPool, ComputeXYKPrice } from '../../../library/XYKLibrary';
 
 export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
-  constructor(runEveryMinutes: number) {
-    super('uniswapv2', runEveryMinutes);
-  }
-
-  /**
-   * Read all the csv files to check what pairs are available
-   * @returns {{[base: string]: string[]}}
-   */
-  getAvailableUniswapV2(): { [base: string]: string[] } {
-    const available: { [base: string]: string[] } = {};
-    // generateRawCSVFilePath
-    const pairs = listAllExistingRawPairs();
-    for (const pair of pairs) {
-      const tokenA = pair.split('-')[0];
-      const tokenB = pair.split('-')[1];
-      if (!available[tokenA]) {
-        available[tokenA] = [];
-      }
-      if (!available[tokenB]) {
-        available[tokenB] = [];
-      }
-      available[tokenA].push(tokenB);
-      available[tokenB].push(tokenA);
-    }
-
-    return available;
-  }
-
-  /**
-   * Compute price from normalized reserves
-   * @param {number} normalizedFrom
-   * @param {number} normalizedTo
-   * @returns {number} calculated price
-   */
-  computeUniswapV2Price(normalizedFrom: number, normalizedTo: number): number {
-    if (normalizedFrom === 0) {
-      return 0;
-    }
-    return normalizedTo / normalizedFrom;
-  }
-
-  async generateUnifiedFileUniv2(endBlock: number) {
-    const available = this.getAvailableUniswapV2();
-    for (const base of Object.keys(available)) {
-      for (const quote of available[base]) {
-        await this.createUnifiedFileForPair(endBlock, base, quote);
-      }
-    }
-
-    const timestampLastYear = Math.round(Date.now() / 1000) - 365 * 24 * 60 * 60; // in seconds
-    const blockLastYear = await retry(Web3Utils.getBlocknumberForTimestamp, [timestampLastYear]);
-    this.truncateUnifiedFiles('uniswapv2', blockLastYear);
-  }
-
-  /**
-   * Truncate all unified files for a platform, keeping only data after 'oldestBlockToKeep'.
-   * @param platform - The platform identifier.
-   * @param oldestBlockToKeep - The oldest block number to keep in the files.
-   */
-  truncateUnifiedFiles(platform: string, oldestBlockToKeep: number): void {
-    const allUnifiedFilesForDirectory: string[] = getAllPreComputed(platform);
-
-    for (const unifiedFileToProcess of allUnifiedFilesForDirectory) {
-      console.log(`truncateUnifiedFiles: working on ${unifiedFileToProcess}`);
-      const linesToKeep: string[] = ['blocknumber,price,slippagemap\n'];
-      const linesToProcess: string[] = fs.readFileSync(unifiedFileToProcess, 'utf-8').split('\n'); // To put in the helper with a condition as well
-      let deletedLines = 0;
-
-      for (let i = 1; i < linesToProcess.length - 1; i++) {
-        const lineToProcess: string = linesToProcess[i];
-        if (lineToProcess) {
-          const blockNumber = Number(lineToProcess.split(',')[0]);
-          if (blockNumber > oldestBlockToKeep) {
-            linesToKeep.push(lineToProcess + '\n');
-          } else {
-            deletedLines++;
-          }
-        }
-      }
-
-      if (deletedLines === 0) {
-        console.log(`truncateUnifiedFiles: no data to be truncated from ${unifiedFileToProcess}`);
-        continue;
-      }
-
-      const stagingFilepath: string = unifiedFileToProcess + '-staging';
-      fs.writeFileSync(stagingFilepath, linesToKeep.join(''));
-      console.log(
-        `truncateUnifiedFiles: ${unifiedFileToProcess} will be truncated from ${linesToProcess.length} to ${linesToKeep.length} lines`
-      );
-      // Adjust the retrySync function as per your project's implementation.
-      fs.renameSync(stagingFilepath, unifiedFileToProcess);
-    }
-  }
-
-  async createUnifiedFileForPair(endBlock: number, fromSymbol: string, toSymbol: string) {
-    console.log(`${this.workerName}: create/append for ${fromSymbol} ${toSymbol}`);
-    const unifiedFullFilename = generateUnifiedCSVFilePath(this.workerName, fromSymbol + '-' + toSymbol);
-    const unifiedFullFilenamePrice = generatePriceCSVFilePath(this.workerName, fromSymbol + '-' + toSymbol);
-    let sinceBlock = 0;
-    const toWrite = [];
-    const toWritePrice = [];
-    if (!fs.existsSync(unifiedFullFilename)) {
-      fs.mkdirSync(dirname(unifiedFullFilename), { recursive: true });
-      fs.writeFileSync(unifiedFullFilename, 'blocknumber,price,slippagemap\n');
-    } else {
-      const lastLine = await readLastLine(unifiedFullFilename);
-      sinceBlock = Number(lastLine.split(',')[0]) + 1;
-      if (isNaN(sinceBlock)) {
-        sinceBlock = 0;
-      }
-    }
-
-    if (!fs.existsSync(unifiedFullFilenamePrice)) {
-      fs.mkdirSync(dirname(unifiedFullFilenamePrice), { recursive: true });
-      fs.writeFileSync(unifiedFullFilenamePrice, 'blocknumber,price\n');
-    }
-
-    console.log(`${this.workerName}: getting data since ${sinceBlock} to ${endBlock}`);
-    const univ2Data: {
-      [blockNumber: string]: {
-        fromReserve: string;
-        toReserve: string;
-      };
-    } = this.getUniV2DataforBlockInterval(fromSymbol, toSymbol, sinceBlock, endBlock);
-    const fromConf = this.tokens[fromSymbol]; // tokens was precomputed by main class
-    const toConf = this.tokens[toSymbol];
-
-    let lastSavedBlock: number = sinceBlock - 1;
-    for (const blockNumber in univ2Data) {
-      const data = univ2Data[blockNumber];
-      const normalizedFrom = normalize(data.fromReserve, fromConf.decimals);
-      const normalizedTo = normalize(data.toReserve, toConf.decimals);
-      const price = this.computeUniswapV2Price(normalizedFrom, normalizedTo);
-
-      // only save every 50 blocks
-      if (lastSavedBlock + 50 > +blockNumber) {
-        // This will cast number to a number
-        // just save the price
-        toWritePrice.push(`${blockNumber},${price}\n`);
-        continue;
-      }
-
-      const slippageMap: {
-        [slippageBps: string]: {
-          quote: number;
-          base: number;
-        };
-      } = {};
-      for (let slippageBps = 50; slippageBps <= 2000; slippageBps += 50) {
-        slippageMap[slippageBps] = this.computeLiquidityUniV2Pool(normalizedFrom, normalizedTo, slippageBps / 10000);
-      }
-
-      lastSavedBlock = Number(blockNumber);
-      toWrite.push(`${blockNumber},${price},${JSON.stringify(slippageMap)}\n`);
-      toWritePrice.push(`${blockNumber},${price}\n`);
-    }
-
-    if (toWrite.length == 0) {
-      console.log(`${this.workerName}: nothing to add to file`);
-    } else {
-      fs.appendFileSync(unifiedFullFilename, toWrite.join(''));
-    }
-
-    if (toWritePrice.length == 0) {
-      console.log(`${this.workerName}: nothing to add to price file`);
-    } else {
-      fs.appendFileSync(unifiedFullFilenamePrice, toWritePrice.join(''));
-    }
-  }
-
-  /**
-   * Formula from
-   * https://ethereum.stackexchange.com/a/107170/105194
-   * TL;DR:
-   * a = sqrt(pxy)/p - x
-   * where p is the target price to be maintained and x and y
-   * are the quantities of the two tokens in the pool before the trade takes place.
-   * and a is the amount of x I can sell to reach the price p
-   * @param {string} fromSymbol
-   * @param {number} fromReserve must be normalized with the correct decimal place
-   * @param {string} toSymbol
-   * @param {number} toReserve must be normalized with the correct decimal place
-   * @param {number} targetSlippage
-   * @returns {{ base: number, quote: number }} base amount of token exchangeable for defined slippage, quote amount obtained
-   */
-  computeLiquidityUniV2Pool(
-    fromReserve: number,
-    toReserve: number,
-    targetSlippage: number
-  ): { base: number; quote: number } {
-    if (fromReserve === 0) {
-      return { base: 0, quote: 0 };
-    }
-
-    const initPrice = toReserve / fromReserve;
-    const targetPrice = initPrice - initPrice * targetSlippage;
-    const amountOfFromToSell = Math.sqrt(targetPrice * fromReserve * toReserve) / targetPrice - fromReserve;
-    const amountOfToObtained = this.calculateYReceived(fromReserve, toReserve, amountOfFromToSell);
-
-    return { base: amountOfFromToSell, quote: amountOfToObtained };
-  }
-
-  calculateYReceived(x0: number, y0: number, xSell: number): number {
-    // Initial state of the liquidity pool
-    const k0: number = x0 * y0;
-    // Calculate the new quantity of asset X after the sale (it increases)
-    const x1: number = x0 + xSell;
-    // Calculate the new quantity of asset Y using the x * y = k formula
-    const y1: number = k0 / x1;
-    // Calculate the difference in asset Y received
-    const deltaY: number = y0 - y1;
-    return deltaY;
-  }
-
-  getUniV2DataforBlockInterval(
-    fromSymbol: string,
-    toSymbol: string,
-    fromBlock: number,
-    toBlock: number
-  ): { [blockNumber: string]: { fromReserve: string; toReserve: string } } {
-    const fileInfo = this.getUniV2DataFile(fromSymbol, toSymbol);
-    if (!fileInfo) {
-      throw new Error(`Could not find pool data for ${fromSymbol}/${toSymbol} on uniswapv2`);
-    }
-    // load the file in RAM
-    const fileContent = fs.readFileSync(fileInfo.path, 'utf-8').split('\n');
-
-    const results: { [blockNumber: string]: { fromReserve: string; toReserve: string } } = {};
-
-    for (let i = 1; i < fileContent.length - 1; i++) {
-      const line = fileContent[i];
-      const splitted = line.split(',');
-      const blockNumber = Number(splitted[0]);
-      if (blockNumber < fromBlock) {
-        continue;
-      }
-
-      if (blockNumber > toBlock) {
-        break;
-      }
-
-      results[blockNumber] = {
-        fromReserve: fileInfo.reverse ? splitted[2] : splitted[1],
-        toReserve: fileInfo.reverse ? splitted[1] : splitted[2]
-      };
-    }
-
-    return results;
-  }
-
-  getUniV2DataFile(fromSymbol: string, toSymbol: string) {
-    let filePath = generateRawCSVFilePath('uniswapv2', `${fromSymbol}-${toSymbol}`);
-    let reverse = false;
-
-    if (fs.existsSync(filePath)) {
-      return {
-        path: filePath,
-        reverse: reverse
-      };
-    } else {
-      filePath = generateRawCSVFilePath('uniswapv2', `${toSymbol}-${fromSymbol}`);
-      reverse = true;
-      if (fs.existsSync(filePath)) {
-        return {
-          path: filePath,
-          reverse: reverse
-        };
-      } else {
-        return null;
-      }
-    }
+  constructor(runEveryMinutes: number, workerName = 'uniswapv2') {
+    super(workerName, runEveryMinutes);
   }
 
   async runSpecific(): Promise<void> {
@@ -337,15 +67,27 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
     };
 
     fs.writeFileSync(
-      path.join(Constants.DATA_DIR, this.workerName, 'uniswapv2-fetcher-result.json'),
+      path.join(Constants.DATA_DIR, this.workerName, `${this.workerName}-fetcher-result.json`),
       JSON.stringify(fetcherResult, null, 2)
     );
 
+    // generate unified files
     await this.generateUnifiedFileUniv2(endBlock);
+
+    // truncate all files to 1 year
+    const timestampLastYear = Math.round(Date.now() / 1000) - 365 * 24 * 60 * 60; // in seconds
+    const blockLastYear = await retry(Web3Utils.getBlocknumberForTimestamp, [timestampLastYear]);
+    this.truncateUnifiedFiles(this.workerName, blockLastYear);
   }
 
+  //    ___ ___ _____ ___ _  _   ___ _   _ _  _  ___ _____ ___ ___  _  _ ___
+  //   | __| __|_   _/ __| || | | __| | | | \| |/ __|_   _|_ _/ _ \| \| / __|
+  //   | _|| _|  | || (__| __ | | _|| |_| | .` | (__  | |  | | (_) | .` \__ \
+  //   |_| |___| |_| \___|_||_| |_|  \___/|_|\_|\___| |_| |___\___/|_|\_|___/
+  //
+
   async FetchHistoryForPair(pairKey: string, currentBlock: number, minStartBlock: number) {
-    const web3Provider: ethers.JsonRpcProvider = await Web3Utils.getJsonRPCProvider();
+    const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
 
     const historyFileName = generateRawCSVFilePath(this.workerName, pairKey);
 
@@ -502,5 +244,214 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
 
     // return true if the last event fetched is more than 500k blocks old
     return { isStale: lastEventBlock < currentBlock - 500_000, pairAddress: pairAddress };
+  }
+
+  async generateUnifiedFileUniv2(endBlock: number) {
+    const available = this.getAvailableUniswapV2();
+    for (const base of Object.keys(available)) {
+      for (const quote of available[base]) {
+        await this.createUnifiedFileForPair(endBlock, base, quote);
+      }
+    }
+  }
+
+  /**
+   * Truncate all unified files for a platform, keeping only data after 'oldestBlockToKeep'.
+   * @param platform - The platform identifier.
+   * @param oldestBlockToKeep - The oldest block number to keep in the files.
+   */
+  truncateUnifiedFiles(platform: string, oldestBlockToKeep: number): void {
+    const allUnifiedFilesForDirectory: string[] = getAllPreComputed(platform);
+
+    for (const unifiedFileToProcess of allUnifiedFilesForDirectory) {
+      console.log(`truncateUnifiedFiles: working on ${unifiedFileToProcess}`);
+      const linesToKeep: string[] = ['blocknumber,price,slippagemap\n'];
+      const linesToProcess: string[] = fs.readFileSync(unifiedFileToProcess, 'utf-8').split('\n'); // To put in the helper with a condition as well
+      let deletedLines = 0;
+
+      for (let i = 1; i < linesToProcess.length - 1; i++) {
+        const lineToProcess: string = linesToProcess[i];
+        if (lineToProcess) {
+          const blockNumber = Number(lineToProcess.split(',')[0]);
+          if (blockNumber > oldestBlockToKeep) {
+            linesToKeep.push(lineToProcess + '\n');
+          } else {
+            deletedLines++;
+          }
+        }
+      }
+
+      if (deletedLines === 0) {
+        console.log(`truncateUnifiedFiles: no data to be truncated from ${unifiedFileToProcess}`);
+        continue;
+      }
+
+      const stagingFilepath: string = unifiedFileToProcess + '-staging';
+      fs.writeFileSync(stagingFilepath, linesToKeep.join(''));
+      console.log(
+        `truncateUnifiedFiles: ${unifiedFileToProcess} will be truncated from ${linesToProcess.length} to ${linesToKeep.length} lines`
+      );
+      // Adjust the retrySync function as per your project's implementation.
+      fs.renameSync(stagingFilepath, unifiedFileToProcess);
+    }
+  }
+
+  /**
+   * Read all the csv files to check what pairs are available
+   * @returns {{[base: string]: string[]}}
+   */
+  getAvailableUniswapV2(): { [base: string]: string[] } {
+    const available: { [base: string]: string[] } = {};
+    // generateRawCSVFilePath
+    const pairs = listAllExistingRawPairs(this.workerName);
+    for (const pair of pairs) {
+      const tokenA = pair.split('-')[0];
+      const tokenB = pair.split('-')[1];
+      if (!available[tokenA]) {
+        available[tokenA] = [];
+      }
+      if (!available[tokenB]) {
+        available[tokenB] = [];
+      }
+      available[tokenA].push(tokenB);
+      available[tokenB].push(tokenA);
+    }
+
+    return available;
+  }
+
+  async createUnifiedFileForPair(endBlock: number, fromSymbol: string, toSymbol: string) {
+    console.log(`${this.workerName}: create/append for ${fromSymbol} ${toSymbol}`);
+    const unifiedFullFilename = generateUnifiedCSVFilePath(this.workerName, fromSymbol + '-' + toSymbol);
+    const unifiedFullFilenamePrice = generatePriceCSVFilePath(this.workerName, fromSymbol + '-' + toSymbol);
+    let sinceBlock = 0;
+    const toWrite = [];
+    const toWritePrice = [];
+    if (!fs.existsSync(unifiedFullFilename)) {
+      fs.mkdirSync(dirname(unifiedFullFilename), { recursive: true });
+      fs.writeFileSync(unifiedFullFilename, 'blocknumber,price,slippagemap\n');
+    } else {
+      const lastLine = await readLastLine(unifiedFullFilename);
+      sinceBlock = Number(lastLine.split(',')[0]) + 1;
+      if (isNaN(sinceBlock)) {
+        sinceBlock = 0;
+      }
+    }
+
+    if (!fs.existsSync(unifiedFullFilenamePrice)) {
+      fs.mkdirSync(dirname(unifiedFullFilenamePrice), { recursive: true });
+      fs.writeFileSync(unifiedFullFilenamePrice, 'blocknumber,price\n');
+    }
+
+    console.log(`${this.workerName}: getting data since ${sinceBlock} to ${endBlock}`);
+    const univ2Data: {
+      [blockNumber: string]: {
+        fromReserve: string;
+        toReserve: string;
+      };
+    } = this.getUniV2DataforBlockInterval(fromSymbol, toSymbol, sinceBlock, endBlock);
+    const fromConf = this.tokens[fromSymbol]; // tokens was precomputed by main class
+    const toConf = this.tokens[toSymbol];
+
+    let lastSavedBlock: number = sinceBlock - 1;
+    for (const blockNumber in univ2Data) {
+      const data = univ2Data[blockNumber];
+      const normalizedFrom = normalize(data.fromReserve, fromConf.decimals);
+      const normalizedTo = normalize(data.toReserve, toConf.decimals);
+      const price = ComputeXYKPrice(normalizedFrom, normalizedTo);
+
+      // only save every 50 blocks
+      if (lastSavedBlock + 50 > +blockNumber) {
+        // This will cast number to a number
+        // just save the price
+        toWritePrice.push(`${blockNumber},${price}\n`);
+        continue;
+      }
+
+      const slippageMap: {
+        [slippageBps: string]: {
+          quote: number;
+          base: number;
+        };
+      } = {};
+      for (let slippageBps = 50; slippageBps <= 2000; slippageBps += 50) {
+        slippageMap[slippageBps] = ComputeLiquidityXYKPool(normalizedFrom, normalizedTo, slippageBps / 10000);
+      }
+
+      lastSavedBlock = Number(blockNumber);
+      toWrite.push(`${blockNumber},${price},${JSON.stringify(slippageMap)}\n`);
+      toWritePrice.push(`${blockNumber},${price}\n`);
+    }
+
+    if (toWrite.length == 0) {
+      console.log(`${this.workerName}: nothing to add to file`);
+    } else {
+      fs.appendFileSync(unifiedFullFilename, toWrite.join(''));
+    }
+
+    if (toWritePrice.length == 0) {
+      console.log(`${this.workerName}: nothing to add to price file`);
+    } else {
+      fs.appendFileSync(unifiedFullFilenamePrice, toWritePrice.join(''));
+    }
+  }
+
+  getUniV2DataforBlockInterval(
+    fromSymbol: string,
+    toSymbol: string,
+    fromBlock: number,
+    toBlock: number
+  ): { [blockNumber: string]: { fromReserve: string; toReserve: string } } {
+    const fileInfo = this.getUniV2DataFile(fromSymbol, toSymbol);
+    if (!fileInfo) {
+      throw new Error(`Could not find pool data for ${fromSymbol}/${toSymbol} on uniswapv2`);
+    }
+    // load the file in RAM
+    const fileContent = fs.readFileSync(fileInfo.path, 'utf-8').split('\n');
+
+    const results: { [blockNumber: string]: { fromReserve: string; toReserve: string } } = {};
+
+    for (let i = 1; i < fileContent.length - 1; i++) {
+      const line = fileContent[i];
+      const splitted = line.split(',');
+      const blockNumber = Number(splitted[0]);
+      if (blockNumber < fromBlock) {
+        continue;
+      }
+
+      if (blockNumber > toBlock) {
+        break;
+      }
+
+      results[blockNumber] = {
+        fromReserve: fileInfo.reverse ? splitted[2] : splitted[1],
+        toReserve: fileInfo.reverse ? splitted[1] : splitted[2]
+      };
+    }
+
+    return results;
+  }
+
+  getUniV2DataFile(fromSymbol: string, toSymbol: string) {
+    let filePath = generateRawCSVFilePath(this.workerName, `${fromSymbol}-${toSymbol}`);
+    let reverse = false;
+
+    if (fs.existsSync(filePath)) {
+      return {
+        path: filePath,
+        reverse: reverse
+      };
+    } else {
+      filePath = generateRawCSVFilePath(this.workerName, `${toSymbol}-${fromSymbol}`);
+      reverse = true;
+      if (fs.existsSync(filePath)) {
+        return {
+          path: filePath,
+          reverse: reverse
+        };
+      } else {
+        return null;
+      }
+    }
   }
 }
