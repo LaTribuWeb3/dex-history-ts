@@ -390,10 +390,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
     }
 
     if (!startBlock) {
-      const deployBlockNumber: number = await retry(Web3Utils.GetContractCreationBlockNumber, [
-        pairAddress,
-        this.workerName
-      ]);
+      const deployBlockNumber = await retry(Web3Utils.GetContractCreationBlockNumber, [pairAddress, this.workerName]);
 
       if (!deployBlockNumber) {
         throw new Error('Deploy block is null when getting the pair address creation block');
