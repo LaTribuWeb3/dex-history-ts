@@ -2,13 +2,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as Constants from './Constants';
 import { sleep, writeContentToFile } from './Utils';
+import Config from '../../config/config.json';
 
 interface SyncFilenames {
   FETCHERS_LAUNCHER: string;
 }
 
 const SYNC_FILENAMES: SyncFilenames = {
-  FETCHERS_LAUNCHER: 'fetchers-launcher'
+  FETCHERS_LAUNCHER: Config.externalLockFile
 };
 
 // Methods used to sync processes using filenames
@@ -17,13 +18,19 @@ function UpdateSyncFile(syncFilename: string, isWorking: boolean): void {
 
   console.log(`SYNC: setting ${syncFilename} working to ${isWorking}`);
 
-  const fullFilename = path.join(Constants.DATA_DIR, syncFilename);
-
-  writeContentToFile(fullFilename, content);
+  if (path.isAbsolute(syncFilename)) {
+    writeContentToFile(syncFilename, content);
+  } else {
+    writeContentToFile(path.join(Constants.DATA_DIR, syncFilename), content);
+  }
 }
 
 function CheckSyncFileStatusInData(syncFilename: string): string | undefined {
-  return CheckSyncFileStatus(path.join(Constants.DATA_DIR, syncFilename));
+  if (path.isAbsolute(syncFilename)) {
+    return CheckSyncFileStatus(syncFilename);
+  } else {
+    return CheckSyncFileStatus(path.join(Constants.DATA_DIR, syncFilename));
+  }
 }
 
 function CheckSyncFileStatus(syncFilename: string): string | undefined {
@@ -49,11 +56,17 @@ async function WaitUntilDone(syncFilename: string): Promise<void> {
 }
 
 async function WaitForStatusInFileBeforeContinuing(file: string, expectedStatus: string, closure: () => any) {
-  if (CheckSyncFileStatus(file) == expectedStatus) closure();
-
-  fs.watch(file, () => {
-    if (CheckSyncFileStatus(file) == expectedStatus) closure();
+  const watcher = fs.watch(file, () => {
+    if (CheckSyncFileStatus(file) == expectedStatus) {
+      watcher.close();
+      closure();
+    }
   });
+
+  if (CheckSyncFileStatus(file) == expectedStatus) {
+    watcher.close();
+    closure();
+  }
 }
 
 export { SYNC_FILENAMES, UpdateSyncFile, WaitUntilDone, writeContentToFile, WaitForStatusInFileBeforeContinuing };

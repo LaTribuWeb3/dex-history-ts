@@ -1,21 +1,17 @@
-import { SYNC_FILENAMES, UpdateSyncFile, WaitForStatusInFileBeforeContinuing } from '../../utils/Sync';
+import { SYNC_FILENAMES, UpdateSyncFile, WaitUntilDone } from '../../utils/Sync';
 import { sleep } from '../../utils/Utils';
 import { BaseWorker } from '../BaseWorker';
 import { WorkerConfiguration } from '../configuration/WorkerConfiguration';
 import { UniswapV2Fetcher } from '../fetchers/uniswapv2/UniswapV2Fetcher';
-import Config from '../../../config/config.json';
 
 const RUN_EVERY_MINUTES = 60;
 const fetchersToLaunch: BaseWorker<WorkerConfiguration>[] = [new UniswapV2Fetcher(RUN_EVERY_MINUTES)];
 
 async function FetchersRunner() {
-  WaitForStatusInFileBeforeContinuing(Config.externalLockFile, 'done', startMainLoop);
-}
-
-async function startMainLoop() {
-  // eslint-disable-next-line no-constant-condition
   while (true) {
+    // eslint-disable-next-line no-constant-condition
     const start = Date.now();
+    WaitUntilDone(SYNC_FILENAMES.FETCHERS_LAUNCHER);
     UpdateSyncFile(SYNC_FILENAMES.FETCHERS_LAUNCHER, true);
     for (const fetcherToLaunch of fetchersToLaunch) {
       console.log(`Starting fetcher ${fetcherToLaunch.workerName}`);
