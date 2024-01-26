@@ -11,7 +11,7 @@
         "lintfix": "eslint . --ext .ts --fix",
         "prettier-format": "prettier --config .prettierrc \"./src/**/*.ts\" --write",
         "prettier-watch": "onchange \"src/**/*.ts\" -- prettier --write {{changed}}",
-        "typechain": "rimraf src/contracts/types && typechain --target ethers-v6 --out-dir src/contracts/types"
+        "typechain": "rimraf src/contracts/types && typechain --target ethers-v6 --out-dir src/contracts/types ./src/contracts/abi/**/*.json"
     },
     "keywords": [],
     "author": "",

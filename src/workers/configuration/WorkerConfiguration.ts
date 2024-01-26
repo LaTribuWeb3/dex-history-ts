@@ -14,6 +14,7 @@ export interface CurveFetcherWorkerConfiguration extends WorkerConfiguration {
 }
 
 export interface UniSwapV2WorkerConfiguration extends WorkerConfiguration {
+  factoryAddress: string;
   pairs: PairConfiguration[];
 }
 
@@ -26,7 +27,7 @@ export interface SushiSwapV2WorkerConfiguration extends WorkerConfiguration {
 }
 
 export interface WorkerConfiguration {
-  address: string;
+  configType: string;
 }
 
 export interface WorkerMainConfiguration {
@@ -70,8 +71,7 @@ export function readdirSyncWithFullPath(dir: string): string[] {
 }
 
 export function generateUnifiedCSVFilePath(worker: string, pair: string) {
-  if (directoryStructureVersion == 0)
-    return `${Constants.DATA_DIR}/precomputed/${worker}/${pair}-unified-data.csv`;
+  if (directoryStructureVersion == 0) return `${Constants.DATA_DIR}/precomputed/${worker}/${pair}-unified-data.csv`;
   else return generateUnifedCSVBasePathForPair('computed', worker, pair) + `/${worker}.${pair}.computed.csv`;
 }
 

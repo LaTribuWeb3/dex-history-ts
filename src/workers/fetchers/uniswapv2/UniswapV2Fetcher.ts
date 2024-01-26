@@ -19,6 +19,7 @@ import {
   listAllExistingRawPairs
 } from '../../configuration/WorkerConfiguration';
 import { ComputeLiquidityXYKPool, ComputeXYKPrice } from '../../../library/XYKLibrary';
+import UniswapV2PairAbi from '../../../contracts/abi/uniswapv2/UniswapV2Pair.json';
 
 export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
   constructor(runEveryMinutes: number, workerName = 'uniswapv2') {
@@ -95,7 +96,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
     const token0Address: string = this.tokens[token0Symbol].address;
     const token1Symbol = pairKey.split('-')[1];
     const token1Address: string = this.tokens[token1Symbol].address;
-    const uniswapV2Factory = UniswapV2Factory__factory.connect(this.workerConfiguration.address, web3Provider);
+    const uniswapV2Factory = UniswapV2Factory__factory.connect(this.workerConfiguration.factoryAddress, web3Provider);
 
     const pairAddress: string = await uniswapV2Factory.getPair(token0Address, token1Address);
 
@@ -165,8 +166,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
 
       let events = undefined;
       try {
-        const uniswapV2Pair = UniswapV2Pair__factory.connect(this.workerConfiguration.address, web3Provider);
-        events = await pairContract.queryFilter(uniswapV2Pair.getEvent('Sync'), fromBlock, toBlock);
+        events = await pairContract.queryFilter(pairContract.filters.Sync(), fromBlock, toBlock);
       } catch (e) {
         // console.log(`query filter error: ${e.toString()}`);
         blockStep = Math.max(10, Math.round(blockStep / 2));
