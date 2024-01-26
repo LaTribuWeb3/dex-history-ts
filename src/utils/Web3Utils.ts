@@ -1,6 +1,6 @@
 import * as ethers from 'ethers';
 import { retry, sleep } from './Utils';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 
 let lastCallEtherscan = 0;
 

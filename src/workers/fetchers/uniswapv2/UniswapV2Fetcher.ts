@@ -19,7 +19,6 @@ import {
   listAllExistingRawPairs
 } from '../../configuration/WorkerConfiguration';
 import { ComputeLiquidityXYKPool, ComputeXYKPrice } from '../../../library/XYKLibrary';
-import UniswapV2PairAbi from '../../../contracts/abi/uniswapv2/UniswapV2Pair.json';
 
 export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
   constructor(runEveryMinutes: number, workerName = 'uniswapv2') {

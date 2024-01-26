@@ -1,5 +1,3 @@
-import { TokenList } from './TokenData';
-import { UniSwapV2WorkerConfiguration } from './WorkerConfiguration';
 import * as fs from 'fs';
 
 /**
