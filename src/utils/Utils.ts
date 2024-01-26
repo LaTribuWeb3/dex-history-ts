@@ -6,13 +6,13 @@ import path from 'path';
  * Retries a function n number of times before giving up
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function retry<T extends (...arg0: any[]) => U, U>(
+export async function retry<T extends (...arg0: any[]) => any>(
   fn: T,
   args: Parameters<T>,
   maxTry = 10,
   incrSleepDelay = 10000,
   retryCount = 1
-): Promise<Awaited<U>> {
+): Promise<Awaited<ReturnType<T>>> {
   const currRetry = typeof retryCount === 'number' ? retryCount : 1;
   try {
     const result = await fn(...args);
