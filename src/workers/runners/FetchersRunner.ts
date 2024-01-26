@@ -8,8 +8,8 @@ const RUN_EVERY_MINUTES = 60;
 const fetchersToLaunch: BaseWorker<WorkerConfiguration>[] = [new UniswapV2Fetcher(RUN_EVERY_MINUTES)];
 
 async function FetchersRunner() {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
-    // eslint-disable-next-line no-constant-condition
     const start = Date.now();
     WaitUntilDone(SYNC_FILENAMES.FETCHERS_LAUNCHER);
     UpdateSyncFile(SYNC_FILENAMES.FETCHERS_LAUNCHER, true);
