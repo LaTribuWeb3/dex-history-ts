@@ -3,21 +3,25 @@
     "version": "1.0.0",
     "main": "index.ts",
     "scripts": {
+        "start:fetcher": "ts-node ./src/workers/runners/FetchersRunner.ts",
         "start": "ts-node ./src/index.ts",
         "start:fetchers": "ts-node ./src/runners/FetchersRunner.ts",
         "build": "rimraf ./build && tsc",
         "lint": "eslint . --ext .ts",
         "lintfix": "eslint . --ext .ts --fix",
         "prettier-format": "prettier --config .prettierrc \"./src/**/*.ts\" --write",
-        "prettier-watch": "onchange \"src/**/*.ts\" -- prettier --write {{changed}}"
+        "prettier-watch": "onchange \"src/**/*.ts\" -- prettier --write {{changed}}",
+        "typechain": "rimraf src/contracts/types && typechain --target ethers-v6 --out-dir src/contracts/types ./src/contracts/abi/**/*.json"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "@typechain/ethers-v6": "^0.5.1",
         "@types/node": "^18.19.6",
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
+        "dotenv": "^16.3.1",
         "eslint": "^8.56.0",
         "eslint-config-prettier": "^8.10.0",
         "eslint-plugin-prettier": "^4.2.1",
@@ -25,6 +29,7 @@
         "prettier": "^2.8.8",
         "rimraf": "^4.4.1",
         "ts-node": "^10.9.2",
+        "typechain": "^8.3.2",
         "typescript": "^5.3.3"
     },
     "dependencies": {

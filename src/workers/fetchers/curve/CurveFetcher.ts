@@ -1,8 +1,9 @@
 import { BaseWorker } from '../../BaseWorker';
+import { CurveFetcherWorkerConfiguration } from '../../configuration/WorkerConfiguration';
 
-export class CurveFetcher extends BaseWorker {
-  constructor(workerName: string, runEveryMinutes: number) {
-    super(workerName, runEveryMinutes);
+export class CurveFetcher extends BaseWorker<CurveFetcherWorkerConfiguration> {
+  constructor(runEveryMinutes: number) {
+    super('curvefetcher', runEveryMinutes);
   }
 
   runSpecific(): Promise<void> {

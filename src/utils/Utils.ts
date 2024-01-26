@@ -1,4 +1,6 @@
 import BigNumber from 'bignumber.js';
+import * as fs from 'fs';
+import path from 'path';
 
 /**
  * Retries a function n number of times before giving up
@@ -41,4 +43,11 @@ export function normalize(amount: string | bigint, decimals: number): number {
 export function roundTo(num: number, dec = 2): number {
   const pow = Math.pow(10, dec);
   return Math.round((num + Number.EPSILON) * pow) / pow;
+}
+
+export function writeContentToFile(syncFilename: string, content: string) {
+  if (!fs.existsSync(path.dirname(syncFilename))) {
+    fs.mkdirSync(path.dirname(syncFilename), { recursive: true });
+  }
+  fs.writeFileSync(syncFilename, content);
 }
