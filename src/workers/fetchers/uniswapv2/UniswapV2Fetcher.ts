@@ -27,10 +27,8 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
 
   async runSpecific(): Promise<void> {
     const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
-
-    this.createDataDirForWorker();
-
     const endBlock: number = (await web3Provider.getBlockNumber()) - 10;
+
     let startBlock = 0;
     const stalePools = [];
     const poolsData = [];

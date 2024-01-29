@@ -69,6 +69,8 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
       // Step 3: Log the start of the specific worker run
       console.log(`${this.workerName}: starting run specific`);
 
+      this.createDataDirForWorker();
+
       // Step 4: Execute the worker's specific logic
       await this.runSpecific();
 
