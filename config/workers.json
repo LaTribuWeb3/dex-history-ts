@@ -151,6 +151,30 @@
         "pairs": [
           {
             "name": "UNI-WETH"
+          },
+          {
+            "name": "WBTC-WETH"
+          },
+          {
+            "name": "WETH-USDT"
+          },
+          {
+            "name": "USDC-WETH"
+          },
+          {
+            "name": "DAI-WETH"
+          },
+          {
+            "name": "COMP-WETH"
+          },
+          {
+            "name": "LINK-WETH"
+          },
+          {
+            "name": "CVX-WETH"
+          },
+          {
+            "name": "FXS-WETH"
           }
         ]
       }
