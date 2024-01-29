@@ -14,7 +14,7 @@ import {
   UniSwapV2WorkerConfiguration,
   getAllPreComputed,
   generatePriceCSVFilePath,
-  generateRawCSVFilePath,
+  generateRawCSVFilePathForPair,
   generateUnifiedCSVFilePath,
   listAllExistingRawPairs
 } from '../../configuration/WorkerConfiguration';
@@ -87,7 +87,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
   async FetchHistoryForPair(pairKey: string, currentBlock: number, minStartBlock: number) {
     const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
 
-    const historyFileName = generateRawCSVFilePath(this.workerName, pairKey);
+    const historyFileName = generateRawCSVFilePathForPair(this.workerName, pairKey);
 
     const token0Symbol = pairKey.split('-')[0];
     const token0Address: string = this.tokens[token0Symbol].address;
@@ -430,7 +430,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
   }
 
   getUniV2DataFile(fromSymbol: string, toSymbol: string) {
-    let filePath = generateRawCSVFilePath(this.workerName, `${fromSymbol}-${toSymbol}`);
+    let filePath = generateRawCSVFilePathForPair(this.workerName, `${fromSymbol}-${toSymbol}`);
     let reverse = false;
 
     if (fs.existsSync(filePath)) {
@@ -439,7 +439,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
         reverse: reverse
       };
     } else {
-      filePath = generateRawCSVFilePath(this.workerName, `${toSymbol}-${fromSymbol}`);
+      filePath = generateRawCSVFilePathForPair(this.workerName, `${toSymbol}-${fromSymbol}`);
       reverse = true;
       if (fs.existsSync(filePath)) {
         return {

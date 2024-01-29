@@ -69,7 +69,7 @@ export function generateUnifedCSVBasePathForPair(type: string, worker: string, p
   return generateCSVFolderPath(type, worker) + `/${pair}`;
 }
 
-export function generateRawCSVFilePath(worker: string, pair: string) {
+export function generateRawCSVFilePathForPair(worker: string, pair: string) {
   if (directoryStructureVersion == 0) return `${Constants.DATA_DIR}/${worker}/${pair}_${worker}.csv`;
   else return generateUnifedCSVBasePathForPair('raw', worker, pair) + `/${worker}.${pair}.raw.csv`;
 }
