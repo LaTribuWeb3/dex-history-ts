@@ -4,7 +4,7 @@ import path from 'path';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-export interface PairConfiguration {
+export interface UniSwapV2PairConfiguration {
   name: string;
   startBlock?: number;
 }
@@ -15,7 +15,26 @@ export interface CurveFetcherWorkerConfiguration extends WorkerConfiguration {
 
 export interface UniSwapV2WorkerConfiguration extends WorkerConfiguration {
   factoryAddress: string;
-  pairs: PairConfiguration[];
+  pairs: UniSwapV2PairConfiguration[];
+}
+
+export interface CurveToken {
+  symbol: string;
+  address: string;
+}
+
+export interface CurvePairConfiguration {
+  poolAddress: string;
+  poolName: string;
+  lpTokenAddress: string;
+  lpTokenName: string;
+  abi: string;
+  tokens: CurveToken[];
+}
+
+export interface CurveWorkerConfiguration extends WorkerConfiguration {
+  factoryAddress: string;
+  pairs: CurvePairConfiguration[];
 }
 
 export interface UniSwapV3WorkerConfiguration extends WorkerConfiguration {
