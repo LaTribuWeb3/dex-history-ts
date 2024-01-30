@@ -4,8 +4,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as WorkerConfiguration from './configuration/WorkerConfiguration';
 import { TokenList } from './configuration/TokenData';
-import workers from '../../config/workers.json';
-import tokens from '../../config/tokens.json';
+import workers from '../config/workers.json';
+import tokens from '../config/tokens.json';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
