@@ -1,4 +1,6 @@
 import BigNumber from 'bignumber.js';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 /**
  * Where all the files are saved
