@@ -9,7 +9,7 @@ dotenv.config();
 let externalLockFile = process.env.EXTERNAL_LOCK_FILE;
 
 if (!externalLockFile) {
-  externalLockFile = path.join(process.cwd(), 'data', 'fetchers-launcher');
+  externalLockFile = path.join(Constants.DATA_DIR, 'fetchers-launcher');
 }
 
 interface SyncFilenames {
