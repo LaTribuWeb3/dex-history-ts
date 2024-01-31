@@ -141,7 +141,7 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     // fetch all blocks where an event occured since startBlock
     const curveContract: Swap = this.getCurveContract(fetchConfig, web3Provider);
     const curveTopics = await Promise.all(this.getCurveTopics(curveContract, fetchConfig));
-    const topics: string[] = curveTopics.map((curveTopicList) => curveTopicList[0]!.toString());
+    const topics: ethers.TopicFilter = [curveTopics.map((curveTopicList) => curveTopicList[0]!.toString())];
 
     const allBlocksWithEvents: number[] = await this.getAllBlocksWithEventsForContractAndTopics(
       fetchConfig,
@@ -284,7 +284,7 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     startBlock: number,
     endBlock: number,
     curveContract: ethers.BaseContract,
-    topics: string[]
+    topics: ethers.TopicFilter
   ) {
     const blockSet: Set<number> = new Set();
 
@@ -294,7 +294,7 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
       let toBlock = Math.min(endBlock, fromBlock + blockStep - 1);
 
       try {
-        const events = await curveContract.queryFilter([topics], fromBlock, toBlock);
+        const events = await curveContract.queryFilter(topics, fromBlock, toBlock);
 
         /* Problem: The previous call now authorize only 4 parameters. TODO fix this */
 
