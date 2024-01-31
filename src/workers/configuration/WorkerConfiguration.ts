@@ -123,3 +123,15 @@ export function generateCurvePoolSummaryFullName(workerName: string): string {
 export function generateCurvePoolFetcherResult(workerName: string): string {
   return `${Constants.DATA_DIR}/${workerName}/${workerName}-fetcher-result.json`;
 }
+
+export function getCurvePoolSummaryFile() {
+  return `${Constants.DATA_DIR}/curve/curve_pools_summary.json`;
+}
+
+export function ensureCurvePrecomputedPresent() {
+  const dir = `${Constants.DATA_DIR}/precomputed/curve`;
+
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
+}

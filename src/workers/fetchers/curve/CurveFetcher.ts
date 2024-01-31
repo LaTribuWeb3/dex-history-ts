@@ -2,9 +2,12 @@ import { BaseWorker } from '../../BaseWorker';
 import {
   CurvePairConfiguration,
   CurveWorkerConfiguration,
+  ensureCurvePrecomputedPresent,
   generateCurvePoolFetcherResult,
   generateCurvePoolSummaryFullName,
-  generateRawCSVFilePathForCurvePool
+  generateRawCSVFilePathForCurvePool,
+  generateUnifiedCSVFilePath,
+  getCurvePoolSummaryFile
 } from '../../configuration/WorkerConfiguration';
 import * as ethers from 'ethers';
 import * as Web3Utils from '../../../utils/Web3Utils';
@@ -34,6 +37,10 @@ import { MulticallWrapper } from 'ethers-multicall-provider';
 import { normalize } from '../../../utils/Utils';
 import { TokenWithReserve } from '../../configuration/TokenData';
 import { TypedContractMethod } from 'ethers-multicall-provider/lib/types/common';
+import {
+  computePriceAndSlippageMapForReserveValue,
+  computePriceAndSlippageMapForReserveValueCryptoV2
+} from '../../../library/CurveLibrary';
 
 interface Swap extends ethers.BaseContract {
   A: TypedContractMethod<[], [bigint], 'view'>;
@@ -44,6 +51,23 @@ interface Swap extends ethers.BaseContract {
     | TypedContractMethod<[k?: ethers.BigNumberish], [bigint], 'view'>
     | TypedContractMethod<[], [bigint], 'view'>;
 }
+
+type CurveData = {
+  isCryptoV2: boolean;
+  poolTokens: string[];
+  reserveValues: {
+    [block: number]: {
+      ampFactor: number;
+      gamma: number;
+      D: number;
+      lpSupply: string;
+      priceScale: number[];
+      tokens: {
+        [token: string]: string;
+      };
+    };
+  };
+};
 
 export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
   constructor(runEveryMinutes: number) {
@@ -58,7 +82,7 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     const currentBlock = (await web3Provider.getBlockNumber()) - 10;
     const fetchPromises: Promise<TokenWithReserve>[] = [];
     for (const fetchConfig of this.workerConfiguration.pairs) {
-      fetchPromises.push(this.FetchHistory(fetchConfig, currentBlock, web3Provider));
+      fetchPromises.push(this.FetchHistory(fetchConfig, 16420535, web3Provider));
       await Promise.all(fetchPromises);
       sleep(2000);
     }
@@ -99,7 +123,7 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     const fetcherResultFullname: string = generateCurvePoolFetcherResult(this.workerName);
     fs.writeFileSync(fetcherResultFullname, JSON.stringify(fetcherResult, null, 2));
 
-    throw new Error('Method not implemented.');
+    await generateUnifiedFileCurve(currentBlock);
   }
 
   //    ___ ___ _____ ___ _  _   ___ _   _ _  _  ___ _____ ___ ___  _  _ ___
@@ -141,7 +165,14 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     // fetch all blocks where an event occured since startBlock
     const curveContract: Swap = this.getCurveContract(fetchConfig, web3Provider);
     const curveTopics = await Promise.all(this.getCurveTopics(curveContract, fetchConfig));
-    const topics: string[] = curveTopics.map((curveTopicList) => curveTopicList[0]!.toString());
+    const topics: string[] = curveTopics
+      .filter((curveTopicList) => curveTopicList.length != 0)
+      .filter((curveTopicList) => curveTopicList[0] != null)
+      .flatMap((curveTopicList) => {
+        if (curveTopicList.length == 0) return [];
+        if (curveTopicList[0] == null) return [];
+        else return curveTopicList[0].toString();
+      });
 
     const allBlocksWithEvents: number[] = await this.getAllBlocksWithEventsForContractAndTopics(
       fetchConfig,
@@ -164,7 +195,7 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     const lastLine = await readLastLine(historyFileName);
     const lastData: TokenWithReserve = {};
     for (let i = 0; i < fetchConfig.tokens.length; i++) {
-      const symbolAndReserve = extractFetchConfigAndNormalize(fetchConfig, i, lastLine);
+      const symbolAndReserve = extractFetchConfigAndNormalize(fetchConfig, i, lastLine, fetchConfig.isCryptoV2 ? 5 : 3);
       lastData[symbolAndReserve.tokenSymbol] = symbolAndReserve.tokenReserve;
     }
 
@@ -295,8 +326,6 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
 
       try {
         const events = await curveContract.queryFilter([topics], fromBlock, toBlock);
-
-        /* Problem: The previous call now authorize only 4 parameters. TODO fix this */
 
         console.log(
           `${this.workerName}[${fetchConfig.poolName}-${fetchConfig.lpTokenName}]: [${fromBlock} - ${toBlock}] found ${
@@ -496,13 +525,315 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
 function extractFetchConfigAndNormalize(
   fetchConfig: CurvePairConfiguration,
   i: number,
-  lastLine: string
+  lastLine: string,
+  indexOffset: number
 ): { tokenSymbol: string; tokenReserve: number } {
   const tokenSymbol = fetchConfig.tokens[i].symbol;
   const confToken = getConfTokenBySymbol(tokenSymbol);
-  const tokenReserve = normalize(lastLine.split(',')[i + 5], confToken.decimals);
+  const tokenReserve = normalize(lastLine.split(',')[i + indexOffset], confToken.decimals);
   return {
     tokenSymbol: tokenSymbol,
     tokenReserve: tokenReserve
   };
+}
+
+async function generateUnifiedFileCurve(currentBlock: number) {
+  const available = getAvailableCurve();
+
+  ensureCurvePrecomputedPresent();
+
+  for (const base of Object.keys(available)) {
+    for (const quote of Object.keys(available[base])) {
+      for (const pool of Object.keys(available[base][quote])) {
+        await createUnifiedFileForPair(currentBlock, base, quote, pool);
+      }
+    }
+  }
+}
+
+function getAvailableCurve() {
+  const summary = JSON.parse(fs.readFileSync(getCurvePoolSummaryFile(), 'utf-8'));
+  const available: { [tokenA: string]: { [tokenB: string]: { [pool: string]: { [token: string]: number } } } } = {};
+  for (const poolName of Object.keys(summary)) {
+    for (const [token, reserveValue] of Object.entries(summary[poolName])) {
+      if (!available[token]) {
+        available[token] = {};
+      }
+
+      for (const [tokenB, reserveValueB] of Object.entries(summary[poolName])) {
+        if (tokenB === token) {
+          continue;
+        }
+
+        available[token][tokenB] = available[token][tokenB] || {};
+        available[token][tokenB][poolName] = available[token][tokenB][poolName] || {};
+        available[token][tokenB][poolName][token] = reserveValue as number;
+        available[token][tokenB][poolName][tokenB] = reserveValueB as number;
+      }
+    }
+  }
+  return available;
+}
+
+async function createUnifiedFileForPair(endBlock: number, base: string, quote: string, poolName: string) {
+  const unifiedFullFilename = generateUnifiedCSVFilePath('curve', base + '-' + quote + '-' + poolName);
+
+  const sinceBlock = await getStartBlockFromExistingFile(unifiedFullFilename);
+  let toWrite = [];
+
+  console.log(`Curve: getting data since ${sinceBlock} to ${endBlock}`);
+  const poolData = getCurveDataforBlockIntervalAnyVersion(poolName, sinceBlock, endBlock);
+
+  for (const blockNumber of Object.keys(poolData.reserveValues)) {
+    const blockNumberInt = parseInt(blockNumber);
+    const dataForBlock = poolData.reserveValues[blockNumberInt];
+    const reserves = [];
+    for (const poolToken of poolData.poolTokens) {
+      reserves.push(poolData.reserveValues[blockNumberInt].tokens[poolToken]);
+    }
+
+    let priceAndSlippage = undefined;
+    if (poolData.isCryptoV2) {
+      const precisions = [];
+      for (const token of poolData.poolTokens) {
+        const tokenConf = getConfTokenBySymbol(token);
+        precisions.push(10n ** BigInt(18 - tokenConf.decimals));
+      }
+
+      priceAndSlippage = computePriceAndSlippageMapForReserveValueCryptoV2(
+        base,
+        quote,
+        poolData.poolTokens,
+        dataForBlock.ampFactor,
+        reserves,
+        precisions,
+        dataForBlock.gamma,
+        dataForBlock.D,
+        dataForBlock.priceScale
+      );
+    } else {
+      priceAndSlippage = computePriceAndSlippageMapForReserveValue(
+        base,
+        quote,
+        poolData.poolTokens,
+        dataForBlock.ampFactor,
+        reserves
+      );
+    }
+
+    toWrite.push(`${blockNumber},${priceAndSlippage.price},${JSON.stringify(priceAndSlippage.slippageMap)}\n`);
+
+    if (toWrite.length >= 50) {
+      fs.appendFileSync(unifiedFullFilename, toWrite.join(''));
+      toWrite = [];
+    }
+  }
+
+  if (toWrite.length >= 0) {
+    fs.appendFileSync(unifiedFullFilename, toWrite.join(''));
+  }
+}
+
+async function getStartBlockFromExistingFile(unifiedFullFilename: string): Promise<number> {
+  let sinceBlock = 0;
+
+  if (!fs.existsSync(unifiedFullFilename)) {
+    fs.writeFileSync(unifiedFullFilename, 'blocknumber,price,slippagemap\n');
+  } else {
+    const lastLine = await readLastLine(unifiedFullFilename);
+    sinceBlock = Number(lastLine.split(',')[0]) + 1;
+    if (isNaN(sinceBlock)) {
+      sinceBlock = 0;
+    }
+  }
+
+  if (sinceBlock == 0) {
+    const startDate = Math.round(Date.now() / 1000) - 365 * 24 * 60 * 60;
+    // get the blocknumber for this date
+    sinceBlock = await getBlocknumberForTimestamp(startDate);
+  }
+
+  return sinceBlock;
+}
+
+function getCurveDataforBlockIntervalAnyVersion(poolName: string, startBlock: number, endBlock: number): CurveData {
+  const rawDataFilePath = generateRawCSVFilePathForCurvePool('curve', poolName);
+  const fileContent = fs.readFileSync(rawDataFilePath, 'utf-8').split('\n');
+
+  const headersSplitted = fileContent[0].split(',');
+  if (headersSplitted.includes('gamma')) {
+    return getCurveDataforBlockIntervalCryptoV2(fileContent, startBlock, endBlock);
+  } else {
+    return getCurveDataforBlockIntervalStandard(headersSplitted, fileContent, endBlock, startBlock);
+  }
+}
+
+function getCurveDataforBlockIntervalStandard(
+  headersSplitted: string[],
+  fileContent: string[],
+  endBlock: number,
+  startBlock: number
+): CurveData {
+  const dataContents: CurveData = {
+    isCryptoV2: false,
+    poolTokens: [], // ORDERED
+    reserveValues: {}
+  };
+
+  for (let i = 3; i < headersSplitted.length; i++) {
+    // save the symbol value into pool tokens
+    dataContents.poolTokens.push(headersSplitted[i].split('_')[1]);
+  }
+
+  let lastValue = undefined;
+  for (let i = 1; i < fileContent.length - 1; i++) {
+    const line = fileContent[i];
+    const splt = line.split(',');
+    const blockNum = Number(splt[0]);
+
+    if (blockNum > endBlock) {
+      break;
+    }
+
+    // if blockNum inferior to startBlock, ignore but save last value
+    if (blockNum < startBlock) {
+      lastValue = {
+        blockNumber: blockNum,
+        lineValue: line.toString()
+      };
+    } else {
+      // here it means we went through the sinceBlock, save the last value before
+      // reaching sinceBlock to have one previous data
+      if (lastValue && blockNum != startBlock) {
+        const beforeValueSplitted = lastValue.lineValue.split(',');
+        const lastValueBlock = lastValue.blockNumber;
+
+        dataContents.reserveValues[lastValueBlock] = {
+          ampFactor: Number(beforeValueSplitted[1]),
+          lpSupply: beforeValueSplitted[2],
+          gamma: 0,
+          D: 0,
+          priceScale: [],
+          tokens: {}
+        };
+
+        for (let i = 3; i < beforeValueSplitted.length; i++) {
+          const token = dataContents.poolTokens[i - 3];
+          dataContents.reserveValues[lastValueBlock].tokens[token] = beforeValueSplitted[i];
+        }
+
+        // set lastValue to null, meaning we already saved it
+        lastValue = null;
+      }
+
+      // save current value
+      dataContents.reserveValues[blockNum] = {
+        ampFactor: Number(splt[1]),
+        lpSupply: splt[2],
+        gamma: 0,
+        D: 0,
+        priceScale: [],
+        tokens: {}
+      };
+
+      for (let i = 3; i < splt.length; i++) {
+        const token = dataContents.poolTokens[i - 3];
+        dataContents.reserveValues[blockNum].tokens[token] = splt[i];
+      }
+    }
+  }
+
+  return dataContents;
+}
+
+function getCurveDataforBlockIntervalCryptoV2(fileContent: string[], startBlock: number, endBlock: number) {
+  const headersSplitted = fileContent[0].split(',');
+
+  const dataContents: CurveData = {
+    isCryptoV2: true,
+    poolTokens: [], // ORDERED
+    reserveValues: {}
+  };
+
+  for (let i = 5; i < headersSplitted.length; i++) {
+    const type = headersSplitted[i].split('_')[0]; // reserve of price_scale
+
+    if (type == 'reserve') {
+      // save the symbol value into pool tokens
+      dataContents.poolTokens.push(headersSplitted[i].split('_')[1]);
+      // poolTokens will contain plain tokens like BTC, WETH, WBTC, USDT
+    }
+  }
+
+  let lastValue = undefined;
+  for (let i = 1; i < fileContent.length - 1; i++) {
+    const line = fileContent[i];
+    const splt = line.split(',');
+    const blockNum = Number(splt[0]);
+
+    if (blockNum > endBlock) {
+      break;
+    }
+
+    // if blockNum inferior to startBlock, ignore but save last value
+    if (blockNum < startBlock) {
+      lastValue = {
+        blockNumber: blockNum,
+        lineValue: line.toString()
+      };
+    } else {
+      // here it means we went through the sinceBlock, save the last value before
+      // reaching sinceBlock to have one previous data
+      if (lastValue && blockNum != startBlock) {
+        const beforeValueSplitted = lastValue.lineValue.split(',');
+        const lastValueBlock = lastValue.blockNumber;
+
+        dataContents.reserveValues[lastValueBlock] = {
+          ampFactor: parseInt(beforeValueSplitted[1]),
+          gamma: parseInt(beforeValueSplitted[2]),
+          D: parseInt(beforeValueSplitted[3]),
+          lpSupply: beforeValueSplitted[4],
+          priceScale: [],
+          tokens: {}
+        };
+
+        for (let i = 0; i < dataContents.poolTokens.length; i++) {
+          const token = dataContents.poolTokens[i];
+          dataContents.reserveValues[lastValueBlock].tokens[token] = beforeValueSplitted[i + 5];
+        }
+
+        dataContents.reserveValues[lastValueBlock].priceScale = [];
+        for (let i = 0; i < dataContents.poolTokens.length - 1; i++) {
+          dataContents.reserveValues[lastValueBlock].priceScale.push(
+            parseInt(beforeValueSplitted[i + 5 + dataContents.poolTokens.length])
+          );
+        }
+
+        // set lastValue to null, meaning we already saved it
+        lastValue = null;
+      }
+
+      // save current value
+      dataContents.reserveValues[blockNum] = {
+        ampFactor: Number(splt[1]),
+        gamma: parseInt(splt[2]),
+        D: parseInt(splt[3]),
+        lpSupply: splt[4],
+        priceScale: [],
+        tokens: {}
+      };
+
+      for (let i = 0; i < dataContents.poolTokens.length; i++) {
+        const token = dataContents.poolTokens[i];
+        dataContents.reserveValues[blockNum].tokens[token] = splt[i + 5];
+      }
+
+      dataContents.reserveValues[blockNum].priceScale = [];
+      for (let i = 0; i < dataContents.poolTokens.length - 1; i++) {
+        dataContents.reserveValues[blockNum].priceScale.push(parseInt(splt[i + 5 + dataContents.poolTokens.length]));
+      }
+    }
+  }
+
+  return dataContents;
 }
