@@ -1,12 +1,14 @@
 import BigNumber from 'bignumber.js';
 import * as fs from 'fs';
 import path from 'path';
+import tokens from '../../config/tokens.json';
+import { TokenData } from '../workers/configuration/TokenData';
 
 /**
  * Retries a function n number of times before giving up
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function retry<T extends (...arg0: any[]) => any>(
+export default async function retry<T extends (...arg0: any[]) => any>(
   fn: T,
   args: Parameters<T>,
   maxTry = 10,
@@ -50,4 +52,14 @@ export function writeContentToFile(syncFilename: string, content: string) {
     fs.mkdirSync(path.dirname(syncFilename), { recursive: true });
   }
   fs.writeFileSync(syncFilename, content);
+}
+
+export function getConfTokenBySymbol(symbol: string): TokenData {
+  type ObjectKey = keyof typeof tokens;
+  const objectKey = symbol as ObjectKey;
+  const tokenConf = tokens[objectKey];
+  if (!tokenConf) {
+    throw new Error(`Cannot find token with symbol ${symbol}`);
+  }
+  return tokenConf;
 }

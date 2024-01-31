@@ -18,6 +18,7 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
   runEveryMinutes: number;
   workerConfiguration: T;
   tokens: TokenList;
+  monitoringName: string;
 
   // Assuming workers is an array of worker configurations
   protected findWorkerByName(name: string): T {
@@ -28,9 +29,10 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
     return foundWorker.configuration as unknown as T;
   }
 
-  constructor(workerName: string, runEveryMinutes: number) {
+  constructor(workerName: string, monitoringName: string, runEveryMinutes: number) {
     this.tokens = tokens;
     this.workerName = workerName;
+    this.monitoringName = monitoringName;
     this.runEveryMinutes = runEveryMinutes;
     this.workerConfiguration = this.findWorkerByName(workerName);
     console.log(`worker name: ${this.workerName}`);
@@ -109,7 +111,7 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
     error?: string
   ) {
     const m: MonitoringData = {
-      name: this.workerName,
+      name: this.monitoringName,
       type: 'Dex History',
       status: status,
       runEvery: this.runEveryMinutes * 60

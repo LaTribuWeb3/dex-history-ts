@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as Constants from '../../../utils/Constants';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import * as Sync from '../../../utils/Sync';
-import { normalize, retry } from '../../../utils/Utils';
+import retry, { normalize } from '../../../utils/Utils';
 import { UniswapV2Factory__factory } from '../../../contracts/types/factories/uniswapv2/UniswapV2Factory__factory';
 import { UniswapV2Pair__factory } from '../../../contracts/types/factories/uniswapv2/UniswapV2Pair__factory';
 import * as Helper from '../../configuration/Helper';
@@ -21,8 +21,8 @@ import {
 import { ComputeLiquidityXYKPool, ComputeXYKPrice } from '../../../library/XYKLibrary';
 
 export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
-  constructor(runEveryMinutes: number, workerName = 'uniswapv2') {
-    super(workerName, runEveryMinutes);
+  constructor(runEveryMinutes: number, workerName = 'uniswapv2', monitoringName = 'UniswapV2 Fetcher') {
+    super(workerName, monitoringName, runEveryMinutes);
   }
 
   async runSpecific(): Promise<void> {

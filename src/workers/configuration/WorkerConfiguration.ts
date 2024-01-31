@@ -29,6 +29,8 @@ export interface CurvePairConfiguration {
   lpTokenAddress: string;
   lpTokenName: string;
   abi: string;
+  isCryptoV2?: boolean;
+  minBlock?: number;
   tokens: CurveToken[];
 }
 
@@ -74,6 +76,11 @@ export function generateRawCSVFilePathForPair(worker: string, pair: string) {
   else return generateUnifedCSVBasePathForPair('raw', worker, pair) + `/${worker}.${pair}.raw.csv`;
 }
 
+export function generateRawCSVFilePathForCurvePool(worker: string, pool: string) {
+  if (directoryStructureVersion == 0) return `${Constants.DATA_DIR}/${worker}/${pool}_${worker}.csv`;
+  else return generateUnifedCSVBasePathForPair('raw', worker, pool) + `/${worker}.${pool}.raw.csv`;
+}
+
 export function getAllPreComputed(worker: string): string[] {
   if (directoryStructureVersion == 0)
     return readdirSyncWithFullPath(`${Constants.DATA_DIR}/precomputed/${worker}`).filter((file) =>
@@ -107,4 +114,12 @@ export function listAllExistingRawPairs(workerName: string) {
       .filter((f) => f.endsWith('.csv'))
       .map((f) => f.split('_')[0]);
   else return fs.readdirSync(`${Constants.DATA_DIR}/raw/uniswapv2`);
+}
+
+export function generateCurvePoolSummaryFullName(workerName: string): string {
+  return `${Constants.DATA_DIR}/${workerName}/${workerName}_pools_summary.json`;
+}
+
+export function generateCurvePoolFetcherResult(workerName: string): string {
+  return `${Constants.DATA_DIR}/${workerName}/${workerName}-fetcher-result.json`;
 }

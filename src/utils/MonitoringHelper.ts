@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { retry } from './Utils';
+import retry from './Utils';
 
 const uri = process.env.MONITORING_API_URI;
 const monitoringEnabled = process.env.MONITORING && process.env.MONITORING == 'true';
