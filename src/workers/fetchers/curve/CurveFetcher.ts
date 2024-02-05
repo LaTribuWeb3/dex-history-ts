@@ -382,10 +382,12 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
 
     // when only two crypto, price_scale is not an array, it's a normal field...
     if (fetchConfig.tokens.length == 2) {
-      promises.push(poolContract.price_scale(blockNum));
+      const c = poolContract as CryptoV2;
+      promises.push(c.price_scale({ blockTag: blockNum }));
     } else {
       for (let i = 0; i < fetchConfig.tokens.length - 1; i++) {
-        promises.push(poolContract.price_scale(i, blockNum));
+        const c = poolContract as TriCryptoV2;
+        promises.push(c.price_scale(i, { blockTag: blockNum }));
       }
     }
 
