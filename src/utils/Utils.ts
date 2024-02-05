@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import * as fs from 'fs';
 import path from 'path';
-import tokens from '../../config/tokens.json';
+import tokens from '../config/tokens.json';
 import { TokenData } from '../workers/configuration/TokenData';
 
 /**
