@@ -457,11 +457,10 @@ async function createUnifiedFileForPair(endBlock: number, base: string, quote: s
   const sinceBlock = await getStartBlockFromExistingFile(unifiedFullFilename);
   let toWrite = [];
 
-  console.log(`Curve: getting data since ${sinceBlock} to ${endBlock}`);
+  console.log(`Curve: [${poolName}][${base}-${quote}] getting data since ${sinceBlock} to ${endBlock}`);
   const poolData = getCurveDataforBlockIntervalAnyVersion(poolName, sinceBlock, endBlock);
 
   for (const blockNumber of Object.keys(poolData.reserveValues)) {
-    console.log(`[${poolName}][${base}-${quote}] Computing price and slippage for block ${blockNumber}/${endBlock}`);
     const blockNumberInt = parseInt(blockNumber);
     const dataForBlock: BlockData = poolData.reserveValues[blockNumberInt];
     const reserves = [];
