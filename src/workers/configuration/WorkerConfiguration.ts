@@ -132,6 +132,6 @@ export function ensureCurvePrecomputedPresent() {
   const dir = `${Constants.DATA_DIR}/precomputed/curve`;
 
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
+    fs.mkdirSync(dir, { recursive: true });
   }
 }
