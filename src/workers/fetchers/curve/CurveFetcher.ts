@@ -34,7 +34,7 @@ type BlockData = {
   tokens: {
     [token: string]: string;
   };
-}
+};
 
 type CurveData = {
   isCryptoV2: boolean;
@@ -418,10 +418,20 @@ async function generateUnifiedFileCurve(currentBlock: number) {
 
   ensureCurvePrecomputedPresent();
 
+  let totalNumberOfPairs = 0;
+
+  for (const base of Object.keys(available)) {
+    for (const quote of Object.keys(available[base])) {
+      totalNumberOfPairs = totalNumberOfPairs + Object.keys(available[base][quote]).length;
+    }
+  }
+
+  let currentPoolNumber = 1;
+
   for (const base of Object.keys(available)) {
     for (const quote of Object.keys(available[base])) {
       for (const pool of Object.keys(available[base][quote])) {
-        await createUnifiedFileForPair(currentBlock, base, quote, pool);
+        await createUnifiedFileForPair(currentBlock, base, quote, pool, currentPoolNumber++, totalNumberOfPairs);
       }
     }
   }
@@ -451,13 +461,22 @@ function getAvailableCurve() {
   return available;
 }
 
-async function createUnifiedFileForPair(endBlock: number, base: string, quote: string, poolName: string) {
+async function createUnifiedFileForPair(
+  endBlock: number,
+  base: string,
+  quote: string,
+  poolName: string,
+  currentPoolNumber: number,
+  totalPoolCount: number
+) {
   const unifiedFullFilename = generateUnifiedCSVFilePath('curve', base + '-' + quote + '-' + poolName);
 
   const sinceBlock = await getStartBlockFromExistingFile(unifiedFullFilename);
   let toWrite = [];
 
-  console.log(`Curve: [${poolName}][${base}-${quote}] getting data since ${sinceBlock} to ${endBlock}`);
+  console.log(
+    `Curve: (${currentPoolNumber}/${totalPoolCount}) [${poolName}][${base}-${quote}] getting data since ${sinceBlock} to ${endBlock}`
+  );
   const poolData = getCurveDataforBlockIntervalAnyVersion(poolName, sinceBlock, endBlock);
 
   for (const blockNumber of Object.keys(poolData.reserveValues)) {
