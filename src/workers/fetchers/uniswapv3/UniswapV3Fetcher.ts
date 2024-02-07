@@ -3,7 +3,7 @@ import { UniSwapV3WorkerConfiguration } from '../../configuration/WorkerConfigur
 
 export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
   constructor(runEveryMinutes: number) {
-    super('uniswapv3', runEveryMinutes);
+    super('uniswapv3', 'UniswapV3 Fetcher', runEveryMinutes);
   }
 
   runSpecific(): Promise<void> {

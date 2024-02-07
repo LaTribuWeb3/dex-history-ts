@@ -4,9 +4,9 @@ import * as fs from 'fs';
 import * as Constants from '../../../utils/Constants';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import * as Sync from '../../../utils/Sync';
-import { normalize, retry } from '../../../utils/Utils';
-import { UniswapV2Factory__factory } from '../../../contracts/types/factories/UniswapV2Factory__factory';
-import { UniswapV2Pair__factory } from '../../../contracts/types/factories/UniswapV2Pair__factory';
+import retry, { normalize } from '../../../utils/Utils';
+import { UniswapV2Factory__factory } from '../../../contracts/types/factories/uniswapv2/UniswapV2Factory__factory';
+import { UniswapV2Pair__factory } from '../../../contracts/types/factories/uniswapv2/UniswapV2Pair__factory';
 import * as Helper from '../../configuration/Helper';
 import path, { dirname } from 'path';
 import { readLastLine } from '../../configuration/Helper';
@@ -14,23 +14,23 @@ import {
   UniSwapV2WorkerConfiguration,
   getAllPreComputed,
   generatePriceCSVFilePath,
-  generateRawCSVFilePath,
+  generateRawCSVFilePathForPair,
   generateUnifiedCSVFilePath,
   listAllExistingRawPairs
 } from '../../configuration/WorkerConfiguration';
 import { ComputeLiquidityXYKPool, ComputeXYKPrice } from '../../../library/XYKLibrary';
 
 export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
-  constructor(runEveryMinutes: number, workerName = 'uniswapv2') {
-    super(workerName, runEveryMinutes);
+  constructor(runEveryMinutes: number, workerName = 'uniswapv2', monitoringName = 'UniswapV2 Fetcher') {
+    super(workerName, monitoringName, runEveryMinutes);
   }
 
   async runSpecific(): Promise<void> {
     const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
+    const endBlock: number = (await web3Provider.getBlockNumber()) - 10;
 
     this.createDataDirForWorker();
 
-    const endBlock: number = (await web3Provider.getBlockNumber()) - 10;
     let startBlock = 0;
     const stalePools = [];
     const poolsData = [];
@@ -89,7 +89,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
   async FetchHistoryForPair(pairKey: string, currentBlock: number, minStartBlock: number) {
     const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
 
-    const historyFileName = generateRawCSVFilePath(this.workerName, pairKey);
+    const historyFileName = generateRawCSVFilePathForPair(this.workerName, pairKey);
 
     const token0Symbol = pairKey.split('-')[0];
     const token0Address: string = this.tokens[token0Symbol].address;
@@ -432,7 +432,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
   }
 
   getUniV2DataFile(fromSymbol: string, toSymbol: string) {
-    let filePath = generateRawCSVFilePath(this.workerName, `${fromSymbol}-${toSymbol}`);
+    let filePath = generateRawCSVFilePathForPair(this.workerName, `${fromSymbol}-${toSymbol}`);
     let reverse = false;
 
     if (fs.existsSync(filePath)) {
@@ -441,7 +441,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
         reverse: reverse
       };
     } else {
-      filePath = generateRawCSVFilePath(this.workerName, `${toSymbol}-${fromSymbol}`);
+      filePath = generateRawCSVFilePathForPair(this.workerName, `${toSymbol}-${fromSymbol}`);
       reverse = true;
       if (fs.existsSync(filePath)) {
         return {
