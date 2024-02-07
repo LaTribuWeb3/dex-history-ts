@@ -107,6 +107,17 @@ export function generatePriceCSVFilePath(worker: string, pair: string) {
   else return generateUnifedCSVBasePathForPair('price', worker, pair) + `/${worker}.${pair}.price.csv`;
 }
 
+export function generateLastFetchFileName(worker: string, pool: string) {
+  if (directoryStructureVersion == 0) return `${Constants.DATA_DIR}/precomputed/price/${worker}/${pool}-lastfetch.csv`;
+  else return generateCSVFolderPath('price', worker) + `/${pool}-lastfetch.json`;
+}
+
+export function generateUnifiedDataFileName(worker: string, pool: string) {
+  if (directoryStructureVersion == 0)
+    return `${Constants.DATA_DIR}/precomputed/price/${worker}/${pool}-unified-data.csv`;
+  else return generateCSVFolderPath('price', worker) + `/${pool}-unified-data.csv`;
+}
+
 export function listAllExistingRawPairs(workerName: string) {
   if (directoryStructureVersion == 0)
     return fs
