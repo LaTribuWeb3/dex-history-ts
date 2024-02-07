@@ -19,13 +19,13 @@ const BIGINT_1e18 = BigInt(10) ** BigInt(18);
 export function computePriceAndSlippageMapForReserveValueCryptoV2(
   fromSymbol: string,
   toSymbol: string,
-  poolTokens: any[],
+  poolTokens: string[],
   ampFactorArg: number,
   reservesArgs: string[],
   precisions: bigint[],
-  gammaArg: number,
-  Darg: number,
-  priceScaleArg: number[]
+  gammaArg: bigint,
+  Darg: bigint,
+  priceScaleArg: bigint[]
 ) {
   if (poolTokens.length != reservesArgs.length) {
     throw new Error('Tokens array must be same length as reserves array');
