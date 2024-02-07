@@ -10,7 +10,7 @@
         "lint": "eslint . --ext .ts",
         "lintfix": "eslint . --ext .ts --fix",
         "prettier-format": "prettier --config .prettierrc \"./src/**/*.ts\" --write",
-        "prettier-watch": "onchange --await-write-finish --delay 2000 \"src/**/*.ts\" \"config/*.json\" -- prettier --write {{changed}}",
+        "prettier-watch": "onchange --await-write-finish 2000 \"src/**/*.ts\" \"config/*.json\" -- prettier --write {{changed}}",
         "typechain": "rimraf src/contracts/types && typechain --target ethers-v6 --out-dir src/contracts/types ./src/contracts/abi/**/*.json"
     },
     "keywords": [],
