@@ -26,11 +26,11 @@ import {
 import { CurveUtils, CurveContract } from './CurveContract';
 
 type BlockData = {
-  ampFactor: number;
-  gamma: number;
-  D: number;
+  ampFactor: bigint;
+  gamma: bigint;
+  D: bigint;
   lpSupply: string;
-  priceScale: number[];
+  priceScale: bigint[];
   tokens: {
     [token: string]: string;
   };
@@ -504,7 +504,7 @@ async function createUnifiedFileForPair(
         precisions,
         dataForBlock.gamma,
         dataForBlock.D,
-        dataForBlock.priceScale
+        dataForBlock.priceScale.map((n) => BigInt(n))
       );
     } else {
       priceAndSlippage = computePriceAndSlippageMapForReserveValue(
@@ -604,10 +604,10 @@ function getCurveDataforBlockIntervalStandard(
         const lastValueBlock = lastValue.blockNumber;
 
         dataContents.reserveValues[lastValueBlock] = {
-          ampFactor: Number(beforeValueSplitted[1]),
+          ampFactor: BigInt(beforeValueSplitted[1]),
           lpSupply: beforeValueSplitted[2],
-          gamma: 0,
-          D: 0,
+          gamma: 0n,
+          D: 0n,
           priceScale: [],
           tokens: {}
         };
@@ -623,10 +623,10 @@ function getCurveDataforBlockIntervalStandard(
 
       // save current value
       dataContents.reserveValues[blockNum] = {
-        ampFactor: Number(splt[1]),
+        ampFactor: BigInt(splt[1]),
         lpSupply: splt[2],
-        gamma: 0,
-        D: 0,
+        gamma: 0n,
+        D: 0n,
         priceScale: [],
         tokens: {}
       };
@@ -687,9 +687,9 @@ function getCurveDataforBlockIntervalCryptoV2(
         const lastValueBlock = lastValue.blockNumber;
 
         dataContents.reserveValues[lastValueBlock] = {
-          ampFactor: parseInt(beforeValueSplitted[1]),
-          gamma: parseInt(beforeValueSplitted[2]),
-          D: parseInt(beforeValueSplitted[3]),
+          ampFactor: BigInt(beforeValueSplitted[1]),
+          gamma: BigInt(beforeValueSplitted[2]),
+          D: BigInt(beforeValueSplitted[3]),
           lpSupply: beforeValueSplitted[4],
           priceScale: [],
           tokens: {}
@@ -703,7 +703,7 @@ function getCurveDataforBlockIntervalCryptoV2(
         dataContents.reserveValues[lastValueBlock].priceScale = [];
         for (let i = 0; i < dataContents.poolTokens.length - 1; i++) {
           dataContents.reserveValues[lastValueBlock].priceScale.push(
-            parseInt(beforeValueSplitted[i + 5 + dataContents.poolTokens.length])
+            BigInt(beforeValueSplitted[i + 5 + dataContents.poolTokens.length])
           );
         }
 
@@ -713,9 +713,9 @@ function getCurveDataforBlockIntervalCryptoV2(
 
       // save current value
       dataContents.reserveValues[blockNum] = {
-        ampFactor: Number(splt[1]),
-        gamma: parseInt(splt[2]),
-        D: parseInt(splt[3]),
+        ampFactor: BigInt(splt[1]),
+        gamma: BigInt(splt[2]),
+        D: BigInt(splt[3]),
         lpSupply: splt[4],
         priceScale: [],
         tokens: {}
@@ -728,7 +728,7 @@ function getCurveDataforBlockIntervalCryptoV2(
 
       dataContents.reserveValues[blockNum].priceScale = [];
       for (let i = 0; i < dataContents.poolTokens.length - 1; i++) {
-        dataContents.reserveValues[blockNum].priceScale.push(parseInt(splt[i + 5 + dataContents.poolTokens.length]));
+        dataContents.reserveValues[blockNum].priceScale.push(BigInt(splt[i + 5 + dataContents.poolTokens.length]));
       }
     }
   }

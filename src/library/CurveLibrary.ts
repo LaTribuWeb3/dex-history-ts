@@ -20,7 +20,7 @@ export function computePriceAndSlippageMapForReserveValueCryptoV2(
   fromSymbol: string,
   toSymbol: string,
   poolTokens: string[],
-  ampFactorArg: number,
+  ampFactorArg: bigint,
   reservesArgs: string[],
   precisions: bigint[],
   gammaArg: bigint,
@@ -370,8 +370,8 @@ function v2_computeLiquidityForSlippageCurvePoolCryptoV2(
 export function computePriceAndSlippageMapForReserveValue(
   fromSymbol: string,
   toSymbol: string,
-  poolTokens: any[],
-  ampFactor: number,
+  poolTokens: string[],
+  ampFactor: bigint,
   reserves: string[]
 ) {
   if (poolTokens.length != reserves.length) {
@@ -422,8 +422,8 @@ function getReservesNormalizedTo18Decimals(tokens: TokenData[], reserves: string
 
   return reservesNorm;
 }
-function get_return(i: number, j: number, x: bigint, balances: bigint[], A: number) {
-  return get_y(i, j, x + balances[i], balances, BigInt(balances.length), BigInt(A));
+function get_return(i: number, j: number, x: bigint, balances: bigint[], A: bigint) {
+  return get_y(i, j, x + balances[i], balances, BigInt(balances.length), A);
 }
 
 function get_y(i: number, j: number, x: bigint, _xp: bigint[], N_COINS: bigint, A: bigint) {
@@ -501,7 +501,7 @@ function v2_computeLiquidityForSlippageCurvePool(
   baseReserves: bigint[],
   i: number,
   j: number,
-  amplificationFactor: number
+  amplificationFactor: bigint
 ) {
   let low = undefined;
   let high = undefined;
