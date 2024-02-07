@@ -122,6 +122,8 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     const historyFileName = generateRawCSVFilePathForCurvePool(this.workerName, fetchConfig.poolName);
     let startBlock = 0;
 
+    this.createDataDirForWorker();
+
     if (fs.existsSync(historyFileName)) {
       const lastLine = await readLastLine(historyFileName);
       startBlock = Number(lastLine.split(',')[0]) + 1;
