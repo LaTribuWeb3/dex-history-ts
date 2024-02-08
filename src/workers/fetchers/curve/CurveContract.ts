@@ -102,6 +102,7 @@ export class CurveUtils {
           curveContract.filters.StopRampA().getTopicFilter()
         ];
       case 'susdpool':
+      case 'susdcurvepool':
         return [
           curveContract.filters.TokenExchange().getTopicFilter(),
           curveContract.filters.TokenExchangeUnderlying().getTopicFilter(),
@@ -121,8 +122,8 @@ export class CurveUtils {
           curveContract.filters.CommitNewParameters().getTopicFilter(),
           curveContract.filters.RampAgamma().getTopicFilter()
         ];
-
       case 'tricryptov2factory':
+      case 'tricryptofactory':
         return [
           curveContract.filters.TokenExchange().getTopicFilter(),
           curveContract.filters.AddLiquidity().getTopicFilter(),
