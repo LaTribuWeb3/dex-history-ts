@@ -15,7 +15,17 @@ import { getConfTokenBySymbol, sleep } from '../../../utils/Utils';
 import { readLastLine } from '../../configuration/Helper';
 import { getBlocknumberForTimestamp } from '../../../utils/Web3Utils';
 import * as fs from 'fs';
-import { CryptoV2, ERC20, ERC20__factory, TriCryptoFactory, TriCryptoV2 } from '../../../contracts/types';
+import {
+  CryptoV2,
+  CurvePool,
+  ERC20,
+  ERC20__factory,
+  StableSwap,
+  StableSwapFactory,
+  SusDCurve,
+  TriCryptoFactory,
+  TriCryptoV2
+} from '../../../contracts/types';
 import { MulticallWrapper } from 'ethers-multicall-provider';
 import { normalize } from '../../../utils/Utils';
 import { TokenWithReserve } from '../../configuration/TokenData';
@@ -303,7 +313,9 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     );
   }
 
-  instanceOfCryptoV2(object: any): object is TriCryptoV2 | TriCryptoFactory | CryptoV2 {
+  instanceOfCryptoV2(
+    object: StableSwap | StableSwapFactory | CurvePool | SusDCurve | TriCryptoV2 | TriCryptoFactory | CryptoV2
+  ): object is TriCryptoV2 | TriCryptoFactory | CryptoV2 {
     return true;
   }
 
