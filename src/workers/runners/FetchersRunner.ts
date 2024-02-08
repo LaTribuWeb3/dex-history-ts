@@ -9,9 +9,9 @@ import { UniswapV2Fetcher } from '../fetchers/uniswapv2/UniswapV2Fetcher';
 
 const RUN_EVERY_MINUTES = 60;
 const fetchersToLaunch: BaseWorker<WorkerConfiguration>[] = [
-  new UniswapV2Fetcher(RUN_EVERY_MINUTES),
-  new SushiswapV2Fetcher(RUN_EVERY_MINUTES),
-  new CurveFetcher(RUN_EVERY_MINUTES),
+  // new UniswapV2Fetcher(RUN_EVERY_MINUTES),
+  // new SushiswapV2Fetcher(RUN_EVERY_MINUTES),
+  // new CurveFetcher(RUN_EVERY_MINUTES),
   new CurvePriceFetcher(RUN_EVERY_MINUTES)
 ];
 

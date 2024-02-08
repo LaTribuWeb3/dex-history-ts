@@ -24,7 +24,11 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
     const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
 
     const currentBlock = (await web3Provider.getBlockNumber()) - 10;
+    let i = 1;
     for (const fetchConfig of this.workerConfiguration.pricePairs) {
+      console.log(
+        `[${fetchConfig.poolName}] (${i++}/${this.workerConfiguration.pricePairs.length}): Start fetching history`
+      );
       await this.FetchPriceHistory(fetchConfig, currentBlock, web3Provider);
     }
   }
@@ -46,13 +50,12 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
     currentBlock: number,
     web3Provider: ethers.JsonRpcProvider
   ) {
-    console.log(`[${curvePricePairConfiguration.poolName}]: Start fetching history`);
     const historyFileName = generateLastFetchFileName(this.workerName, curvePricePairConfiguration.poolName);
     let startBlock = 0;
 
     if (fs.existsSync(historyFileName)) {
-      const lastLine = await readLastLine(historyFileName);
-      startBlock = Number(lastLine.split(',')[0]) + 1;
+      const historyFile: HistoryFile = JSON.parse(fs.readFileSync(historyFileName, 'utf-8'));
+      startBlock = historyFile.lastBlockFetched + 1;
     } else {
       startBlock =
         (await Web3Utils.GetContractCreationBlockNumber(curvePricePairConfiguration.poolAddress, this.workerName)) +
@@ -162,7 +165,7 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
 
     this.savePriceData(priceData);
 
-    const lastFetchData = { lastBlockFetched: currentBlock };
+    const lastFetchData: HistoryFile = { lastBlockFetched: currentBlock };
     fs.writeFileSync(historyFileName, JSON.stringify(lastFetchData, null, 2));
   }
 
@@ -196,6 +199,8 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
     return priceData;
   }
 }
+
+type HistoryFile = { lastBlockFetched: number };
 
 type BlockPrice = { block: number; price: number };
 
