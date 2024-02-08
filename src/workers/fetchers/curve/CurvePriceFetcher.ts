@@ -1,19 +1,19 @@
+import * as ethers from 'ethers';
+import * as fs from 'fs';
+import path from 'path';
+import { getConfTokenBySymbol, normalize, sleep } from '../../../utils/Utils';
+import * as Web3Utils from '../../../utils/Web3Utils';
 import { BaseWorker } from '../../BaseWorker';
+import { readLastLine } from '../../configuration/Helper';
+import { TokenData } from '../../configuration/TokenData';
 import {
-  CurvePairConfiguration,
+  CurvePricePairConfiguration,
+  CurveTokenPair,
   CurveWorkerConfiguration,
   generateLastFetchFileName,
   generateUnifiedDataFileName
 } from '../../configuration/WorkerConfiguration';
-import * as ethers from 'ethers';
-import * as Web3Utils from '../../../utils/Web3Utils';
-import { getConfTokenBySymbol, sleep } from '../../../utils/Utils';
-import { readLastLine } from '../../configuration/Helper';
-import * as fs from 'fs';
-import { normalize } from '../../../utils/Utils';
-import { TokenData } from '../../configuration/TokenData';
-import { CurveUtils, CurveContract } from './CurveContract';
-import path from 'path';
+import { CurveContract, CurveUtils } from './CurveContract';
 
 export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
   constructor(runEveryMinutes: number) {
@@ -24,8 +24,8 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
     const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
 
     const currentBlock = (await web3Provider.getBlockNumber()) - 10;
-    for (const fetchConfig of this.workerConfiguration.pairs) {
-      await this.FetchPriceHistory(fetchConfig, currentBlock, web3Provider, this.workerConfiguration.pairs);
+    for (const fetchConfig of this.workerConfiguration.pricePairs) {
+      await this.FetchPriceHistory(fetchConfig, currentBlock, web3Provider);
     }
   }
 
@@ -37,41 +37,52 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
 
   /**
    * Takes a fetchConfig from curve.config.js and outputs liquidity file in /data
-   * @param {{poolAddress: string, poolName: string, version: number, abi: string, ampFactor: number, additionnalTransferEvents: {[symbol: string]: string[]}}} fetchConfig
+   * @param {{poolAddress: string, poolName: string, version: number, abi: string, ampFactor: number, additionnalTransferEvents: {[symbol: string]: string[]}}} curvePricePairConfiguration
    * @param {number} currentBlock
    * @param {StaticJsonRpcProvider} web3Provider
    */
   async FetchPriceHistory(
-    fetchConfig: CurvePairConfiguration,
+    curvePricePairConfiguration: CurvePricePairConfiguration,
     currentBlock: number,
-    web3Provider: ethers.JsonRpcProvider,
-    pairs: CurvePairConfiguration[]
+    web3Provider: ethers.JsonRpcProvider
   ) {
-    console.log(`[${fetchConfig.poolName}]: Start fetching history`);
-    const historyFileName = generateLastFetchFileName(this.workerName, fetchConfig.poolName);
+    console.log(`[${curvePricePairConfiguration.poolName}]: Start fetching history`);
+    const historyFileName = generateLastFetchFileName(this.workerName, curvePricePairConfiguration.poolName);
     let startBlock = 0;
 
     if (fs.existsSync(historyFileName)) {
       const lastLine = await readLastLine(historyFileName);
       startBlock = Number(lastLine.split(',')[0]) + 1;
     } else {
-      startBlock = await Web3Utils.GetContractCreationBlockNumber(fetchConfig.poolAddress, this.workerName);
+      startBlock =
+        (await Web3Utils.GetContractCreationBlockNumber(curvePricePairConfiguration.poolAddress, this.workerName)) +
+        100_000;
     }
 
-    // this is done for the tricryptoUSDC pool because the first liquidity values are too low for
-    // the liquidity algorithm to work. Dunno why
-    if (fetchConfig.minBlock && startBlock < fetchConfig.minBlock) {
-      startBlock = fetchConfig.minBlock;
-    }
+    // if (curvePairConfiguration == undefined) {
+    //   throw new Error(
+    //     `Pair ${curvePricePairConfiguration.tokens[0].symbol} ${curvePricePairConfiguration.tokens[1].symbol} could not be found in pairs list`
+    //   );
+    // }
+
+    // // this is done for the tricryptoUSDC pool because the first liquidity values are too low for
+    // // the liquidity algorithm to work. Dunno why
+    // if (curvePairConfiguration.minBlock && startBlock < curvePairConfiguration.minBlock) {
+    //   startBlock = curvePairConfiguration.minBlock;
+    // }
 
     // fetch all blocks where an event occured since startBlock
-    const curveContract: CurveContract = CurveUtils.getCurveContract(fetchConfig, web3Provider);
+    const curveContract: CurveContract = CurveUtils.getCurveContractFromABIAsString(
+      curvePricePairConfiguration.abi,
+      curvePricePairConfiguration.poolAddress,
+      web3Provider
+    );
 
     let fromBlock = startBlock;
     let blockStep = 100000;
     let nextSaveBlock = fromBlock + 100_000; // save data every 100k blocks
 
-    let priceData = this.initPriceData(pairs);
+    let priceData = this.initPriceData(curvePricePairConfiguration.pairs);
 
     while (fromBlock <= currentBlock) {
       const toBlock = Math.min(currentBlock, fromBlock + blockStep - 1);
@@ -91,7 +102,7 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
       }
 
       console.log(
-        `${this.workerName}[${fetchConfig.poolName}]: [${fromBlock} - ${toBlock}] found ${
+        `${this.workerName}[${curvePricePairConfiguration.poolName}]: [${fromBlock} - ${toBlock}] found ${
           events.length
         } events (fetched ${toBlock - fromBlock + 1} blocks)`
       );
@@ -99,19 +110,19 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
       if (events.length != 0) {
         for (const e of events) {
           if (e instanceof ethers.ethers.EventLog) {
-            const baseTokenSymbol = fetchConfig.tokens[e.args.sold_id].symbol;
+            const baseTokenSymbol = curvePricePairConfiguration.tokens[e.args.sold_id].symbol;
             const baseToken: TokenData = getConfTokenBySymbol(baseTokenSymbol);
-            const quoteTokenSymbol = fetchConfig.tokens[e.args.bought_id].symbol;
+            const quoteTokenSymbol = curvePricePairConfiguration.tokens[e.args.bought_id].symbol;
             const quoteToken: TokenData = getConfTokenBySymbol(quoteTokenSymbol);
 
             // check if in the list of pair to get
             // if baseToken = USDC and quoteToken = DAI
             // then we search for a pair token0:DAI,token1:USDC or token0:USDC,token1:DAI
             if (
-              pairs.some(
+              curvePricePairConfiguration.pairs.some(
                 (_) =>
-                  (_.tokens[0].symbol == baseTokenSymbol && _.tokens[1].symbol == quoteTokenSymbol) ||
-                  (_.tokens[1].symbol == baseTokenSymbol && _.tokens[0].symbol == quoteTokenSymbol)
+                  (_.token0 == baseTokenSymbol && _.token1 == quoteTokenSymbol) ||
+                  (_.token1 == baseTokenSymbol && _.token0 == quoteTokenSymbol)
               )
             ) {
               const tokenSold = normalize(e.args.tokens_sold, baseToken.decimals);
@@ -156,7 +167,7 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
 
       if (nextSaveBlock <= fromBlock) {
         this.savePriceData(priceData);
-        priceData = this.initPriceData(pairs);
+        priceData = this.initPriceData(curvePricePairConfiguration.pairs);
         nextSaveBlock = fromBlock + 100_000;
       }
     }
@@ -187,11 +198,11 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
     }
   }
 
-  initPriceData(pairs: CurvePairConfiguration[]) {
+  initPriceData(pairs: CurveTokenPair[]) {
     const priceData: PriceData = {};
     for (const pair of pairs) {
-      priceData[`${pair.tokens[0].symbol}-${pair.tokens[1].symbol}`] = [];
-      priceData[`${pair.tokens[1].symbol}-${pair.tokens[0].symbol}`] = [];
+      priceData[`${pair.token0}-${pair.token1}`] = [];
+      priceData[`${pair.token1}-${pair.token0}`] = [];
     }
 
     return priceData;
