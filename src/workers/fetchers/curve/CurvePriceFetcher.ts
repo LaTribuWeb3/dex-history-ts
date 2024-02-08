@@ -59,18 +59,6 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
         100_000;
     }
 
-    // if (curvePairConfiguration == undefined) {
-    //   throw new Error(
-    //     `Pair ${curvePricePairConfiguration.tokens[0].symbol} ${curvePricePairConfiguration.tokens[1].symbol} could not be found in pairs list`
-    //   );
-    // }
-
-    // // this is done for the tricryptoUSDC pool because the first liquidity values are too low for
-    // // the liquidity algorithm to work. Dunno why
-    // if (curvePairConfiguration.minBlock && startBlock < curvePairConfiguration.minBlock) {
-    //   startBlock = curvePairConfiguration.minBlock;
-    // }
-
     // fetch all blocks where an event occured since startBlock
     const curveContract: CurveContract = CurveUtils.getCurveContractFromABIAsString(
       curvePricePairConfiguration.abi,
