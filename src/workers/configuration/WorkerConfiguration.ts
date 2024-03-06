@@ -9,6 +9,22 @@ export interface UniSwapV2PairConfiguration {
   startBlock?: number;
 }
 
+export interface BalancerPoolConfiguration {
+  name: string;
+  deployBlock: number;
+  address: string;
+  poolId: string;
+  type: BalancerPoolTypeEnum;
+  tokenSymbols: string[];
+  tokenIndexes: number[]; // index of the tokens from the vault.getPoolTokens
+  minBlock?: number;
+}
+
+export enum BalancerPoolTypeEnum {
+  META_STABLE_POOL = 'MetaStablePool',
+  WEIGHTED_POOL = 'WeightedPool'
+}
+
 export interface CurveFetcherWorkerConfiguration extends WorkerConfiguration {
   placeholder: string;
 }
@@ -16,6 +32,11 @@ export interface CurveFetcherWorkerConfiguration extends WorkerConfiguration {
 export interface UniSwapV2WorkerConfiguration extends WorkerConfiguration {
   factoryAddress: string;
   pairs: UniSwapV2PairConfiguration[];
+}
+
+export interface BalancerWorkerConfiguration extends WorkerConfiguration {
+  vaultAddress: string;
+  pools: BalancerPoolConfiguration[];
 }
 
 export interface CurveToken {
@@ -77,6 +98,11 @@ export function generateRawCSVFilePathForPair(worker: string, pair: string) {
 }
 
 export function generateRawCSVFilePathForCurvePool(worker: string, pool: string) {
+  if (directoryStructureVersion == 0) return `${Constants.DATA_DIR}/${worker}/${pool}_${worker}.csv`;
+  else return generateUnifedCSVBasePathForPair('raw', worker, pool) + `/${worker}.${pool}.raw.csv`;
+}
+
+export function generateRawCSVFilePathForBalancerPool(worker: string, pool: string) {
   if (directoryStructureVersion == 0) return `${Constants.DATA_DIR}/${worker}/${pool}_${worker}.csv`;
   else return generateUnifedCSVBasePathForPair('raw', worker, pool) + `/${worker}.${pool}.raw.csv`;
 }

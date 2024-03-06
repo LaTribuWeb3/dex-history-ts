@@ -314,6 +314,24 @@
           }
         ]
       }
+    },
+    {
+      "name": "balancer",
+      "configuration": {
+        "configType": "balancer",
+        "vaultAddress": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+        "pools": [
+          {
+            "name": "Balancer-rETH-Stable-Pool",
+            "deployBlock": 13846138,
+            "address": "0x1E19CF2D73a72Ef1332C882F20534B6519Be0276",
+            "poolId": "0x1e19cf2d73a72ef1332c882f20534b6519be0276000200000000000000000112",
+            "type": "MetaStablePool",
+            "tokenSymbols": ["rETH", "WETH"],
+            "tokenIndexes": [0, 1]
+          }
+        ]
+      }
     }
   ]
 }
