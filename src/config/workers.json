@@ -329,6 +329,15 @@
             "type": "MetaStablePool",
             "tokenSymbols": ["rETH", "WETH"],
             "tokenIndexes": [0, 1]
+          },
+          {
+            "name": "Balancer-stETH-Stable-Pool",
+            "deployBlock": 13018166            ,
+            "address": "0x32296969Ef14EB0c6d29669C550D4a0449130230",
+            "poolId": "0x32296969ef14eb0c6d29669c550d4a0449130230000200000000000000000080",
+            "type": "MetaStablePool",
+            "tokenSymbols": ["wstETH", "WETH"],
+            "tokenIndexes": [0, 1]
           }
         ]
       }

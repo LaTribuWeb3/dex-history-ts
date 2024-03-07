@@ -172,3 +172,11 @@ export function ensureCurvePrecomputedPresent() {
     fs.mkdirSync(dir, { recursive: true });
   }
 }
+
+export function ensureBalancerPrecomputedPresent() {
+  const dir = `${Constants.DATA_DIR}/precomputed/balancer`;
+
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}

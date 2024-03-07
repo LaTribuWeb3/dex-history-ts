@@ -67,17 +67,6 @@ function computeSlippageMapForMetaStablePool(
     confTokenTo
   );
 
-  const testAmountIn = new BigNumber(10000).times(new BigNumber(10).pow(confTokenFrom.decimals));
-  const testAmountOut = pool._exactTokenInForTokenOut(poolPairData, testAmountIn);
-
-  // pool.updateTokenBalanceForPool()
-  console.log(
-    `${normalize(testAmountIn.toString(), confTokenFrom.decimals)} ${confTokenFrom.symbol} = ${normalize(
-      testAmountOut.toString(),
-      confTokenTo.decimals
-    )} ${confTokenTo.symbol}`
-  );
-
   let baseAmountIn = baseAmountMap[confTokenFrom.symbol];
   if (!baseAmountIn) {
     baseAmountIn = new BigNumber(10).pow(confTokenFrom.decimals);
@@ -191,10 +180,6 @@ function computeLiquidityForSlippageMetaStable(
       confTokenTo
     );
 
-    // if (!highTo) {
-    //   highTo = pool._exactTokenInForTokenOut(poolPairData, high);
-    // }
-
     const qtyTo = pool._exactTokenInForTokenOut(poolPairData, qtyFrom);
 
     const newBalances: string[] = [];
@@ -263,20 +248,20 @@ function computeLiquidityForSlippageMetaStable(
   }
 }
 
-function debug() {
-  const line =
-    '19382078,50000,400000000000000,12832601570293918646361,1100122216571627535,14876939679682766068291,1000000000000000000';
-  const cfg: BalancerPoolConfiguration = {
-    name: 'Balancer-rETH-Stable-Pool',
-    deployBlock: 13846138,
-    address: '0x1E19CF2D73a72Ef1332C882F20534B6519Be0276',
-    poolId: '0x1e19cf2d73a72ef1332c882f20534b6519be0276000200000000000000000112',
-    type: BalancerPoolTypeEnum.META_STABLE_POOL,
-    tokenSymbols: ['rETH', 'WETH'],
-    tokenIndexes: [0, 1]
-  };
-  const result = computeSlippageMapForMetaStablePool(cfg, line, 1, 0);
-  console.log(result);
-}
+// function debug() {
+//   const line =
+//     '19382278,50000,400000000000000,12832620643215285273092,1100122216571627535,14876918683946300279941,1000000000000000000';
+//   const cfg: BalancerPoolConfiguration = {
+//     name: 'Balancer-rETH-Stable-Pool',
+//     deployBlock: 13846138,
+//     address: '0x1E19CF2D73a72Ef1332C882F20534B6519Be0276',
+//     poolId: '0x1e19cf2d73a72ef1332c882f20534b6519be0276000200000000000000000112',
+//     type: BalancerPoolTypeEnum.META_STABLE_POOL,
+//     tokenSymbols: ['rETH', 'WETH'],
+//     tokenIndexes: [0, 1]
+//   };
+//   const result = computeSlippageMapForMetaStablePool(cfg, line, 1, 0);
+//   console.log(result);
+// }
 
-debug();
+// debug();
