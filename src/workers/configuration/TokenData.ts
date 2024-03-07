@@ -1,4 +1,5 @@
 export interface TokenData {
+  symbol: string;
   decimals: number;
   address: string;
   dustAmount: number;

@@ -169,10 +169,11 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
 
     for (let block = startBlock; block <= endBlock; block += Constants.DEFAULT_STEP_BLOCK) {
       const fetchAndWriteData = async () => {
-        const [poolTokensResult, scalingFactorsResult, ampResult] = await Promise.all([
+        const [poolTokensResult, scalingFactorsResult, ampResult, swapFeePercentageResult] = await Promise.all([
           vaultContract.getPoolTokens(balancerPoolConfig.poolId, { blockTag: block }),
           poolContract.getScalingFactors({ blockTag: block }),
-          poolContract.getAmplificationParameter({ blockTag: block })
+          poolContract.getAmplificationParameter({ blockTag: block }),
+          poolContract.getSwapFeePercentage({ blockTag: block })
         ]);
 
         let tokenValues = '';
@@ -182,7 +183,10 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
             tokenIndex
           ].toString(10)}`;
         }
-        fs.appendFileSync(historyFileName, `${block},${ampResult.value.toString(10)}${tokenValues}\n`);
+        fs.appendFileSync(
+          historyFileName,
+          `${block},${ampResult.value.toString(10)},${swapFeePercentageResult.toString(10)}${tokenValues}\n`
+        );
       };
 
       await retry(fetchAndWriteData, []);
