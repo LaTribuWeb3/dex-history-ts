@@ -112,14 +112,14 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
       }
       fs.writeFileSync(historyFileName, `blocknumber,ampFactor${tokenColumns}\n`);
     }
-
-    const multicallProvider = MulticallWrapper.wrap(web3Provider);
-    const vaultContract = BalancerVault__factory.connect(this.workerConfiguration.vaultAddress, multicallProvider);
-    const poolContract = BalancerMetaStablePool__factory.connect(balancerPoolConfig.address, multicallProvider);
     let counter = 0;
     for (let block = startBlock; block <= endBlock; block += Constants.DEFAULT_STEP_BLOCK) {
       counter++;
       const fetchAndWriteData = async () => {
+        const multicallProvider = MulticallWrapper.wrap(web3Provider);
+        const vaultContract = BalancerVault__factory.connect(this.workerConfiguration.vaultAddress, multicallProvider);
+        const poolContract = BalancerMetaStablePool__factory.connect(balancerPoolConfig.address, multicallProvider);
+
         const [poolTokensResult, scalingFactorsResult, ampResult, swapFeePercentageResult] = await Promise.all([
           vaultContract.getPoolTokens(balancerPoolConfig.poolId, { blockTag: block }),
           poolContract.getScalingFactors({ blockTag: block }),
@@ -140,7 +140,7 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
         );
       };
 
-      await retry(fetchAndWriteData, []);
+      await retry(fetchAndWriteData, [], 100);
     }
 
     return counter;
@@ -175,6 +175,7 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
           sinceBlock = precomputedMinBlock;
         }
 
+        let toWrite = [];
         for (let i = 1; i < fileContent.length - 1; i++) {
           const blockNumber = Number(fileContent[i].split(',')[0]);
           if (blockNumber < sinceBlock) {
@@ -190,10 +191,16 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
             balancerPoolConfig.tokenSymbols.indexOf(quote)
           );
 
-          fs.appendFileSync(
-            unifiedFullFilename,
-            `${blockNumber},${dataToWrite.price},${JSON.stringify(dataToWrite.slippageMap)}\n`
-          );
+          toWrite.push(`${blockNumber},${dataToWrite.price},${JSON.stringify(dataToWrite.slippageMap)}\n`);
+
+          if (toWrite.length >= 50) {
+            fs.appendFileSync(unifiedFullFilename, toWrite.join(''));
+            toWrite = [];
+          }
+        }
+
+        if (toWrite.length >= 0) {
+          fs.appendFileSync(unifiedFullFilename, toWrite.join(''));
         }
       }
     }
