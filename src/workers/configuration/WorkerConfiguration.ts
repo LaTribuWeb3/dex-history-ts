@@ -22,7 +22,8 @@ export interface BalancerPoolConfiguration {
 
 export enum BalancerPoolTypeEnum {
   META_STABLE_POOL = 'MetaStablePool',
-  WEIGHTED_POOL = 'WeightedPool'
+  COMPOSABLE_STABLE_POOL = 'ComposableStablePool',
+  WEIGHTED_POOL_2_TOKENS = 'WeightedPool2Tokens'
 }
 
 export interface CurveFetcherWorkerConfiguration extends WorkerConfiguration {

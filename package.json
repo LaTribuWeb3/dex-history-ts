@@ -9,8 +9,8 @@
         "build": "rimraf ./build && tsc",
         "lint": "eslint . --ext .ts",
         "lintfix": "eslint . --ext .ts --fix",
-        "prettier-format": "prettier --config .prettierrc \"./src/**/*.ts\" --write",
-        "prettier-watch": "onchange \"src/**/*.ts\" \"config/*.json\" -- prettier --write {{changed}}",
+        "prettier-format": "prettier --config .prettierrc \"./(src|scripts)/**/*.ts\" --write",
+        "prettier-watch": "onchange \"(src|scripts)/**/*.ts\" \"config/*.json\" -- prettier --write {{changed}}",
         "typechain": "rimraf src/contracts/types && typechain --target ethers-v6 --out-dir src/contracts/types ./src/contracts/abi/**/*.json"
     },
     "keywords": [],

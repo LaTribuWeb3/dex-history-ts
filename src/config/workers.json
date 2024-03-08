@@ -338,6 +338,25 @@
             "type": "MetaStablePool",
             "tokenSymbols": ["wstETH", "WETH"],
             "tokenIndexes": [0, 1]
+          },
+          {
+            "name": "Balancer-weETH-ezETH-rswETH",
+            "deployBlock": 19181112            ,
+            "address": "0x848a5564158d84b8A8fb68ab5D004Fae11619A54",
+            "poolId": "0x848a5564158d84b8a8fb68ab5d004fae11619a5400000000000000000000066a",
+            "type": "ComposableStablePool",
+            "tokenSymbols": ["ezETH", "weETH", "rswETH"],
+            "tokenIndexes": [1, 2, 3],
+            "minBlock": 19194412
+          },
+          {
+            "name": "Balancer-50-WBTC-50-WETH",
+            "deployBlock": 12368025            ,
+            "address": "0xa6f548df93de924d73be7d25dc02554c6bd66db5",
+            "poolId": "0xa6f548df93de924d73be7d25dc02554c6bd66db500020000000000000000000e",
+            "type": "WeightedPool2Tokens",
+            "tokenSymbols": ["WBTC", "WETH"],
+            "tokenIndexes": [0, 1]
           }
         ]
       }
