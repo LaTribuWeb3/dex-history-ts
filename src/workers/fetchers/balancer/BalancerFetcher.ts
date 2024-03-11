@@ -6,7 +6,6 @@ import * as Web3Utils from '../../../utils/Web3Utils';
 import retry from '../../../utils/Utils';
 import { readLastLine } from '../../configuration/Helper';
 import {
-  generateUnifiedCSVFilePath,
   BalancerWorkerConfiguration,
   BalancerPoolConfiguration,
   generateRawCSVFilePathForBalancerPool,
@@ -20,9 +19,6 @@ import {
   BalancerVault__factory,
   BalancerWeightedPool2Tokens__factory
 } from '../../../contracts/types';
-import { BlockData } from '../../../models/datainterface/BlockData';
-import { computeSlippageMapForBalancerPool } from '../../../library/BalancerLibrary';
-import { WeightedPool } from '@balancer-labs/sor';
 import { computeBalancerUnifiedDataForPair } from './BalancerUtils';
 BigNumber.config({ EXPONENTIAL_AT: 1e9 }); // this is needed to interract with the balancer sor package
 
