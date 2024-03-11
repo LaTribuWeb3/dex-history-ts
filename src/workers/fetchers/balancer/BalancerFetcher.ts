@@ -56,7 +56,6 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
     for (const balancerPoolConfig of this.workerConfiguration.pools) {
       console.log(`Start generating unified pool data for ${balancerPoolConfig.name}`);
       await this.generateUnifiedData(balancerPoolConfig);
-      console.log(`End generating unified pool data for ${balancerPoolConfig.name}`);
     }
   }
 
@@ -236,9 +235,9 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
   }
 }
 
-async function debug() {
-  const fetcher = new BalancerFetcher(0);
-  await fetcher.runSpecific();
-}
+// async function debug() {
+//   const fetcher = new BalancerFetcher(0);
+//   await fetcher.runSpecific();
+// }
 
-debug();
+// debug();
