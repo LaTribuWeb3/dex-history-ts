@@ -3,8 +3,8 @@ import {
   CurvePairConfiguration,
   CurveWorkerConfiguration,
   ensureCurvePrecomputedPresent,
-  generateCurvePoolFetcherResult,
   generateCurvePoolSummaryFullName,
+  generateFetcherResultFilename,
   generateRawCSVFilePathForCurvePool,
   generateUnifiedCSVFilePath,
   getCurvePoolSummaryFile
@@ -24,6 +24,7 @@ import {
   computePriceAndSlippageMapForReserveValueCryptoV2
 } from '../../../library/CurveLibrary';
 import { CurveUtils, CurveContract } from './CurveContract';
+import { FetcherResults, PoolData } from '../../../models/dashboard/FetcherResult';
 
 type BlockData = {
   ampFactor: bigint;
@@ -64,22 +65,18 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
 
     const lastDataResults: TokenWithReserve[] = await Promise.all(fetchPromises);
 
-    const poolsData = [];
+    const poolsData: PoolData[] = [];
     let cpt = 0;
 
     const lastResults: { [poolName: string]: TokenWithReserve } = {};
     for (const fetchConfig of this.workerConfiguration.pairs) {
       const lastData = lastDataResults[cpt];
       lastResults[`${fetchConfig.poolName}`] = lastData;
-      const emptyTokens: string[] = [];
       const poolData = {
-        tokens: emptyTokens,
+        tokens: fetchConfig.tokens.map((_) => _.symbol),
         address: fetchConfig.poolAddress,
         label: fetchConfig.poolName
       };
-      for (const token of fetchConfig.tokens) {
-        poolData.tokens.push(token.symbol);
-      }
 
       poolsData.push(poolData);
       cpt++;
@@ -88,15 +85,14 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     const poolSummaryFullname: string = generateCurvePoolSummaryFullName(this.workerName);
     fs.writeFileSync(poolSummaryFullname, JSON.stringify(lastResults, null, 2));
 
-    const fetcherResult = {
+    const fetcherResult: FetcherResults = {
       dataSourceName: 'curve',
       lastBlockFetched: currentBlock,
       lastRunTimestampMs: Date.now(),
       poolsFetched: poolsData
     };
 
-    const fetcherResultFullname: string = generateCurvePoolFetcherResult(this.workerName);
-    fs.writeFileSync(fetcherResultFullname, JSON.stringify(fetcherResult, null, 2));
+    fs.writeFileSync(generateFetcherResultFilename(this.workerName), JSON.stringify(fetcherResult, null, 2));
 
     await generateUnifiedFileCurve(currentBlock);
   }

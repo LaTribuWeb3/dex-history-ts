@@ -158,7 +158,7 @@ export function generateCurvePoolSummaryFullName(workerName: string): string {
   return `${Constants.DATA_DIR}/${workerName}/${workerName}_pools_summary.json`;
 }
 
-export function generateCurvePoolFetcherResult(workerName: string): string {
+export function generateFetcherResultFilename(workerName: string): string {
   return `${Constants.DATA_DIR}/${workerName}/${workerName}-fetcher-result.json`;
 }
 
