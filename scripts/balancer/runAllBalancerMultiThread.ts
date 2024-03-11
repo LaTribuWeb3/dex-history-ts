@@ -3,6 +3,8 @@ import workers from '../../src/config/workers.json';
 import { BalancerWorkerConfiguration } from '../../src/workers/configuration/WorkerConfiguration';
 import { sleep } from '../../src/utils/Utils';
 
+// run with 'npx ts-node .\scripts\balancer\runAllBalancerMultiThread.ts'
+// only to be used in debug mode
 async function runAllBalancerMultiThread() {
   const balancerConf = workers.workers.find((_) => _.name == 'balancer')?.configuration as BalancerWorkerConfiguration;
   const allChilds = [];

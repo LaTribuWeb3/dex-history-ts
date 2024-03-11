@@ -53,10 +53,10 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
 
     ensureBalancerPrecomputedPresent();
 
-    return;
     for (const balancerPoolConfig of this.workerConfiguration.pools) {
       console.log(`Start generating unified pool data for ${balancerPoolConfig.name}`);
       await this.generateUnifiedData(balancerPoolConfig);
+      console.log(`End generating unified pool data for ${balancerPoolConfig.name}`);
     }
   }
 

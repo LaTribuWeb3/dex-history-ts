@@ -20,6 +20,10 @@ export async function computeBalancerUnifiedDataForPair(
   }
 
   const fileContent = fs.readFileSync(rawDataFilePath, 'utf-8').split('\n');
+  if (fileContent.length < 2) {
+    return;
+  }
+
   let sinceBlock = Number(fileContent[1].split(',')[0]);
   const lastLine = await readLastLine(unifiedFullFilename);
   const precomputedMinBlock = Number(lastLine.split(',')[0]) + 1;
@@ -28,6 +32,7 @@ export async function computeBalancerUnifiedDataForPair(
   }
 
   let lineBefore = '';
+  let genCount = 0;
   for (let i = 1; i < fileContent.length - 1; i++) {
     const dataLine = fileContent[i];
 
@@ -38,7 +43,9 @@ export async function computeBalancerUnifiedDataForPair(
     }
 
     // ignore duplicated from source file
-    if (dataLine == lineBefore) {
+    // splitting and slicing is done to ignore first item of the csv: the blocknumber (which changes every line)
+    // the comparison is done only on the other field: to deduplicate when balances/weights etc are the same
+    if (dataLine.split(',').slice(1).join(',') == lineBefore.split(',').slice(1).join(',')) {
       continue;
     }
 
@@ -52,5 +59,8 @@ export async function computeBalancerUnifiedDataForPair(
     const lineToWrite = `${blockNumber},${dataToWrite.price},${JSON.stringify(dataToWrite.slippageMap)}\n`;
     fs.appendFileSync(unifiedFullFilename, lineToWrite);
     lineBefore = dataLine;
+    genCount++;
   }
+
+  console.log(`End generating unified pool data for ${balancerPoolConfig.name}. Generated ${genCount} new data`);
 }

@@ -6,6 +6,9 @@ import fs from 'fs';
 import workers from '../../src/config/workers.json';
 import { computeBalancerUnifiedDataForPair } from '../../src/workers/fetchers/balancer/BalancerUtils';
 
+// run with 'npx ts-node .\scripts\balancer\runBalancerUnifiedForPoolAndPair.ts Balancer-rETH-Stable-Pool rETH WETH'
+// or launching 'runAllBalancerMultiThread'
+// only to be used in debug mode
 async function runBalancerUnifiedForPoolAndPair() {
   const poolName = process.argv[2];
   const base = process.argv[3];
