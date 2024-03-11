@@ -9,8 +9,8 @@
         "build": "rimraf ./build && tsc",
         "lint": "eslint . --ext .ts",
         "lintfix": "eslint . --ext .ts --fix",
-        "prettier-format": "prettier --config .prettierrc \"./src/**/*.ts\" --write",
-        "prettier-watch": "onchange --await-write-finish 2000 \"src/**/*.ts\" \"config/*.json\" -- prettier --write {{changed}}",
+        "prettier-format": "prettier --config .prettierrc \"./(src|scripts)/**/*.ts\" --write",
+        "prettier-watch": "onchange \"(src|scripts)/**/*.ts\" \"config/*.json\" -- prettier --write {{changed}}",
         "typechain": "rimraf src/contracts/types && typechain --target ethers-v6 --out-dir src/contracts/types ./src/contracts/abi/**/*.json"
     },
     "keywords": [],
@@ -33,6 +33,7 @@
         "typescript": "^5.3.3"
     },
     "dependencies": {
+        "@balancer-labs/sor": "^4.1.1-beta.17",
         "axios": "^1.6.5",
         "bignumber.js": "^9.1.2",
         "ethers-multicall-provider": "^6.0.3"
