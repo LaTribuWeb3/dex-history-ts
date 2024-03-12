@@ -65,3 +65,7 @@ export function getConfTokenBySymbol(symbol: string): TokenData {
   tokenConf.symbol = symbol;
   return tokenConf;
 }
+
+export function checkConfTokenWithSymbol(symbol: string): void {
+  getConfTokenBySymbol(symbol);
+}

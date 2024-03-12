@@ -133,4 +133,23 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
 
     await RecordMonitoring(m);
   }
+
+  logFnDuration(dtStart: number, jobCount: number, jobName: string) {
+    if (!process.env.DEBUG_DURATION) return;
+    const secDuration = (Date.now() - dtStart) / 1000;
+    if (jobCount) {
+      console.log(
+        `${this.logFnDuration.caller.name} duration: ${this.roundTo(secDuration, 6)} s. ${
+          jobCount / secDuration
+        } ${jobName}/sec`
+      );
+    } else {
+      console.log(`${this.logFnDuration.caller.name} duration: ${this.roundTo(secDuration, 6)} s`);
+    }
+  }
+
+  roundTo(num: number, dec = 2) {
+    const pow = Math.pow(10, dec);
+    return Math.round((num + Number.EPSILON) * pow) / pow;
+  }
 }
