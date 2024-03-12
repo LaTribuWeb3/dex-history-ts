@@ -1,5 +1,3 @@
-import BigNumber from 'bignumber.js';
-
 /**
  * Represents a data for a given block
  * Should always be linked to a block number somehow
