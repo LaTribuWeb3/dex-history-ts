@@ -1,6 +1,7 @@
-import * as ethers from 'ethers';
-import retry, { sleep } from './Utils';
 import axios from 'axios';
+import * as ethers from 'ethers';
+import { MulticallProvider, MulticallWrapper } from 'ethers-multicall-provider';
+import retry, { sleep } from './Utils';
 
 let lastCallEtherscan = 0;
 
@@ -50,6 +51,14 @@ export function getJsonRPCProvider(): ethers.JsonRpcProvider {
   }
 
   return new ethers.JsonRpcProvider(process.env.RPC_URL);
+}
+
+export function getMulticallProvider(): MulticallProvider {
+  if (!process.env.RPC_URL) {
+    throw new Error('Cannot find RPC_URL in env');
+  }
+
+  return MulticallWrapper.wrap(getJsonRPCProvider());
 }
 
 export async function getBlocknumberForTimestamp(timestamp: number): Promise<number> {

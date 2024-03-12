@@ -6,13 +6,15 @@ import { BalancerFetcher } from '../fetchers/balancer/BalancerFetcher';
 import { CurveFetcher } from '../fetchers/curve/CurveFetcher';
 import { SushiswapV2Fetcher } from '../fetchers/sushiswap/SushiswapV2Fetcher';
 import { UniswapV2Fetcher } from '../fetchers/uniswapv2/UniswapV2Fetcher';
+import { UniswapV3Fetcher } from '../fetchers/uniswapv3/UniswapV3Fetcher';
 
 const RUN_EVERY_MINUTES = 60;
 const fetchersToLaunch: BaseWorker<WorkerConfiguration>[] = [
   new UniswapV2Fetcher(RUN_EVERY_MINUTES),
   new SushiswapV2Fetcher(RUN_EVERY_MINUTES),
   new CurveFetcher(RUN_EVERY_MINUTES),
-  new BalancerFetcher(RUN_EVERY_MINUTES)
+  new BalancerFetcher(RUN_EVERY_MINUTES),
+  new UniswapV3Fetcher(RUN_EVERY_MINUTES)
 ];
 
 async function FetchersRunner() {

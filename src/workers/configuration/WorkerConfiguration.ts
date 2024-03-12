@@ -62,8 +62,23 @@ export interface CurveWorkerConfiguration extends WorkerConfiguration {
 }
 
 export interface UniSwapV3WorkerConfiguration extends WorkerConfiguration {
+  factoryAddress: string;
+  startBlockNumber?: number;
+  pairs: UniswapV3PairConfiguration[];
+  fees: number[];
+}
+
+export interface UniswapV3PairConfiguration {
+  token0: any;
+  token1: any;
   placeholder: string;
 }
+
+export type Univ3PairWithFeesAndPool = {
+  pairToFetch: UniswapV3PairConfiguration;
+  fee: number;
+  poolAddress: string;
+};
 
 export interface SushiSwapV2WorkerConfiguration extends WorkerConfiguration {
   placeholder: string;
@@ -84,7 +99,7 @@ export interface WorkersConfiguration {
 
 const directoryStructureVersion = process.env.DIRECTORY_STRUCTURE_VERSION || 0;
 
-export function generateCSVFolderPath(type: string, worker: string) {
+export function generateCSVFolderPath(type = '', worker: string) {
   if (directoryStructureVersion == 0) return `${Constants.DATA_DIR}/${worker}`;
   else return `${Constants.DATA_DIR}/${type}/${worker}`;
 }
@@ -110,7 +125,7 @@ export function generateRawCSVFilePathForBalancerPool(worker: string, pool: stri
 
 export function getAllPreComputed(worker: string): string[] {
   if (directoryStructureVersion == 0)
-    return readdirSyncWithFullPath(`${Constants.DATA_DIR}/precomputed/${worker}`).filter((file) =>
+    return readdirSyncWithFullPath(generatePreComputedForWorker(worker)).filter((file) =>
       file.endsWith('unified-data.csv')
     );
   else
@@ -124,8 +139,12 @@ export function readdirSyncWithFullPath(dir: string): string[] {
 }
 
 export function generateUnifiedCSVFilePath(worker: string, pair: string) {
-  if (directoryStructureVersion == 0) return `${Constants.DATA_DIR}/precomputed/${worker}/${pair}-unified-data.csv`;
+  if (directoryStructureVersion == 0) return generatePreComputedForWorker(worker) + `/${pair}-unified-data.csv`;
   else return generateUnifedCSVBasePathForPair('computed', worker, pair) + `/${worker}.${pair}.computed.csv`;
+}
+
+export function generatePreComputedForWorker(worker: string) {
+  return `${Constants.DATA_DIR}/precomputed/${worker}`;
 }
 
 export function generatePriceCSVFilePath(worker: string, pair: string) {
@@ -164,6 +183,22 @@ export function generateCurvePoolFetcherResult(workerName: string): string {
 
 export function getCurvePoolSummaryFile() {
   return `${Constants.DATA_DIR}/curve/curve_pools_summary.json`;
+}
+
+export function getUniswapV3PairLatestDataPath(pairWithFeesAndPool: Univ3PairWithFeesAndPool) {
+  return `${Constants.DATA_DIR}/uniswapv3/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}-latestdata.json`;
+}
+
+export function getUniswapV3PairDataPath(pairWithFeesAndPool: Univ3PairWithFeesAndPool) {
+  return `${Constants.DATA_DIR}/uniswapv3/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}-data.csv`;
+}
+
+export function getUniswapV3FetcherResultPath() {
+  return `${Constants.DATA_DIR}/uniswapv3/uniswapv3-fetcher-result.json`;
+}
+
+export function getUniswapV3BaseFolder() {
+  return `${Constants.DATA_DIR}/uniswapv3`;
 }
 
 export function ensureCurvePrecomputedPresent() {
