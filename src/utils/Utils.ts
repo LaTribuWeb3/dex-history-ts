@@ -57,9 +57,11 @@ export function writeContentToFile(syncFilename: string, content: string) {
 export function getConfTokenBySymbol(symbol: string): TokenData {
   type ObjectKey = keyof typeof tokens;
   const objectKey = symbol as ObjectKey;
-  const tokenConf = tokens[objectKey];
+  const tokenConf = tokens[objectKey] as TokenData;
   if (!tokenConf) {
     throw new Error(`Cannot find token with symbol ${symbol}`);
   }
+
+  tokenConf.symbol = symbol;
   return tokenConf;
 }
