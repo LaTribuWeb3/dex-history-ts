@@ -265,10 +265,6 @@ export class Uniswapv3Library {
     // console.log(`Adding ${amount} from ${tickLower} to ${tickUpper}`);
     const amountNorm = amount.div(UniswapV3Constants.CONSTANT_1e18).toNumber();
 
-    if (blockNumber == 17853406) {
-      console.log(`before: ${latestData.ticks[760]}`);
-    }
-
     for (let tick = Number(tickLower); tick < tickUpper; tick += Number(latestData.tickSpacing)) {
       if (!latestData.ticks[tick]) {
         latestData.ticks[tick] = 0;
@@ -276,10 +272,6 @@ export class Uniswapv3Library {
 
       // always add because for burn events, amount value will be < 0
       latestData.ticks[tick] += amountNorm;
-    }
-
-    if (blockNumber == 17853406) {
-      console.log(`after: ${latestData.ticks[760]}`);
     }
 
     latestData.blockNumber = blockNumber;
