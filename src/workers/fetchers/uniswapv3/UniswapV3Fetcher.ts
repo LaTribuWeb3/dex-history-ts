@@ -685,7 +685,7 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
     }
 
     fs.writeFileSync(latestDataFilePath, JSON.stringify(latestData));
-    this.logFnDuration(dtStart, events.length, 'event');
+    this.logFnDuration('processEvents', dtStart, events.length, 'event');
   }
 
   /**
@@ -755,9 +755,9 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
   }
 }
 
-// async function debug() {
-//   const fetcher = new UniswapV3Fetcher(0);
-//   await fetcher.runSpecific();
-// }
+async function debug() {
+  const fetcher = new UniswapV3Fetcher(0);
+  await fetcher.runSpecific();
+}
 
-// debug();
+debug();
