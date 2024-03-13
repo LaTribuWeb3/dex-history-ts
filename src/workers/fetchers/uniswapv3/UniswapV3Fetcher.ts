@@ -35,8 +35,10 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
 
     const poolsData = [];
 
-    const multicallProvider = Web3Utils.getMulticallProvider();
-    const univ3Factory = UniswapV3Factory__factory.connect(this.workerConfiguration.factoryAddress, multicallProvider);
+    const univ3Factory = UniswapV3Factory__factory.connect(
+      this.workerConfiguration.factoryAddress,
+      Web3Utils.getMulticallProvider()
+    );
     const currentBlock = (await web3Provider.getBlockNumber()) - 10;
 
     // this is used to only keep 380 days of data, but still need to fetch trade data since the pool initialize block
