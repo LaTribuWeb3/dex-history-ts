@@ -338,12 +338,6 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
     return { selectedFiles, reverse };
   }
 
-  /**
-   *
-   * @param {*} selectedFiles
-   * @param {*} dataDir
-   * @param {*} minBlock
-   */
   getUniV3DataContents(selectedFiles: string[], minBlock = 0) {
     const dataContents: { [file: string]: { [blockNumber: string]: any } } = {};
     for (let i = 0; i < selectedFiles.length; i++) {
