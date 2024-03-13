@@ -1,4 +1,3 @@
-import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import * as ethers from 'ethers';
 import * as fs from 'fs';
@@ -45,7 +44,7 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
     // computing the data is CPU heavy so this avoid computing too old data that we don't use
     // fetching events is not
     const minStartDate = Math.round(Date.now() / 1000) - 380 * 24 * 60 * 60; // min start block is 380 days ago
-    const minStartBlock: number = await this.getBlocknumberForTimestamp(minStartDate);
+    const minStartBlock: number = await Web3Utils.getBlocknumberForTimestamp(minStartDate);
     console.log(`minStartBlock is ${minStartBlock}`);
 
     console.log(`${this.workerName}: getting pools to fetch`);
@@ -414,19 +413,6 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
     }
 
     return available;
-  }
-
-  /**
-   * Get block closest of timestamp, using defillama api
-   * Retry 10 times if needed
-   * @param {number} timestamp in seconds
-   * @returns {Promise<number>} blocknumber
-   */
-  async getBlocknumberForTimestamp(timestamp: number) {
-    const defiLamaResp = await axios.get(`https://coins.llama.fi/block/ethereum/${timestamp}`);
-    const blockNumber = defiLamaResp.data.height;
-    console.log(`${this.workerName}: at timestamp ${timestamp}, block: ${blockNumber}`);
-    return blockNumber;
   }
 
   async getAllPoolsToFetch(univ3Factory: UniswapV3Factory) {
