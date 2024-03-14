@@ -10,7 +10,8 @@ import {
   BalancerPoolConfiguration,
   generateRawCSVFilePathForBalancerPool,
   BalancerPoolTypeEnum,
-  ensureBalancerPrecomputedPresent
+  ensureBalancerPrecomputedPresent,
+  generateFetcherResultFilename
 } from '../../configuration/WorkerConfiguration';
 import BigNumber from 'bignumber.js';
 import { MulticallWrapper } from 'ethers-multicall-provider';
@@ -20,6 +21,7 @@ import {
   BalancerWeightedPool2Tokens__factory
 } from '../../../contracts/types';
 import { computeBalancerUnifiedDataForPair } from './BalancerUtils';
+import { FetcherResults, PoolData } from '../../../models/dashboard/FetcherResult';
 BigNumber.config({ EXPONENTIAL_AT: 1e9 }); // this is needed to interract with the balancer sor package
 
 export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
@@ -38,16 +40,31 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
     this.createDataDirForWorker();
 
     const promises = [];
+    const poolsData: PoolData[] = [];
+
     for (const balancerPoolConfig of this.workerConfiguration.pools) {
       console.log(`Start fetching pool data for ${balancerPoolConfig.name}`);
       const promise = this.fetchBalancerPool(balancerPoolConfig, web3Provider, endBlock, minStartBlock);
-      // await promise;
+      poolsData.push({
+        address: balancerPoolConfig.address,
+        tokens: balancerPoolConfig.tokenSymbols,
+        label: balancerPoolConfig.name
+      });
       promises.push(promise);
     }
 
     await Promise.all(promises);
 
     ensureBalancerPrecomputedPresent();
+
+    const fetcherResult: FetcherResults = {
+      dataSourceName: 'balancer',
+      lastBlockFetched: endBlock,
+      lastRunTimestampMs: Date.now(),
+      poolsFetched: poolsData
+    };
+
+    fs.writeFileSync(generateFetcherResultFilename(this.workerName), JSON.stringify(fetcherResult, null, 2));
 
     for (const balancerPoolConfig of this.workerConfiguration.pools) {
       console.log(`Start generating unified pool data for ${balancerPoolConfig.name}`);
