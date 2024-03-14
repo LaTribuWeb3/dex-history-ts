@@ -18,6 +18,7 @@ export interface BalancerPoolConfiguration {
   tokenSymbols: string[];
   tokenIndexes: number[]; // index of the tokens from the vault.getPoolTokens
   minBlock?: number;
+  computePrice: boolean; // whether or not to compute the prices of this pool
 }
 
 export enum BalancerPoolTypeEnum {
@@ -135,7 +136,7 @@ export function generatePriceCSVFilePath(worker: string, pair: string) {
 }
 
 export function generateLastFetchFileName(worker: string, pool: string) {
-  if (directoryStructureVersion == 0) return `${Constants.DATA_DIR}/precomputed/price/${worker}/${pool}-lastfetch.csv`;
+  if (directoryStructureVersion == 0) return `${Constants.DATA_DIR}/precomputed/price/${worker}/${pool}-lastfetch.json`;
   else return generateCSVFolderPath('price', worker) + `/${pool}-lastfetch.json`;
 }
 
