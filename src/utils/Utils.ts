@@ -65,3 +65,13 @@ export function getConfTokenBySymbol(symbol: string): TokenData {
   tokenConf.symbol = symbol;
   return tokenConf;
 }
+
+export function getConfTokenByAddress(address: string): TokenData {
+  for (const token of Object.values(tokens)) {
+    if (address.toLowerCase() == token.address.toLowerCase()) {
+      return token as TokenData;
+    }
+  }
+
+  throw new Error(`Could not find token with address ${address}`);
+}

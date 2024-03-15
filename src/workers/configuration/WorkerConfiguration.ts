@@ -18,6 +18,7 @@ export interface BalancerPoolConfiguration {
   tokenSymbols: string[];
   tokenIndexes: number[]; // index of the tokens from the vault.getPoolTokens
   minBlock?: number;
+  computePrice: boolean; // whether or not to compute the prices of this pool
 }
 
 export enum BalancerPoolTypeEnum {

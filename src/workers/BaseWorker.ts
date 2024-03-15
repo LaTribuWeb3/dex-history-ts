@@ -44,6 +44,13 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
     }
   }
 
+  async createPriceDataDirForWorker() {
+    const dirPath = path.join(Constants.DATA_DIR, 'precomputed', 'price', this.workerName);
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
+  }
+
   /**
    * Asynchronous method representing the main execution logic for a worker task.
    *
