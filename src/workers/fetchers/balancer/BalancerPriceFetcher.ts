@@ -33,7 +33,7 @@ export class BalancerPriceFetcher extends BaseWorker<BalancerWorkerConfiguration
       }
       console.log(`Start fetching pool data for ${balancerPoolConfig.name}`);
       const promise = this.fetchPriceBalancerPool(balancerPoolConfig, web3Provider, endBlock);
-      await promise;
+      // await promise;
       promises.push(promise);
     }
 
