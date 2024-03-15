@@ -57,9 +57,23 @@ export interface CurvePairConfiguration {
   tokens: CurveToken[];
 }
 
+export interface CurveTokenPair {
+  token0: string;
+  token1: string;
+}
+
+export interface CurvePricePairConfiguration {
+  poolAddress: string;
+  poolName: string;
+  abi: string;
+  tokens: CurveToken[];
+  pairs: CurveTokenPair[];
+}
+
 export interface CurveWorkerConfiguration extends WorkerConfiguration {
   factoryAddress: string;
   pairs: CurvePairConfiguration[];
+  pricePairs: CurvePricePairConfiguration[];
 }
 
 export interface UniSwapV3WorkerConfiguration extends WorkerConfiguration {
