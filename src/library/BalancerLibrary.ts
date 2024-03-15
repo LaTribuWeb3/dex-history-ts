@@ -476,7 +476,8 @@ function debugMetaStable() {
     poolId: '0x1e19cf2d73a72ef1332c882f20534b6519be0276000200000000000000000112',
     type: BalancerPoolTypeEnum.META_STABLE_POOL,
     tokenSymbols: ['rETH', 'WETH'],
-    tokenIndexes: [0, 1]
+    tokenIndexes: [0, 1],
+    computePrice: false
   };
   const result = computeSlippageMapForComposableStablePool(cfg, line, 1, 0);
   console.log(result);
@@ -492,7 +493,8 @@ function debugWeightedPoolTwoTokens() {
     poolId: '0xa6f548df93de924d73be7d25dc02554c6bd66db500020000000000000000000e',
     type: BalancerPoolTypeEnum.WEIGHTED_POOL_2_TOKENS,
     tokenSymbols: ['WBTC', 'WETH'],
-    tokenIndexes: [0, 1]
+    tokenIndexes: [0, 1],
+    computePrice: false
   };
 
   const result = computeSlippageMapForBalancerPool(cfg, line, 0, 1);
