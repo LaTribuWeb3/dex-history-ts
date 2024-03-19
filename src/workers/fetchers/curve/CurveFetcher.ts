@@ -3,8 +3,8 @@ import {
   CurvePairConfiguration,
   CurveWorkerConfiguration,
   ensureCurvePrecomputedPresent,
-  generateCurvePoolFetcherResult,
   generateCurvePoolSummaryFullName,
+  generateFetcherResultFilename,
   generateRawCSVFilePathForCurvePool,
   generateUnifiedCSVFilePath,
   getCurvePoolSummaryFile
@@ -15,7 +15,17 @@ import { getConfTokenBySymbol, sleep } from '../../../utils/Utils';
 import { readLastLine } from '../../configuration/Helper';
 import { getBlocknumberForTimestamp } from '../../../utils/Web3Utils';
 import * as fs from 'fs';
-import { CryptoV2, ERC20, ERC20__factory, TriCryptoFactory, TriCryptoV2 } from '../../../contracts/types';
+import {
+  CryptoV2,
+  CurvePool,
+  ERC20,
+  ERC20__factory,
+  StableSwap,
+  StableSwapFactory,
+  SusDCurve,
+  TriCryptoFactory,
+  TriCryptoV2
+} from '../../../contracts/types';
 import { MulticallWrapper } from 'ethers-multicall-provider';
 import { normalize } from '../../../utils/Utils';
 import { TokenWithReserve } from '../../configuration/TokenData';
@@ -24,6 +34,7 @@ import {
   computePriceAndSlippageMapForReserveValueCryptoV2
 } from '../../../library/CurveLibrary';
 import { CurveUtils, CurveContract } from './CurveContract';
+import { FetcherResults, PoolData } from '../../../models/dashboard/FetcherResult';
 
 type BlockData = {
   ampFactor: bigint;
@@ -64,22 +75,18 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
 
     const lastDataResults: TokenWithReserve[] = await Promise.all(fetchPromises);
 
-    const poolsData = [];
+    const poolsData: PoolData[] = [];
     let cpt = 0;
 
     const lastResults: { [poolName: string]: TokenWithReserve } = {};
     for (const fetchConfig of this.workerConfiguration.pairs) {
       const lastData = lastDataResults[cpt];
       lastResults[`${fetchConfig.poolName}`] = lastData;
-      const emptyTokens: string[] = [];
       const poolData = {
-        tokens: emptyTokens,
+        tokens: fetchConfig.tokens.map((_) => _.symbol),
         address: fetchConfig.poolAddress,
         label: fetchConfig.poolName
       };
-      for (const token of fetchConfig.tokens) {
-        poolData.tokens.push(token.symbol);
-      }
 
       poolsData.push(poolData);
       cpt++;
@@ -88,15 +95,14 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     const poolSummaryFullname: string = generateCurvePoolSummaryFullName(this.workerName);
     fs.writeFileSync(poolSummaryFullname, JSON.stringify(lastResults, null, 2));
 
-    const fetcherResult = {
+    const fetcherResult: FetcherResults = {
       dataSourceName: 'curve',
       lastBlockFetched: currentBlock,
       lastRunTimestampMs: Date.now(),
       poolsFetched: poolsData
     };
 
-    const fetcherResultFullname: string = generateCurvePoolFetcherResult(this.workerName);
-    fs.writeFileSync(fetcherResultFullname, JSON.stringify(fetcherResult, null, 2));
+    fs.writeFileSync(generateFetcherResultFilename(this.workerName), JSON.stringify(fetcherResult, null, 2));
 
     await generateUnifiedFileCurve(currentBlock);
   }
@@ -201,8 +207,6 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
       try {
         const events = await curveContract.queryFilter(topics, fromBlock, toBlock);
 
-        /* Problem: The previous call now authorize only 4 parameters. TODO fix this */
-
         console.log(
           `${this.workerName}[${fetchConfig.poolName}-${fetchConfig.lpTokenName}]: [${fromBlock} - ${toBlock}] found ${
             events.length
@@ -284,7 +288,6 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     web3Provider: ethers.ethers.JsonRpcProvider,
     allBlocksWithEvents: number[]
   ) {
-    let lastBlockCurrent = lastBlock;
     const multicallProvider = MulticallWrapper.wrap(web3Provider);
     const lpTokenContract = ERC20__factory.connect(fetchConfig.lpTokenAddress, multicallProvider);
     const poolContract = CurveUtils.getCurveContract(fetchConfig, multicallProvider);
@@ -293,17 +296,19 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
       throw new Error(`Pool Contract for ${fetchConfig.lpTokenName} is not a Crypto V2`);
     }
 
-    lastBlockCurrent = await this.fetchReservesDataCryptoV2ForPossibleTypes(
+    await this.fetchReservesDataCryptoV2ForPossibleTypes(
       historyFileName,
       fetchConfig,
       allBlocksWithEvents,
-      lastBlockCurrent,
+      lastBlock,
       poolContract,
       lpTokenContract
     );
   }
 
-  instanceOfCryptoV2(object: any): object is TriCryptoV2 | TriCryptoFactory | CryptoV2 {
+  instanceOfCryptoV2(
+    object: StableSwap | StableSwapFactory | CurvePool | SusDCurve | TriCryptoV2 | TriCryptoFactory | CryptoV2
+  ): object is TriCryptoV2 | TriCryptoFactory | CryptoV2 {
     return true;
   }
 
@@ -342,7 +347,6 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
       fs.appendFileSync(historyFileName, `${blockNum},${lineToWrite}\n`);
       lastBlockCurrent = blockNum;
     }
-    return lastBlockCurrent;
   }
 
   async fetchCurveData(

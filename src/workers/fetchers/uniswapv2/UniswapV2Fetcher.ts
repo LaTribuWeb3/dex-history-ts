@@ -16,9 +16,11 @@ import {
   generatePriceCSVFilePath,
   generateRawCSVFilePathForPair,
   generateUnifiedCSVFilePath,
-  listAllExistingRawPairs
+  listAllExistingRawPairs,
+  generateFetcherResultFilename
 } from '../../configuration/WorkerConfiguration';
 import { ComputeLiquidityXYKPool, ComputeXYKPrice } from '../../../library/XYKLibrary';
+import { FetcherResults, PoolData } from '../../../models/dashboard/FetcherResult';
 
 export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
   constructor(runEveryMinutes: number, workerName = 'uniswapv2', monitoringName = 'UniswapV2 Fetcher') {
@@ -33,7 +35,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
 
     let startBlock = 0;
     const stalePools = [];
-    const poolsData = [];
+    const poolsData: PoolData[] = [];
     for (const pairKey of this.workerConfiguration.pairs) {
       if (pairKey.startBlock != undefined) {
         startBlock = pairKey.startBlock;
@@ -59,17 +61,14 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
       console.warn(`Stale pools: ${stalePools.join(',')}`);
     }
 
-    const fetcherResult = {
+    const fetcherResult: FetcherResults = {
       dataSourceName: this.workerName,
       lastBlockFetched: endBlock,
       lastRunTimestampMs: Date.now(),
       poolsFetched: poolsData
     };
 
-    fs.writeFileSync(
-      path.join(Constants.DATA_DIR, this.workerName, `${this.workerName}-fetcher-result.json`),
-      JSON.stringify(fetcherResult, null, 2)
-    );
+    fs.writeFileSync(generateFetcherResultFilename(this.workerName), JSON.stringify(fetcherResult, null, 2));
 
     // generate unified files
     await this.generateUnifiedFileUniv2(endBlock);

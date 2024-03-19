@@ -18,6 +18,7 @@ export interface BalancerPoolConfiguration {
   tokenSymbols: string[];
   tokenIndexes: number[]; // index of the tokens from the vault.getPoolTokens
   minBlock?: number;
+  computePrice: boolean; // whether or not to compute the prices of this pool
 }
 
 export enum BalancerPoolTypeEnum {
@@ -56,9 +57,23 @@ export interface CurvePairConfiguration {
   tokens: CurveToken[];
 }
 
+export interface CurveTokenPair {
+  token0: string;
+  token1: string;
+}
+
+export interface CurvePricePairConfiguration {
+  poolAddress: string;
+  poolName: string;
+  abi: string;
+  tokens: CurveToken[];
+  pairs: CurveTokenPair[];
+}
+
 export interface CurveWorkerConfiguration extends WorkerConfiguration {
   factoryAddress: string;
   pairs: CurvePairConfiguration[];
+  pricePairs: CurvePricePairConfiguration[];
 }
 
 export interface UniSwapV3WorkerConfiguration extends WorkerConfiguration {
@@ -154,7 +169,7 @@ export function generatePriceCSVFilePath(worker: string, pair: string) {
 }
 
 export function generateLastFetchFileName(worker: string, pool: string) {
-  if (directoryStructureVersion == 0) return `${Constants.DATA_DIR}/precomputed/price/${worker}/${pool}-lastfetch.csv`;
+  if (directoryStructureVersion == 0) return `${Constants.DATA_DIR}/precomputed/price/${worker}/${pool}-lastfetch.json`;
   else return generateCSVFolderPath('price', worker) + `/${pool}-lastfetch.json`;
 }
 
@@ -177,7 +192,7 @@ export function generateCurvePoolSummaryFullName(workerName: string): string {
   return `${Constants.DATA_DIR}/${workerName}/${workerName}_pools_summary.json`;
 }
 
-export function generateCurvePoolFetcherResult(workerName: string): string {
+export function generateFetcherResultFilename(workerName: string): string {
   return `${Constants.DATA_DIR}/${workerName}/${workerName}-fetcher-result.json`;
 }
 
