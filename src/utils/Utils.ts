@@ -18,6 +18,7 @@ export default async function retry<T extends (...arg0: any[]) => any>(
   const currRetry = typeof retryCount === 'number' ? retryCount : 1;
   try {
     const result = await fn(...args);
+    if (currRetry > 1) console.log(`Success after ${retryCount - 1} retries.`);
     return result;
   } catch (e) {
     if (currRetry >= maxTry) {
@@ -26,7 +27,7 @@ export default async function retry<T extends (...arg0: any[]) => any>(
     }
     console.log(`Retry ${currRetry} failed: ${e}`);
     // console.log(e);
-    console.log(`Waiting ${retryCount} second(s)`);
+    console.log(`Waiting ${retryCount} second(s) before retrying... `);
     await sleep(incrSleepDelay * retryCount);
     return retry(fn, args, maxTry, incrSleepDelay, currRetry + 1);
   }
