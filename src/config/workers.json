@@ -1,683 +1,701 @@
 {
-  "workers": [
-    {
-      "name": "uniswapv2",
-      "configuration": {
-        "configType": "XYK",
-        "factoryAddress": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
-        "pairs": [
-          {
-            "name": "AAVE-USDC",
-            "startBlock": 11116836
-          },
-          {
-            "name": "AAVE-WETH",
-            "startBlock": 16462922
-          },
-          {
-            "name": "BAT-DAI"
-          },
-          {
-            "name": "BAT-USDC"
-          },
-          {
-            "name": "BAT-WETH"
-          },
-          {
-            "name": "COMP-WETH"
-          },
-          {
-            "name": "DAI-AAVE"
-          },
-          {
-            "name": "DAI-COMP"
-          },
-          {
-            "name": "DAI-MKR"
-          },
-          {
-            "name": "DAI-USDC"
-          },
-          {
-            "name": "DAI-USDT"
-          },
-          {
-            "name": "DAI-WETH"
-          },
-          {
-            "name": "DAI-ZRX"
-          },
-          {
-            "name": "FEI-USDC"
-          },
-          {
-            "name": "FEI-WETH"
-          },
-          {
-            "name": "LINK-DAI"
-          },
-          {
-            "name": "LINK-USDC"
-          },
-          {
-            "name": "LINK-WETH"
-          },
-          {
-            "name": "MANA-WETH"
-          },
-          {
-            "name": "MKR-USDC"
-          },
-          {
-            "name": "MKR-WETH"
-          },
-          {
-            "name": "SNX-WETH"
-          },
-          {
-            "name": "sUSD-WETH"
-          },
-          {
-            "name": "SUSHI-USDC"
-          },
-          {
-            "name": "SUSHI-WETH"
-          },
-          {
-            "name": "TUSD-USDC"
-          },
-          {
-            "name": "TUSD-WETH"
-          },
-          {
-            "name": "UNI-DAI"
-          },
-          {
-            "name": "UNI-USDC"
-          },
-          {
-            "name": "UNI-WETH"
-          },
-          {
-            "name": "USDC-COMP"
-          },
-          {
-            "name": "USDC-USDT"
-          },
-          {
-            "name": "USDC-WETH"
-          },
-          {
-            "name": "USDC-ZRX"
-          },
-          {
-            "name": "USDP-WETH"
-          },
-          {
-            "name": "WBTC-DAI"
-          },
-          {
-            "name": "WBTC-USDC"
-          },
-          {
-            "name": "WBTC-USDT"
-          },
-          {
-            "name": "WBTC-WETH"
-          },
-          {
-            "name": "WETH-USDT"
-          },
-          {
-            "name": "WETH-ZRX"
-          },
-          {
-            "name": "YFI-WETH"
-          },
-          {
-            "name": "stETH-WETH"
-          },
-          {
-            "name": "HarryPotterObamaSonic10Inu-WETH"
-          }
-        ]
-      }
-    },
-    {
-      "name": "sushiswapv2",
-      "configuration": {
-        "configType": "XYK",
-        "factoryAddress": "0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac",
-        "pairs": [
-          {
-            "name": "UNI-WETH"
-          },
-          {
-            "name": "WBTC-WETH"
-          },
-          {
-            "name": "WETH-USDT"
-          },
-          {
-            "name": "USDC-WETH"
-          },
-          {
-            "name": "DAI-WETH"
-          },
-          {
-            "name": "COMP-WETH"
-          },
-          {
-            "name": "LINK-WETH"
-          },
-          {
-            "name": "CVX-WETH"
-          },
-          {
-            "name": "FXS-WETH"
-          }
-        ]
-      }
-    },
-    {
-      "name": "curve",
-      "configuration": {
-        "configType": "curvePrice",
-        "factoryAddress": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
-        "pairs": [
-          {
-            "poolAddress": "0xdc24316b9ae028f1497c275eb9192a3ea0f67022",
-            "poolName": "stETHPool",
-            "lpTokenAddress": "0x06325440D014e39736583c165C2963BA99fAf14E",
-            "lpTokenName": "steCRV",
-            "abi": "StableSwap",
-            "tokens": [
-              {
-                "symbol": "WETH",
-                "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-              },
-              {
-                "symbol": "stETH",
-                "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7",
-            "poolName": "3Pool",
-            "lpTokenAddress": "0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490",
-            "lpTokenName": "3Crv",
-            "abi": "CurvePool",
-            "tokens": [
-              {
-                "symbol": "DAI",
-                "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F"
-              },
-              {
-                "symbol": "USDC",
-                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-              },
-              {
-                "symbol": "USDT",
-                "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0xa5407eae9ba41422680e2e00537571bcc53efbfd",
-            "poolName": "sUSDPool",
-            "lpTokenAddress": "0xc25a3a3b969415c80451098fa907ec722572917f",
-            "lpTokenName": "crvPlain3andSUSD",
-            "abi": "susdPool",
-            "tokens": [
-              {
-                "symbol": "DAI",
-                "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F"
-              },
-              {
-                "symbol": "USDC",
-                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-              },
-              {
-                "symbol": "USDT",
-                "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-              },
-              {
-                "symbol": "sUSD",
-                "address": "0x57Ab1ec28D129707052df4dF418D58a2D46d5f51"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0xD51a44d3FaE010294C616388b506AcdA1bfAAE46",
-            "poolName": "tricrypto2Pool",
-            "lpTokenAddress": "0xc4ad29ba4b3c580e6d59105fff484999997675ff",
-            "lpTokenName": "crv3crypto",
-            "abi": "tricryptov2",
-            "isCryptoV2": true,
-            "tokens": [
-              {
-                "symbol": "USDT",
-                "address": "0xdac17f958d2ee523a2206206994597c13d831ec7"
-              },
-              {
-                "symbol": "WBTC",
-                "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
-              },
-              {
-                "symbol": "WETH",
-                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0x5fae7e604fc3e24fd43a72867cebac94c65b404a",
-            "poolName": "cbETHPool",
-            "lpTokenAddress": "0x5b6c539b224014a09b3388e51caaa8e354c959c8",
-            "lpTokenName": "cbETHETH-f",
-            "isCryptoV2": true,
-            "abi": "cryptov2",
-            "tokens": [
-              {
-                "symbol": "WETH",
-                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-              },
-              {
-                "symbol": "cbETH",
-                "address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0xf5f5b97624542d72a9e06f04804bf81baa15e2b4",
-            "poolName": "tricryptoUSDTPool",
-            "lpTokenAddress": "0xf5f5b97624542d72a9e06f04804bf81baa15e2b4",
-            "lpTokenName": "crvUSDTWBTCWETH",
-            "abi": "tricryptov2Factory",
-            "isCryptoV2": true,
-            "tokens": [
-              {
-                "symbol": "USDT",
-                "address": "0xdac17f958d2ee523a2206206994597c13d831ec7"
-              },
-              {
-                "symbol": "WBTC",
-                "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
-              },
-              {
-                "symbol": "WETH",
-                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0x7f86bf177dd4f3494b841a37e810a34dd56c829b",
-            "poolName": "tricryptoUSDCPool",
-            "lpTokenAddress": "0x7f86bf177dd4f3494b841a37e810a34dd56c829b",
-            "lpTokenName": "crvUSDCWBTCWETH",
-            "abi": "tricryptov2Factory",
-            "isCryptoV2": true,
-            "minBlock": 17404919,
-            "tokens": [
-              {
-                "symbol": "USDC",
-                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-              },
-              {
-                "symbol": "WBTC",
-                "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
-              },
-              {
-                "symbol": "WETH",
-                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0x9409280dc1e6d33ab7a8c6ec03e5763fb61772b5",
-            "poolName": "LDOETHPool",
-            "lpTokenAddress": "0xb79565c01b7ae53618d9b847b9443aaf4f9011e7",
-            "lpTokenName": "LDOETH-f",
-            "abi": "cryptov2",
-            "isCryptoV2": true,
-            "tokens": [
-              {
-                "symbol": "WETH",
-                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-              },
-              {
-                "symbol": "LDO",
-                "address": "0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0xb576491f1e6e5e62f1d8f26062ee822b40b0e0d4",
-            "poolName": "CVXETHPool",
-            "lpTokenAddress": "0x3a283d9c08e8b55966afb64c515f5143cf907611",
-            "lpTokenName": "crvCVXETH",
-            "abi": "cryptov2",
-            "isCryptoV2": true,
-            "tokens": [
-              {
-                "symbol": "WETH",
-                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-              },
-              {
-                "symbol": "CVX",
-                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0x21e27a5e5513d6e65c4f830167390997aa84843a",
-            "poolName": "stETHngPool",
-            "lpTokenAddress": "0x21e27a5e5513d6e65c4f830167390997aa84843a",
-            "lpTokenName": "stETH-ng-f",
-            "abi": "StableSwapFactory",
-            "minBlock": 17278752,
-            "tokens": [
-              {
-                "symbol": "WETH",
-                "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-              },
-              {
-                "symbol": "stETH",
-                "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
-              }
-            ]
-          }
-        ],
-        "pricePairs": [
-          {
-            "poolAddress": "0x0f3159811670c117c372428d4e69ac32325e4d0f",
-            "poolName": "rETHPool",
-            "abi": "cryptov2",
-            "tokens": [
-              {
-                "symbol": "WETH",
-                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-              },
-              {
-                "symbol": "rETH",
-                "address": "0xae78736Cd615f374D3085123A210448E74Fc6393"
-              }
-            ],
-            "pairs": [
-              {
-                "token0": "rETH",
-                "token1": "WETH"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7",
-            "poolName": "3Pool",
-            "abi": "curvePool",
-            "tokens": [
-              {
-                "symbol": "DAI",
-                "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F"
-              },
-              {
-                "symbol": "USDC",
-                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-              },
-              {
-                "symbol": "USDT",
-                "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-              }
-            ],
-            "pairs": [
-              {
-                "token0": "DAI",
-                "token1": "USDC"
-              },
-              {
-                "token0": "DAI",
-                "token1": "USDT"
-              },
-              {
-                "token0": "USDC",
-                "token1": "USDT"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0xD51a44d3FaE010294C616388b506AcdA1bfAAE46",
-            "poolName": "tricrypto2Pool",
-            "abi": "triCryptov2",
-            "tokens": [
-              {
-                "symbol": "USDT",
-                "address": "0xdac17f958d2ee523a2206206994597c13d831ec7"
-              },
-              {
-                "symbol": "WBTC",
-                "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
-              },
-              {
-                "symbol": "WETH",
-                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-              }
-            ],
-            "pairs": [
-              {
-                "token0": "USDT",
-                "token1": "WBTC"
-              },
-              {
-                "token0": "USDT",
-                "token1": "WETH"
-              },
-              {
-                "token0": "WETH",
-                "token1": "WBTC"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0xdc24316b9ae028f1497c275eb9192a3ea0f67022",
-            "poolName": "stETHPool",
-            "abi": "stableSwap",
-            "tokens": [
-              {
-                "symbol": "WETH",
-                "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-              },
-              {
-                "symbol": "stETH",
-                "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
-              }
-            ],
-            "pairs": [
-              {
-                "token0": "WETH",
-                "token1": "stETH"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0xa5407eae9ba41422680e2e00537571bcc53efbfd",
-            "poolName": "sUSDPool",
-            "abi": "susdCurvePool",
-            "tokens": [
-              {
-                "symbol": "DAI",
-                "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F"
-              },
-              {
-                "symbol": "USDC",
-                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-              },
-              {
-                "symbol": "USDT",
-                "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-              },
-              {
-                "symbol": "sUSD",
-                "address": "0x57Ab1ec28D129707052df4dF418D58a2D46d5f51"
-              }
-            ],
-            "pairs": [
-              {
-                "token0": "sUSD",
-                "token1": "DAI"
-              },
-              {
-                "token0": "sUSD",
-                "token1": "USDC"
-              },
-              {
-                "token0": "sUSD",
-                "token1": "USDT"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0x5fae7e604fc3e24fd43a72867cebac94c65b404a",
-            "poolName": "cbETHPool",
-            "abi": "cryptov2",
-            "tokens": [
-              {
-                "symbol": "WETH",
-                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-              },
-              {
-                "symbol": "cbETH",
-                "address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704"
-              }
-            ],
-            "pairs": [
-              {
-                "token0": "WETH",
-                "token1": "cbETH"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0x9409280dc1e6d33ab7a8c6ec03e5763fb61772b5",
-            "poolName": "LDOETHPool",
-            "abi": "cryptov2",
-            "tokens": [
-              {
-                "symbol": "WETH",
-                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-              },
-              {
-                "symbol": "LDO",
-                "address": "0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32"
-              }
-            ],
-            "pairs": [
-              {
-                "token0": "WETH",
-                "token1": "LDO"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0xb576491f1e6e5e62f1d8f26062ee822b40b0e0d4",
-            "poolName": "CVXETHPool",
-            "abi": "cryptov2",
-            "tokens": [
-              {
-                "symbol": "WETH",
-                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-              },
-              {
-                "symbol": "CVX",
-                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B"
-              }
-            ],
-            "pairs": [
-              {
-                "token0": "WETH",
-                "token1": "CVX"
-              }
-            ]
-          },
-          {
-            "poolAddress": "0x7f86bf177dd4f3494b841a37e810a34dd56c829b",
-            "poolName": "tricryptoUSDCPool",
-            "abi": "tricryptoFactory",
-            "tokens": [
-              {
-                "symbol": "USDC",
-                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-              },
-              {
-                "symbol": "WBTC",
-                "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
-              },
-              {
-                "symbol": "WETH",
-                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-              }
-            ],
-            "pairs": [
-              {
-                "token0": "WETH",
-                "token1": "USDC"
-              },
-              {
-                "token0": "WBTC",
-                "token1": "USDC"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "balancer",
-      "configuration": {
-        "configType": "balancer",
-        "vaultAddress": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
-        "pools": [
-          {
-            "name": "Balancer-rETH-Stable-Pool",
-            "deployBlock": 13846138,
-            "address": "0x1E19CF2D73a72Ef1332C882F20534B6519Be0276",
-            "poolId": "0x1e19cf2d73a72ef1332c882f20534b6519be0276000200000000000000000112",
-            "type": "MetaStablePool",
-            "tokenSymbols": ["rETH", "WETH"],
-            "tokenIndexes": [0, 1],
-            "computePrice": true            
-          },
-          {
-            "name": "Balancer-stETH-Stable-Pool",
-            "deployBlock": 13018166            ,
-            "address": "0x32296969Ef14EB0c6d29669C550D4a0449130230",
-            "poolId": "0x32296969ef14eb0c6d29669c550d4a0449130230000200000000000000000080",
-            "type": "MetaStablePool",
-            "tokenSymbols": ["wstETH", "WETH"],
-            "tokenIndexes": [0, 1],
-            "computePrice": true
-          },
-          {
-            "name": "Balancer-weETH-ezETH-rswETH",
-            "deployBlock": 19181112            ,
-            "address": "0x848a5564158d84b8A8fb68ab5D004Fae11619A54",
-            "poolId": "0x848a5564158d84b8a8fb68ab5d004fae11619a5400000000000000000000066a",
-            "type": "ComposableStablePool",
-            "tokenSymbols": ["ezETH", "weETH", "rswETH"],
-            "tokenIndexes": [1, 2, 3],
-            "minBlock": 19194412,
-            "computePrice": true
-          },
-          {
-            "name": "Balancer-50-WBTC-50-WETH",
-            "deployBlock": 12368025            ,
-            "address": "0xa6f548df93de924d73be7d25dc02554c6bd66db5",
-            "poolId": "0xa6f548df93de924d73be7d25dc02554c6bd66db500020000000000000000000e",
-            "type": "WeightedPool2Tokens",
-            "tokenSymbols": ["WBTC", "WETH"],
-            "tokenIndexes": [0, 1],
-            "computePrice": true
-          }
-        ]
-      }
-    }
-  ]
+    "workers": [
+        {
+            "name": "uniswapv2",
+            "configuration": {
+                "configType": "XYK",
+                "factoryAddress": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+                "pairs": [
+                    {
+                        "name": "AAVE-USDC",
+                        "startBlock": 11116836
+                    },
+                    {
+                        "name": "AAVE-WETH",
+                        "startBlock": 16462922
+                    },
+                    {
+                        "name": "BAT-DAI"
+                    },
+                    {
+                        "name": "BAT-USDC"
+                    },
+                    {
+                        "name": "BAT-WETH"
+                    },
+                    {
+                        "name": "COMP-WETH"
+                    },
+                    {
+                        "name": "DAI-AAVE"
+                    },
+                    {
+                        "name": "DAI-COMP"
+                    },
+                    {
+                        "name": "DAI-MKR"
+                    },
+                    {
+                        "name": "DAI-USDC"
+                    },
+                    {
+                        "name": "DAI-USDT"
+                    },
+                    {
+                        "name": "DAI-WETH"
+                    },
+                    {
+                        "name": "DAI-ZRX"
+                    },
+                    {
+                        "name": "FEI-USDC"
+                    },
+                    {
+                        "name": "FEI-WETH"
+                    },
+                    {
+                        "name": "LINK-DAI"
+                    },
+                    {
+                        "name": "LINK-USDC"
+                    },
+                    {
+                        "name": "LINK-WETH"
+                    },
+                    {
+                        "name": "MANA-WETH"
+                    },
+                    {
+                        "name": "MKR-USDC"
+                    },
+                    {
+                        "name": "MKR-WETH"
+                    },
+                    {
+                        "name": "SNX-WETH"
+                    },
+                    {
+                        "name": "sUSD-WETH"
+                    },
+                    {
+                        "name": "SUSHI-USDC"
+                    },
+                    {
+                        "name": "SUSHI-WETH"
+                    },
+                    {
+                        "name": "TUSD-USDC"
+                    },
+                    {
+                        "name": "TUSD-WETH"
+                    },
+                    {
+                        "name": "UNI-DAI"
+                    },
+                    {
+                        "name": "UNI-USDC"
+                    },
+                    {
+                        "name": "UNI-WETH"
+                    },
+                    {
+                        "name": "USDC-COMP"
+                    },
+                    {
+                        "name": "USDC-USDT"
+                    },
+                    {
+                        "name": "USDC-WETH"
+                    },
+                    {
+                        "name": "USDC-ZRX"
+                    },
+                    {
+                        "name": "USDP-WETH"
+                    },
+                    {
+                        "name": "WBTC-DAI"
+                    },
+                    {
+                        "name": "WBTC-USDC"
+                    },
+                    {
+                        "name": "WBTC-USDT"
+                    },
+                    {
+                        "name": "WBTC-WETH"
+                    },
+                    {
+                        "name": "WETH-USDT"
+                    },
+                    {
+                        "name": "WETH-ZRX"
+                    },
+                    {
+                        "name": "YFI-WETH"
+                    },
+                    {
+                        "name": "stETH-WETH"
+                    },
+                    {
+                        "name": "HarryPotterObamaSonic10Inu-WETH"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "sushiswapv2",
+            "configuration": {
+                "configType": "XYK",
+                "factoryAddress": "0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac",
+                "pairs": [
+                    {
+                        "name": "UNI-WETH"
+                    },
+                    {
+                        "name": "WBTC-WETH"
+                    },
+                    {
+                        "name": "WETH-USDT"
+                    },
+                    {
+                        "name": "USDC-WETH"
+                    },
+                    {
+                        "name": "DAI-WETH"
+                    },
+                    {
+                        "name": "COMP-WETH"
+                    },
+                    {
+                        "name": "LINK-WETH"
+                    },
+                    {
+                        "name": "CVX-WETH"
+                    },
+                    {
+                        "name": "FXS-WETH"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "curve",
+            "configuration": {
+                "configType": "curvePrice",
+                "factoryAddress": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+                "pairs": [
+                    {
+                        "poolAddress": "0x0f3159811670c117c372428d4e69ac32325e4d0f",
+                        "poolName": "rETHPool",
+                        "lpTokenAddress": "0x6c38cE8984a890F5e46e6dF6117C26b3F1EcfC9C",
+                        "lpTokenName": "rETH-f",
+                        "isCryptoV2": true,
+                        "abi": "cryptov2",
+                        "tokens": [
+                            {
+                                "symbol": "WETH",
+                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+                            },
+                            {
+                                "symbol": "rETH",
+                                "address": "0xae78736Cd615f374D3085123A210448E74Fc6393"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0xdc24316b9ae028f1497c275eb9192a3ea0f67022",
+                        "poolName": "stETHPool",
+                        "lpTokenAddress": "0x06325440D014e39736583c165C2963BA99fAf14E",
+                        "lpTokenName": "steCRV",
+                        "abi": "StableSwap",
+                        "tokens": [
+                            {
+                                "symbol": "WETH",
+                                "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+                            },
+                            {
+                                "symbol": "stETH",
+                                "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7",
+                        "poolName": "3Pool",
+                        "lpTokenAddress": "0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490",
+                        "lpTokenName": "3Crv",
+                        "abi": "CurvePool",
+                        "tokens": [
+                            {
+                                "symbol": "DAI",
+                                "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+                            },
+                            {
+                                "symbol": "USDC",
+                                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+                            },
+                            {
+                                "symbol": "USDT",
+                                "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0xa5407eae9ba41422680e2e00537571bcc53efbfd",
+                        "poolName": "sUSDPool",
+                        "lpTokenAddress": "0xc25a3a3b969415c80451098fa907ec722572917f",
+                        "lpTokenName": "crvPlain3andSUSD",
+                        "abi": "susdPool",
+                        "tokens": [
+                            {
+                                "symbol": "DAI",
+                                "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+                            },
+                            {
+                                "symbol": "USDC",
+                                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+                            },
+                            {
+                                "symbol": "USDT",
+                                "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+                            },
+                            {
+                                "symbol": "sUSD",
+                                "address": "0x57Ab1ec28D129707052df4dF418D58a2D46d5f51"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0xD51a44d3FaE010294C616388b506AcdA1bfAAE46",
+                        "poolName": "tricrypto2Pool",
+                        "lpTokenAddress": "0xc4ad29ba4b3c580e6d59105fff484999997675ff",
+                        "lpTokenName": "crv3crypto",
+                        "abi": "tricryptov2",
+                        "isCryptoV2": true,
+                        "tokens": [
+                            {
+                                "symbol": "USDT",
+                                "address": "0xdac17f958d2ee523a2206206994597c13d831ec7"
+                            },
+                            {
+                                "symbol": "WBTC",
+                                "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
+                            },
+                            {
+                                "symbol": "WETH",
+                                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0x5fae7e604fc3e24fd43a72867cebac94c65b404a",
+                        "poolName": "cbETHPool",
+                        "lpTokenAddress": "0x5b6c539b224014a09b3388e51caaa8e354c959c8",
+                        "lpTokenName": "cbETHETH-f",
+                        "isCryptoV2": true,
+                        "abi": "cryptov2",
+                        "tokens": [
+                            {
+                                "symbol": "WETH",
+                                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                            },
+                            {
+                                "symbol": "cbETH",
+                                "address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0xf5f5b97624542d72a9e06f04804bf81baa15e2b4",
+                        "poolName": "tricryptoUSDTPool",
+                        "lpTokenAddress": "0xf5f5b97624542d72a9e06f04804bf81baa15e2b4",
+                        "lpTokenName": "crvUSDTWBTCWETH",
+                        "abi": "tricryptov2Factory",
+                        "isCryptoV2": true,
+                        "tokens": [
+                            {
+                                "symbol": "USDT",
+                                "address": "0xdac17f958d2ee523a2206206994597c13d831ec7"
+                            },
+                            {
+                                "symbol": "WBTC",
+                                "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
+                            },
+                            {
+                                "symbol": "WETH",
+                                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0x7f86bf177dd4f3494b841a37e810a34dd56c829b",
+                        "poolName": "tricryptoUSDCPool",
+                        "lpTokenAddress": "0x7f86bf177dd4f3494b841a37e810a34dd56c829b",
+                        "lpTokenName": "crvUSDCWBTCWETH",
+                        "abi": "tricryptov2Factory",
+                        "isCryptoV2": true,
+                        "minBlock": 17404919,
+                        "tokens": [
+                            {
+                                "symbol": "USDC",
+                                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+                            },
+                            {
+                                "symbol": "WBTC",
+                                "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
+                            },
+                            {
+                                "symbol": "WETH",
+                                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0x9409280dc1e6d33ab7a8c6ec03e5763fb61772b5",
+                        "poolName": "LDOETHPool",
+                        "lpTokenAddress": "0xb79565c01b7ae53618d9b847b9443aaf4f9011e7",
+                        "lpTokenName": "LDOETH-f",
+                        "abi": "cryptov2",
+                        "isCryptoV2": true,
+                        "tokens": [
+                            {
+                                "symbol": "WETH",
+                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+                            },
+                            {
+                                "symbol": "LDO",
+                                "address": "0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0xb576491f1e6e5e62f1d8f26062ee822b40b0e0d4",
+                        "poolName": "CVXETHPool",
+                        "lpTokenAddress": "0x3a283d9c08e8b55966afb64c515f5143cf907611",
+                        "lpTokenName": "crvCVXETH",
+                        "abi": "cryptov2",
+                        "isCryptoV2": true,
+                        "tokens": [
+                            {
+                                "symbol": "WETH",
+                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+                            },
+                            {
+                                "symbol": "CVX",
+                                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0x21e27a5e5513d6e65c4f830167390997aa84843a",
+                        "poolName": "stETHngPool",
+                        "lpTokenAddress": "0x21e27a5e5513d6e65c4f830167390997aa84843a",
+                        "lpTokenName": "stETH-ng-f",
+                        "abi": "StableSwapFactory",
+                        "minBlock": 17278752,
+                        "tokens": [
+                            {
+                                "symbol": "WETH",
+                                "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+                            },
+                            {
+                                "symbol": "stETH",
+                                "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
+                            }
+                        ]
+                    }
+                ],
+                "pricePairs": [
+                    {
+                        "poolAddress": "0x0f3159811670c117c372428d4e69ac32325e4d0f",
+                        "poolName": "rETHPool",
+                        "abi": "cryptov2",
+                        "tokens": [
+                            {
+                                "symbol": "WETH",
+                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+                            },
+                            {
+                                "symbol": "rETH",
+                                "address": "0xae78736Cd615f374D3085123A210448E74Fc6393"
+                            }
+                        ],
+                        "pairs": [
+                            {
+                                "token0": "rETH",
+                                "token1": "WETH"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7",
+                        "poolName": "3Pool",
+                        "abi": "curvePool",
+                        "tokens": [
+                            {
+                                "symbol": "DAI",
+                                "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+                            },
+                            {
+                                "symbol": "USDC",
+                                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+                            },
+                            {
+                                "symbol": "USDT",
+                                "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+                            }
+                        ],
+                        "pairs": [
+                            {
+                                "token0": "DAI",
+                                "token1": "USDC"
+                            },
+                            {
+                                "token0": "DAI",
+                                "token1": "USDT"
+                            },
+                            {
+                                "token0": "USDC",
+                                "token1": "USDT"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0xD51a44d3FaE010294C616388b506AcdA1bfAAE46",
+                        "poolName": "tricrypto2Pool",
+                        "abi": "triCryptov2",
+                        "tokens": [
+                            {
+                                "symbol": "USDT",
+                                "address": "0xdac17f958d2ee523a2206206994597c13d831ec7"
+                            },
+                            {
+                                "symbol": "WBTC",
+                                "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
+                            },
+                            {
+                                "symbol": "WETH",
+                                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                            }
+                        ],
+                        "pairs": [
+                            {
+                                "token0": "USDT",
+                                "token1": "WBTC"
+                            },
+                            {
+                                "token0": "USDT",
+                                "token1": "WETH"
+                            },
+                            {
+                                "token0": "WETH",
+                                "token1": "WBTC"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0xdc24316b9ae028f1497c275eb9192a3ea0f67022",
+                        "poolName": "stETHPool",
+                        "abi": "stableSwap",
+                        "tokens": [
+                            {
+                                "symbol": "WETH",
+                                "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+                            },
+                            {
+                                "symbol": "stETH",
+                                "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
+                            }
+                        ],
+                        "pairs": [
+                            {
+                                "token0": "WETH",
+                                "token1": "stETH"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0xa5407eae9ba41422680e2e00537571bcc53efbfd",
+                        "poolName": "sUSDPool",
+                        "abi": "susdCurvePool",
+                        "tokens": [
+                            {
+                                "symbol": "DAI",
+                                "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+                            },
+                            {
+                                "symbol": "USDC",
+                                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+                            },
+                            {
+                                "symbol": "USDT",
+                                "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+                            },
+                            {
+                                "symbol": "sUSD",
+                                "address": "0x57Ab1ec28D129707052df4dF418D58a2D46d5f51"
+                            }
+                        ],
+                        "pairs": [
+                            {
+                                "token0": "sUSD",
+                                "token1": "DAI"
+                            },
+                            {
+                                "token0": "sUSD",
+                                "token1": "USDC"
+                            },
+                            {
+                                "token0": "sUSD",
+                                "token1": "USDT"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0x5fae7e604fc3e24fd43a72867cebac94c65b404a",
+                        "poolName": "cbETHPool",
+                        "abi": "cryptov2",
+                        "tokens": [
+                            {
+                                "symbol": "WETH",
+                                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                            },
+                            {
+                                "symbol": "cbETH",
+                                "address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704"
+                            }
+                        ],
+                        "pairs": [
+                            {
+                                "token0": "WETH",
+                                "token1": "cbETH"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0x9409280dc1e6d33ab7a8c6ec03e5763fb61772b5",
+                        "poolName": "LDOETHPool",
+                        "abi": "cryptov2",
+                        "tokens": [
+                            {
+                                "symbol": "WETH",
+                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+                            },
+                            {
+                                "symbol": "LDO",
+                                "address": "0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32"
+                            }
+                        ],
+                        "pairs": [
+                            {
+                                "token0": "WETH",
+                                "token1": "LDO"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0xb576491f1e6e5e62f1d8f26062ee822b40b0e0d4",
+                        "poolName": "CVXETHPool",
+                        "abi": "cryptov2",
+                        "tokens": [
+                            {
+                                "symbol": "WETH",
+                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+                            },
+                            {
+                                "symbol": "CVX",
+                                "address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B"
+                            }
+                        ],
+                        "pairs": [
+                            {
+                                "token0": "WETH",
+                                "token1": "CVX"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0x7f86bf177dd4f3494b841a37e810a34dd56c829b",
+                        "poolName": "tricryptoUSDCPool",
+                        "abi": "tricryptoFactory",
+                        "tokens": [
+                            {
+                                "symbol": "USDC",
+                                "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+                            },
+                            {
+                                "symbol": "WBTC",
+                                "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
+                            },
+                            {
+                                "symbol": "WETH",
+                                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                            }
+                        ],
+                        "pairs": [
+                            {
+                                "token0": "WETH",
+                                "token1": "USDC"
+                            },
+                            {
+                                "token0": "WBTC",
+                                "token1": "USDC"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "name": "balancer",
+            "configuration": {
+                "configType": "balancer",
+                "vaultAddress": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+                "pools": [
+                    {
+                        "name": "Balancer-rETH-Stable-Pool",
+                        "deployBlock": 13846138,
+                        "address": "0x1E19CF2D73a72Ef1332C882F20534B6519Be0276",
+                        "poolId": "0x1e19cf2d73a72ef1332c882f20534b6519be0276000200000000000000000112",
+                        "type": "MetaStablePool",
+                        "tokenSymbols": ["rETH", "WETH"],
+                        "tokenIndexes": [0, 1],
+                        "computePrice": true
+                    },
+                    {
+                        "name": "Balancer-stETH-Stable-Pool",
+                        "deployBlock": 13018166,
+                        "address": "0x32296969Ef14EB0c6d29669C550D4a0449130230",
+                        "poolId": "0x32296969ef14eb0c6d29669c550d4a0449130230000200000000000000000080",
+                        "type": "MetaStablePool",
+                        "tokenSymbols": ["wstETH", "WETH"],
+                        "tokenIndexes": [0, 1],
+                        "computePrice": true
+                    },
+                    {
+                        "name": "Balancer-weETH-ezETH-rswETH",
+                        "deployBlock": 19181112,
+                        "address": "0x848a5564158d84b8A8fb68ab5D004Fae11619A54",
+                        "poolId": "0x848a5564158d84b8a8fb68ab5d004fae11619a5400000000000000000000066a",
+                        "type": "ComposableStablePool",
+                        "tokenSymbols": ["ezETH", "weETH", "rswETH"],
+                        "tokenIndexes": [1, 2, 3],
+                        "minBlock": 19194412,
+                        "computePrice": true
+                    },
+                    {
+                        "name": "Balancer-50-WBTC-50-WETH",
+                        "deployBlock": 12368025,
+                        "address": "0xa6f548df93de924d73be7d25dc02554c6bd66db5",
+                        "poolId": "0xa6f548df93de924d73be7d25dc02554c6bd66db500020000000000000000000e",
+                        "type": "WeightedPool2Tokens",
+                        "tokenSymbols": ["WBTC", "WETH"],
+                        "tokenIndexes": [0, 1],
+                        "computePrice": true
+                    }
+                ]
+            }
+        }
+    ]
 }
