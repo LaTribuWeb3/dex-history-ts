@@ -5,6 +5,8 @@ import {
   CryptoV2__factory,
   CurvePool,
   CurvePool__factory,
+  CurveStable,
+  CurveStable__factory,
   StableSwap,
   StableSwapFactory,
   StableSwapFactory__factory,
@@ -32,7 +34,7 @@ export class CurveUtils {
   static getCurveContract(
     fetchConfig: CurvePairConfiguration,
     web3Provider: ethers.JsonRpcProvider
-  ): StableSwap | StableSwapFactory | CurvePool | SusDCurve | TriCryptoV2 | TriCryptoFactory | CryptoV2 {
+  ): StableSwap | StableSwapFactory | CurvePool | SusDCurve | CurveStable | TriCryptoV2 | TriCryptoFactory | CryptoV2 {
     const abi = fetchConfig.abi;
     return CurveUtils.getCurveContractFromABIAsString(abi, fetchConfig.poolAddress, web3Provider);
   }
@@ -59,6 +61,8 @@ export class CurveUtils {
         return TriCryptoFactory__factory.connect(poolAddress, web3Provider);
       case 'cryptov2':
         return CryptoV2__factory.connect(poolAddress, web3Provider);
+      case 'curvestable':
+        return CurveStable__factory.connect(poolAddress, web3Provider);
       default:
         throw new Error(`Unknown abi: ${abi}`);
     }
@@ -142,6 +146,21 @@ export class CurveUtils {
           curveContract.filters.NewParameters().getTopicFilter(),
           curveContract.filters.CommitNewParameters().getTopicFilter(),
           curveContract.filters.RampAgamma().getTopicFilter()
+        ];
+      case 'curvestable':
+        return [
+          curveContract.filters.Transfer().getTopicFilter(),
+          curveContract.filters.Approval().getTopicFilter(),
+          curveContract.filters.TokenExchange().getTopicFilter(),
+          curveContract.filters.TokenExchangeUnderlying().getTopicFilter(),
+          curveContract.filters.AddLiquidity().getTopicFilter(),
+          curveContract.filters.RemoveLiquidity().getTopicFilter(),
+          curveContract.filters.RemoveLiquidityOne().getTopicFilter(),
+          curveContract.filters.RemoveLiquidityImbalance().getTopicFilter(),
+          curveContract.filters.RampA().getTopicFilter(),
+          curveContract.filters.StopRampA().getTopicFilter(),
+          curveContract.filters.ApplyNewFee().getTopicFilter(),
+          curveContract.filters.SetNewMATime().getTopicFilter()
         ];
       default:
         throw new Error(`Unknown abi: ${fetchConfig.abi}`);

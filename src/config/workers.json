@@ -175,6 +175,9 @@
                     },
                     {
                         "name": "FXS-WETH"
+                    },
+                    {
+                        "name": "ezETH-WETH"
                     }
                 ]
             }
@@ -402,6 +405,23 @@
                             {
                                 "symbol": "stETH",
                                 "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
+                            }
+                        ]
+                    },
+                    {
+                        "poolAddress": "0x85dE3ADd465a219EE25E04d22c39aB027cF5C12E",
+                        "poolName": "ezEthWETHPool",
+                        "lpTokenAddress": "0x85dE3ADd465a219EE25E04d22c39aB027cF5C12E",
+                        "lpTokenName": "ezETH-WETH",
+                        "abi": "curvestable",
+                        "tokens": [
+                            {
+                                "symbol": "ezETH",
+                                "address": "0xbf5495efe5db9ce00f80364c8b423567e58d2110"
+                            },
+                            {
+                                "symbol": "WETH",
+                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
                             }
                         ]
                     }
@@ -643,6 +663,27 @@
                                 "token1": "USDC"
                             }
                         ]
+                    },
+                    {
+                        "poolAddress": "0x85dE3ADd465a219EE25E04d22c39aB027cF5C12E",
+                        "poolName": "ezEthWETHPool",
+                        "abi": "curveStableSwapNGAbi",
+                        "tokens": [
+                            {
+                                "symbol": "ezETH",
+                                "address": "0xbf5495efe5db9ce00f80364c8b423567e58d2110"
+                            },
+                            {
+                                "symbol": "WETH",
+                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+                            }
+                        ],
+                        "pairs": [
+                            {
+                                "token0": "ezETH",
+                                "token1": "WETH"
+                            }
+                        ]
                     }
                 ]
             }
@@ -659,8 +700,14 @@
                         "address": "0x1E19CF2D73a72Ef1332C882F20534B6519Be0276",
                         "poolId": "0x1e19cf2d73a72ef1332c882f20534b6519be0276000200000000000000000112",
                         "type": "MetaStablePool",
-                        "tokenSymbols": ["rETH", "WETH"],
-                        "tokenIndexes": [0, 1],
+                        "tokenSymbols": [
+                            "rETH",
+                            "WETH"
+                        ],
+                        "tokenIndexes": [
+                            0,
+                            1
+                        ],
                         "computePrice": true
                     },
                     {
@@ -669,8 +716,14 @@
                         "address": "0x32296969Ef14EB0c6d29669C550D4a0449130230",
                         "poolId": "0x32296969ef14eb0c6d29669c550d4a0449130230000200000000000000000080",
                         "type": "MetaStablePool",
-                        "tokenSymbols": ["wstETH", "WETH"],
-                        "tokenIndexes": [0, 1],
+                        "tokenSymbols": [
+                            "wstETH",
+                            "WETH"
+                        ],
+                        "tokenIndexes": [
+                            0,
+                            1
+                        ],
                         "computePrice": true
                     },
                     {
@@ -679,9 +732,34 @@
                         "address": "0x848a5564158d84b8A8fb68ab5D004Fae11619A54",
                         "poolId": "0x848a5564158d84b8a8fb68ab5d004fae11619a5400000000000000000000066a",
                         "type": "ComposableStablePool",
-                        "tokenSymbols": ["ezETH", "weETH", "rswETH"],
-                        "tokenIndexes": [1, 2, 3],
+                        "tokenSymbols": [
+                            "ezETH",
+                            "weETH",
+                            "rswETH"
+                        ],
+                        "tokenIndexes": [
+                            1,
+                            2,
+                            3
+                        ],
                         "minBlock": 19194412,
+                        "computePrice": true
+                    },
+                    {
+                        "name": "Balancer-ezETH-WETH",
+                        "deployBlock": 18999796,
+                        "address": "0x596192bB6e41802428Ac943D2f1476C1Af25CC0E",
+                        "poolId": "0x596192bb6e41802428ac943d2f1476c1af25cc0e000000000000000000000659",
+                        "type": "ComposableStablePool",
+                        "tokenSymbols": [
+                            "ezETH",
+                            "wETH"
+                        ],
+                        "tokenIndexes": [
+                            0,
+                            1
+                        ],
+                        "minBlock": 18999796,
                         "computePrice": true
                     },
                     {
@@ -690,8 +768,14 @@
                         "address": "0xa6f548df93de924d73be7d25dc02554c6bd66db5",
                         "poolId": "0xa6f548df93de924d73be7d25dc02554c6bd66db500020000000000000000000e",
                         "type": "WeightedPool2Tokens",
-                        "tokenSymbols": ["WBTC", "WETH"],
-                        "tokenIndexes": [0, 1],
+                        "tokenSymbols": [
+                            "WBTC",
+                            "WETH"
+                        ],
+                        "tokenIndexes": [
+                            0,
+                            1
+                        ],
                         "computePrice": true
                     }
                 ]

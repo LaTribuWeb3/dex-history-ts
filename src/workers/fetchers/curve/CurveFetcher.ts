@@ -18,6 +18,7 @@ import * as fs from 'fs';
 import {
   CryptoV2,
   CurvePool,
+  CurveStable,
   ERC20,
   ERC20__factory,
   StableSwap,
@@ -307,7 +308,15 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
   }
 
   instanceOfCryptoV2(
-    object: StableSwap | StableSwapFactory | CurvePool | SusDCurve | TriCryptoV2 | TriCryptoFactory | CryptoV2
+    object:
+      | StableSwap
+      | StableSwapFactory
+      | CurvePool
+      | SusDCurve
+      | CurveStable
+      | TriCryptoV2
+      | TriCryptoFactory
+      | CryptoV2
   ): object is TriCryptoV2 | TriCryptoFactory | CryptoV2 {
     return true;
   }
