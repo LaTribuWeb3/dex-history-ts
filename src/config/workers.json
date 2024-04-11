@@ -683,7 +683,7 @@
                     {
                         "poolAddress": "0x85dE3ADd465a219EE25E04d22c39aB027cF5C12E",
                         "poolName": "ezEthWETHPool",
-                        "abi": "curveStableSwapNGAbi",
+                        "abi": "curvestable",
                         "tokens": [
                             {
                                 "symbol": "ezETH",
@@ -704,7 +704,7 @@
                     {
                         "poolAddress": "0xeeda34a377dd0ca676b9511ee1324974fa8d980d",
                         "poolName": "pufETHwstETHPool",
-                        "abi": "curveStableSwapNGAbi",
+                        "abi": "curvestable",
                         "tokens": [
                             {
                                 "symbol": "pufETH",
@@ -725,7 +725,7 @@
                     {
                         "poolAddress": "0x39f5b252de249790faed0c2f05abead56d2088e1",
                         "poolName": "pufETHWETHPool",
-                        "abi": "curveStableSwapNGAbi",
+                        "abi": "curvestable",
                         "tokens": [
                             {
                                 "symbol": "pufETH",
