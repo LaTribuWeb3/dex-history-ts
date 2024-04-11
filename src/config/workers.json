@@ -411,6 +411,7 @@
                         "lpTokenAddress": "0x85dE3ADd465a219EE25E04d22c39aB027cF5C12E",
                         "lpTokenName": "ezETH-WETH",
                         "abi": "curvestable",
+                        "minBlock": 19121403,
                         "tokens": [
                             {
                                 "symbol": "ezETH",
@@ -428,6 +429,7 @@
                         "lpTokenAddress": "0xeeda34a377dd0ca676b9511ee1324974fa8d980d",
                         "lpTokenName": "pufETH-wstETH",
                         "abi": "curvestable",
+                        "minBlock": 19485923,
                         "tokens": [
                             {
                                 "symbol": "pufETH",
@@ -812,34 +814,34 @@
                             "WETH"
                         ],
                         "tokenIndexes": [
-                            0,
-                            1
+                            1,
+                            2
                         ],
-                        "minBlock": 18999796,
+                        "minBlock": 19000096,
                         "computePrice": true
                     },
                     {
                         "name": "Balancer-pufETH-wstETH",
-                        "deployBlock": 18999796,
+                        "deployBlock": 19480773,
                         "address": "0x63E0d47A6964aD1565345Da9bfA66659F4983F02",
-                        "poolId": "0x63e0d47a6964ad1565345da9bfa66659f4983f02000000000000000000000681 ",
+                        "poolId": "0x63e0d47a6964ad1565345da9bfa66659f4983f02000000000000000000000681",
                         "type": "ComposableStablePool",
                         "tokenSymbols": [
-                            "pufETH",
-                            "wstETH"
+                            "wstETH",
+                            "pufETH"
                         ],
                         "tokenIndexes": [
-                            0,
-                            1
+                            1,
+                            2
                         ],
-                        "minBlock": 18999796,
+                        "minBlock": 19484473,
                         "computePrice": true
                     },
                     {
                         "name": "Balancer-rsETH-WETH",
                         "deployBlock": 19470224,
                         "address": "0x58AAdFB1Afac0ad7fca1148f3cdE6aEDF5236B6D",
-                        "poolId": "0x58aadfb1afac0ad7fca1148f3cde6aedf5236b6d00000000000000000000067f  ",
+                        "poolId": "0x58aadfb1afac0ad7fca1148f3cde6aedf5236b6d00000000000000000000067f",
                         "type": "ComposableStablePool",
                         "tokenSymbols": [
                             "rsETH",
@@ -849,7 +851,7 @@
                             1,
                             2
                         ],
-                        "minBlock": 19470224,
+                        "minBlock": 19470324,
                         "computePrice": true
                     },
                     {

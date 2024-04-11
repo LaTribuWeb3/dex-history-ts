@@ -750,3 +750,10 @@ function getCurveDataforBlockIntervalCryptoV2(
 
   return dataContents;
 }
+
+// async function debug() {
+//   const fetcher = new CurveFetcher(0);
+//   await fetcher.runSpecific();
+// }
+
+// debug();
