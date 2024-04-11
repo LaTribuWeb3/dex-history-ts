@@ -438,23 +438,6 @@
                                 "address": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0"
                             }
                         ]
-                    },
-                    {
-                        "poolAddress": "0x39f5b252de249790faed0c2f05abead56d2088e1",
-                        "poolName": "pufETHWETHPool",
-                        "lpTokenAddress": "0x39f5b252de249790faed0c2f05abead56d2088e1",
-                        "lpTokenName": "WETHpufETH",
-                        "abi": "curvestable",
-                        "tokens": [
-                            {
-                                "symbol": "pufETH",
-                                "address": "0xD9A442856C234a39a81a089C06451EBAa4306a72 "
-                            },
-                            {
-                                "symbol": "WETH",
-                                "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
-                            }
-                        ]
                     }
                 ],
                 "pricePairs": [
@@ -836,23 +819,6 @@
                         "computePrice": true
                     },
                     {
-                        "name": "Balancer-ezETH-WETH",
-                        "deployBlock": 18999796,
-                        "address": "0x596192bB6e41802428Ac943D2f1476C1Af25CC0E",
-                        "poolId": "0x596192bb6e41802428ac943d2f1476c1af25cc0e000000000000000000000659",
-                        "type": "ComposableStablePool",
-                        "tokenSymbols": [
-                            "ezETH",
-                            "WETH"
-                        ],
-                        "tokenIndexes": [
-                            0,
-                            1
-                        ],
-                        "minBlock": 18999796,
-                        "computePrice": true
-                    },
-                    {
                         "name": "Balancer-pufETH-wstETH",
                         "deployBlock": 18999796,
                         "address": "0x63E0d47A6964aD1565345Da9bfA66659F4983F02",
@@ -880,8 +846,8 @@
                             "WETH"
                         ],
                         "tokenIndexes": [
-                            0,
-                            1
+                            1,
+                            2
                         ],
                         "minBlock": 19470224,
                         "computePrice": true
