@@ -205,3 +205,10 @@ type HistoryFile = { lastBlockFetched: number };
 type BlockPrice = { block: number; price: number };
 
 type PriceData = { [quoteBaseToken: string]: BlockPrice[] };
+
+// async function debug() {
+//   const fetcher = new CurvePriceFetcher(0);
+//   await fetcher.runSpecific();
+// }
+
+// debug();
