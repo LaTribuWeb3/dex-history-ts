@@ -16,3 +16,14 @@ export interface BlockData {
 export interface SlippageMap {
   [slippageBps: string]: { base: number; quote: number };
 }
+
+export type BlockWithTick = {
+  currentTick: number;
+  currentSqrtPriceX96: string;
+  blockNumber: number;
+  tickSpacing: number;
+  lastCheckpoint: number;
+  lastDataSave: number;
+  ticks: { [tick: number]: number };
+  poolAddress: string;
+};
