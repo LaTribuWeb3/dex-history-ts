@@ -7,6 +7,7 @@ const baseAmountMap: { [token: string]: bigint } = {
   sUSD: 1000n * 10n ** 18n, // 1000 sUSD ~= 1000$
   USDC: 1000n * 10n ** 6n, // 1000 USDC ~= 1000$
   WETH: 5n * 10n ** 17n, // 0.5 ETH ~= 1000$
+  rETH: 5n * 10n ** 17n, // 0.5 ETH ~= 1000$
   stETH: 5n * 10n ** 17n, // 0.5 stETH ~= 1000$
   cbETH: 5n * 10n ** 17n, // 0.5 cbETH ~= 1000$
   WBTC: 4n * 10n ** 6n // 0.04 WBTC ~= 1000$
