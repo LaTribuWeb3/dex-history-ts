@@ -93,8 +93,7 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
       }
 
       console.log(
-        `${this.workerName}[${curvePricePairConfiguration.poolName}]: [${fromBlock} - ${toBlock}] found ${
-          events.length
+        `${this.workerName}[${curvePricePairConfiguration.poolName}]: [${fromBlock} - ${toBlock}] found ${events.length
         } events (fetched ${toBlock - fromBlock + 1} blocks)`
       );
 

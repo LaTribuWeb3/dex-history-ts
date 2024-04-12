@@ -21,6 +21,8 @@ import {
 } from '../../configuration/WorkerConfiguration';
 import { ComputeLiquidityXYKPool, ComputeXYKPrice } from '../../../library/XYKLibrary';
 import { FetcherResults, PoolData } from '../../../models/dashboard/FetcherResult';
+import { UniswapV2Pair } from '../../../contracts/types';
+import { TypedContractEvent, TypedDeferredTopicFilter } from '../../../contracts/types/common';
 
 export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
   constructor(runEveryMinutes: number, workerName = 'uniswapv2', monitoringName = 'UniswapV2 Fetcher') {
@@ -144,12 +146,49 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
     }
 
     console.log(
-      `${this.workerName}[${pairKey}]: start fetching data for ${
-        currentBlock - startBlock
+      `${this.workerName}[${pairKey}]: start fetching data for ${currentBlock - startBlock
       } blocks to reach current block: ${currentBlock}`
     );
 
-    let liquidityValues = [];
+    const iterationResult: {
+      lastEventBlock: number;
+      liquidityValues: {
+        blockNumber: number;
+        reserve0: number;
+        reserve1: number;
+      }[];
+    } = await this.iterateOnBlocks(
+      startBlock,
+      initBlockStep,
+      currentBlock,
+      pairKey,
+      pairContract,
+      pairContract.filters.Sync(),
+      historyFileName
+    );
+
+    if (iterationResult.liquidityValues.length > 0) {
+      const textToAppend = iterationResult.liquidityValues.map((_) => `${_.blockNumber},${_.reserve0},${_.reserve1}`);
+      fs.appendFileSync(historyFileName, textToAppend.join('\n') + '\n');
+    }
+
+    // return true if the last event fetched is more than 500k blocks old
+    return { isStale: iterationResult.lastEventBlock < currentBlock - 500_000, pairAddress: pairAddress };
+  }
+
+  async iterateOnBlocks(
+    startBlock: number,
+    initBlockStep: number,
+    currentBlock: number,
+    pairKey: string,
+    pairContract: ethers.BaseContract,
+    contractEvent: TypedDeferredTopicFilter<TypedContractEvent<any, any, any>>,
+    historyFileName: string
+  ): Promise<{
+    lastEventBlock: number;
+    liquidityValues: { blockNumber: number; reserve0: number; reserve1: number }[];
+  }> {
+    let liquidityValues: { blockNumber: number; reserve0: number; reserve1: number }[] = [];
 
     let blockStep = initBlockStep;
     let fromBlock = startBlock;
@@ -162,9 +201,10 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
         toBlock = currentBlock;
       }
 
-      let events = undefined;
+      let events: (ethers.ethers.EventLog | ethers.ethers.Log)[] = [];
       try {
-        events = await pairContract.queryFilter(pairContract.filters.Sync(), fromBlock, toBlock);
+        const topicFilter: ethers.ethers.TopicFilter = await contractEvent.getTopicFilter();
+        events = await pairContract.queryFilter(topicFilter, fromBlock, toBlock);
       } catch (e) {
         // console.log(`query filter error: ${e.toString()}`);
         blockStep = Math.max(10, Math.round(blockStep / 2));
@@ -177,8 +217,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
       }
 
       console.log(
-        `${this.workerName}[${pairKey}]: [${fromBlock} - ${toBlock}] found ${
-          events.length
+        `${this.workerName}[${pairKey}]: [${fromBlock} - ${toBlock}] found ${events.length
         } Sync events after ${cptError} errors (fetched ${toBlock - fromBlock + 1} blocks)`
       );
       cptError = 0;
@@ -186,37 +225,54 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
       if (events.length > 0) {
         if (events.length == 1) {
           lastEventBlock = events[0].blockNumber;
+
+          if (!(events[0] instanceof ethers.ethers.EventLog)) {
+            console.error('Faced an event that is not a EventLog. This is serious.');
+            continue;
+          }
+
           liquidityValues.push({
             blockNumber: events[0].blockNumber,
             reserve0: events[0].args.reserve0.toString(),
             reserve1: events[0].args.reserve1.toString()
           });
         } else {
-          let previousEvent = events[0];
-          // for each events, we will only save the last event of a block
-          for (let i = 1; i < events.length; i++) {
-            const workingEvent = events[i];
-            lastEventBlock = events[i].blockNumber;
+          let previousEvent = events[0] as ethers.ethers.EventLog;
 
-            // we save the 'previousEvent' when the workingEvent block number is different than the previousEvent
-            if (workingEvent.blockNumber != previousEvent.blockNumber) {
-              liquidityValues.push({
-                blockNumber: previousEvent.blockNumber,
-                reserve0: previousEvent.args.reserve0.toString(),
-                reserve1: previousEvent.args.reserve1.toString()
-              });
+          if (!(previousEvent instanceof ethers.ethers.EventLog)) {
+            console.error('Faced a first event that is not a EventLog. This is serious.');
+          } else {
+            // for each events, we will only save the last event of a block
+            for (let i = 1; i < events.length; i++) {
+              const workingEvent = events[i];
+
+              if (!(workingEvent instanceof ethers.ethers.EventLog)) {
+                console.error('Faced an event in the list that is not a EventLog. This is serious.');
+                continue;
+              }
+
+              lastEventBlock = events[i].blockNumber;
+
+              // we save the 'previousEvent' when the workingEvent block number is different than the previousEvent
+              if (workingEvent.blockNumber != previousEvent.blockNumber) {
+                liquidityValues.push({
+                  blockNumber: previousEvent.blockNumber,
+                  reserve0: previousEvent.args.reserve0.toString(),
+                  reserve1: previousEvent.args.reserve1.toString()
+                });
+              }
+
+              if (i == events.length - 1) {
+                // always save the last event
+                liquidityValues.push({
+                  blockNumber: workingEvent.blockNumber,
+                  reserve0: workingEvent.args.reserve0.toString(),
+                  reserve1: workingEvent.args.reserve1.toString()
+                });
+              }
+
+              previousEvent = workingEvent;
             }
-
-            if (i == events.length - 1) {
-              // always save the last event
-              liquidityValues.push({
-                blockNumber: workingEvent.blockNumber,
-                reserve0: workingEvent.args.reserve0.toString(),
-                reserve1: workingEvent.args.reserve1.toString()
-              });
-            }
-
-            previousEvent = workingEvent;
           }
         }
 
@@ -235,13 +291,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
       fromBlock = toBlock + 1;
     }
 
-    if (liquidityValues.length > 0) {
-      const textToAppend = liquidityValues.map((_) => `${_.blockNumber},${_.reserve0},${_.reserve1}`);
-      fs.appendFileSync(historyFileName, textToAppend.join('\n') + '\n');
-    }
-
-    // return true if the last event fetched is more than 500k blocks old
-    return { isStale: lastEventBlock < currentBlock - 500_000, pairAddress: pairAddress };
+    return { lastEventBlock: lastEventBlock, liquidityValues: liquidityValues };
   }
 
   async generateUnifiedFileUniv2(endBlock: number) {
