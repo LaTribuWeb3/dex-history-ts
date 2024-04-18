@@ -7,6 +7,8 @@ import { TokenList } from './configuration/TokenData';
 import workers from '../config/workers.json';
 import tokens from '../config/tokens.json';
 import * as dotenv from 'dotenv';
+import * as ethers from 'ethers';
+import * as Web3Utils from '../utils/Web3Utils';
 dotenv.config();
 
 /**
@@ -19,6 +21,7 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
   workerConfiguration: T;
   tokens: TokenList;
   monitoringName: string;
+  web3Provider: ethers.JsonRpcProvider;
 
   // Assuming workers is an array of worker configurations
   protected findWorkerByName(name: string): T {
@@ -30,6 +33,7 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
   }
 
   constructor(workerName: string, monitoringName: string, runEveryMinutes: number) {
+    this.web3Provider = Web3Utils.getJsonRPCProvider();
     this.tokens = tokens;
     this.workerName = workerName;
     this.monitoringName = monitoringName;

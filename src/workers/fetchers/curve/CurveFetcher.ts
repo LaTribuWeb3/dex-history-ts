@@ -10,7 +10,6 @@ import {
   getCurvePoolSummaryFile
 } from '../../configuration/WorkerConfiguration';
 import * as ethers from 'ethers';
-import * as Web3Utils from '../../../utils/Web3Utils';
 import { getConfTokenBySymbol, sleep } from '../../../utils/Utils';
 import { readLastLine } from '../../configuration/Helper';
 import { getBlocknumberForTimestamp } from '../../../utils/Web3Utils';
@@ -64,12 +63,10 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
   SAVE_BLOCK_STEP = 50;
 
   async runSpecific(): Promise<void> {
-    const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
-
-    const currentBlock = (await web3Provider.getBlockNumber()) - 10;
+    const currentBlock = (await this.web3Provider.getBlockNumber()) - 10;
     const fetchPromises: Promise<TokenWithReserve>[] = [];
     for (const fetchConfig of this.workerConfiguration.pairs) {
-      fetchPromises.push(this.FetchHistory(fetchConfig, currentBlock, web3Provider));
+      fetchPromises.push(this.FetchHistory(fetchConfig, currentBlock));
       await Promise.all(fetchPromises);
       sleep(2000);
     }
@@ -118,13 +115,8 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
    * Takes a fetchConfig from curve.config.js and outputs liquidity file in /data
    * @param {{poolAddress: string, poolName: string, version: number, abi: string, ampFactor: number, additionnalTransferEvents: {[symbol: string]: string[]}}} fetchConfig
    * @param {number} currentBlock
-   * @param {StaticJsonRpcProvider} web3Provider
    */
-  async FetchHistory(
-    fetchConfig: CurvePairConfiguration,
-    currentBlock: number,
-    web3Provider: ethers.JsonRpcProvider
-  ): Promise<TokenWithReserve> {
+  async FetchHistory(fetchConfig: CurvePairConfiguration, currentBlock: number): Promise<TokenWithReserve> {
     console.log(`[${fetchConfig.poolName}]: Start fetching history`);
     const historyFileName = generateRawCSVFilePathForCurvePool(this.workerName, fetchConfig.poolName);
     let startBlock = 0;
@@ -147,7 +139,7 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     }
 
     // fetch all blocks where an event occured since startBlock
-    const curveContract: CurveContract = CurveUtils.getCurveContract(fetchConfig, web3Provider);
+    const curveContract: CurveContract = CurveUtils.getCurveContract(fetchConfig, this.web3Provider);
     const curveTopics: ethers.ethers.TopicFilter[] = await Promise.all(
       CurveUtils.getCurveTopics(curveContract, fetchConfig)
     );
@@ -174,9 +166,9 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     );
 
     if (fetchConfig.isCryptoV2) {
-      await this.fetchReservesDataCryptoV2(fetchConfig, historyFileName, startBlock, web3Provider, allBlocksWithEvents);
+      await this.fetchReservesDataCryptoV2(fetchConfig, historyFileName, startBlock, allBlocksWithEvents);
     } else {
-      await this.fetchReservesData(fetchConfig, historyFileName, startBlock, web3Provider, allBlocksWithEvents);
+      await this.fetchReservesData(fetchConfig, historyFileName, startBlock, allBlocksWithEvents);
     }
 
     // read the lalst line of the file to return lastData
@@ -250,11 +242,10 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     fetchConfig: CurvePairConfiguration,
     historyFileName: string,
     lastBlock: number,
-    web3Provider: ethers.ethers.JsonRpcProvider,
     allBlocksWithEvents: number[]
   ) {
     let lastBlockCurrent = lastBlock;
-    const multicallProvider = MulticallWrapper.wrap(web3Provider);
+    const multicallProvider = MulticallWrapper.wrap(this.web3Provider);
     const lpTokenContract = ERC20__factory.connect(fetchConfig.lpTokenAddress, multicallProvider);
     const poolContract = CurveUtils.getCurveContract(fetchConfig, multicallProvider);
 
@@ -286,10 +277,9 @@ export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
     fetchConfig: CurvePairConfiguration,
     historyFileName: string,
     lastBlock: number,
-    web3Provider: ethers.ethers.JsonRpcProvider,
     allBlocksWithEvents: number[]
   ) {
-    const multicallProvider = MulticallWrapper.wrap(web3Provider);
+    const multicallProvider = MulticallWrapper.wrap(this.web3Provider);
     const lpTokenContract = ERC20__factory.connect(fetchConfig.lpTokenAddress, multicallProvider);
     const poolContract = CurveUtils.getCurveContract(fetchConfig, multicallProvider);
 

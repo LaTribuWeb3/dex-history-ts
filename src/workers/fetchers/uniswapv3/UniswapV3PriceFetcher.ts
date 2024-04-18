@@ -24,13 +24,7 @@ export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfigurati
   }
 
   async runSpecific(): Promise<void> {
-    const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
-
-    const univ3Factory = UniswapV3Factory__factory.connect(
-      this.workerConfiguration.factoryAddress,
-      Web3Utils.getMulticallProvider()
-    );
-    const currentBlock = (await web3Provider.getBlockNumber()) - 10;
+    const currentBlock = (await this.web3Provider.getBlockNumber()) - 10;
 
     console.log(`${this.workerName}: getting pools to fetch`);
 
@@ -59,7 +53,6 @@ export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfigurati
         this.FetchUniswapV3PriceHistoryForPair(
           groupedFetchConfig.pairToFetch,
           groupedFetchConfig.pools,
-          web3Provider,
           currentBlock
         )
       );
@@ -89,7 +82,6 @@ export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfigurati
   async FetchUniswapV3PriceHistoryForPair(
     pairToFetch: UniswapV3PairConfiguration,
     pools: string[],
-    web3Provider: ethers.ethers.JsonRpcProvider,
     currentBlock: number
   ): Promise<{ lastBlockWithData: number; token0: string; token1: string }> {
     const token0Conf = getConfTokenBySymbol(pairToFetch.token0);
@@ -144,7 +136,7 @@ export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfigurati
     // initializes the pools contracts
     const contracts: { [address: string]: UniswapV3Pair } = {};
     for (const poolAddress of pools) {
-      contracts[poolAddress] = UniswapV3Pair__factory.connect(poolAddress, web3Provider);
+      contracts[poolAddress] = UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
     }
 
     const step = 100_000;
@@ -161,7 +153,7 @@ export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfigurati
       console.log(`${label}: fetching events for blocks [${fromBlock}-${toBlock}]`);
 
       for (const poolAddress of pools) {
-        const univ3PairContract: UniswapV3Pair = UniswapV3Pair__factory.connect(poolAddress, web3Provider);
+        const univ3PairContract: UniswapV3Pair = UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
         tradesByPool[poolAddress] = await fetchEvents(fromBlock, toBlock, univ3PairContract, token0Conf, token1Conf);
       }
 
