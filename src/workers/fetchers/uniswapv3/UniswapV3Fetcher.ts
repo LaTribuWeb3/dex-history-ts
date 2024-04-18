@@ -22,6 +22,7 @@ import {
   getUniswapV3PairLatestDataPath
 } from '../../configuration/WorkerConfiguration';
 import { UniswapV3Constants } from './UniswapV3Constants';
+import { getAllPoolsToFetch, parseEvent, translateTopicFilters } from './UniswapV3Utils';
 
 export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
   constructor(runEveryMinutes: number) {
@@ -33,11 +34,6 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
     this.createDataDirForWorker();
 
     const poolsData = [];
-
-    const univ3Factory = UniswapV3Factory__factory.connect(
-      this.workerConfiguration.factoryAddress,
-      Web3Utils.getMulticallProvider()
-    );
     const currentBlock = (await web3Provider.getBlockNumber()) - 10;
 
     // this is used to only keep 380 days of data, but still need to fetch trade data since the pool initialize block
@@ -49,7 +45,10 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
 
     console.log(`${this.workerName}: getting pools to fetch`);
 
-    const poolsToFetch: Univ3PairWithFeesAndPool[] = await this.getAllPoolsToFetch(univ3Factory);
+    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(
+      this.workerName,
+      this.workerConfiguration
+    );
 
     console.log(
       `${this.workerName}: found ${poolsToFetch.length} pools to fetch from ${this.workerConfiguration.pairs.length} pairs in config`
@@ -415,40 +414,6 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
     return available;
   }
 
-  async getAllPoolsToFetch(univ3Factory: UniswapV3Factory) {
-    const poolsToFetch = [];
-    // find existing pools via multicall
-    const promises = [];
-    for (const pairToFetch of this.workerConfiguration.pairs) {
-      for (const fee of this.workerConfiguration.fees) {
-        const token0 = getConfTokenBySymbol(pairToFetch.token0);
-        const token1 = getConfTokenBySymbol(pairToFetch.token1);
-
-        promises.push(univ3Factory.getPool(token0.address, token1.address, fee));
-      }
-    }
-
-    let promiseIndex = 0;
-    for (const pairToFetch of this.workerConfiguration.pairs) {
-      for (const fee of this.workerConfiguration.fees) {
-        const poolAddress = await promises[promiseIndex];
-        if (poolAddress == ethers.ZeroAddress) {
-          console.log(`${this.workerName}[${pairToFetch.token0}-${pairToFetch.token1}-${fee}]: pool does not exist`);
-        } else {
-          poolsToFetch.push({
-            pairToFetch,
-            fee,
-            poolAddress
-          });
-        }
-
-        promiseIndex++;
-      }
-    }
-
-    return poolsToFetch;
-  }
-
   async FetchUniswapV3HistoryForPair(
     pairWithFeesAndPool: Univ3PairWithFeesAndPool,
     web3Provider: ethers.ethers.JsonRpcProvider,
@@ -521,22 +486,11 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
 
       let events = undefined;
 
-      const allTopics: ethers.ethers.TopicFilter[] = await Promise.all([
+      const topics: ethers.TopicFilter = await translateTopicFilters([
         univ3PairContract.filters.Burn().getTopicFilter(),
         univ3PairContract.filters.Mint().getTopicFilter(),
         univ3PairContract.filters.Swap().getTopicFilter()
       ]);
-
-      const topics: ethers.TopicFilter = [
-        allTopics
-          .filter((_) => _.length != 0)
-          .filter((_) => _[0] != null)
-          .flatMap((_) => {
-            if (_.length == 0) return [];
-            if (_[0] == null) return [];
-            else return _[0].toString();
-          })
-      ];
 
       try {
         events = await (univ3PairContract as ethers.BaseContract).queryFilter(topics, fromBlock, toBlock);
@@ -594,7 +548,7 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
     // const checkpointData = [];
     let lastBlock = events[0].blockNumber;
     for (const event of events) {
-      const parsedEvent: ethers.ethers.LogDescription = this.parseEvent(event);
+      const parsedEvent: ethers.ethers.LogDescription = parseEvent(event);
 
       // this checks that we are crossing a new block, so we will save the price and maybe checkpoint data
       if (
@@ -676,20 +630,6 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
    */
   fnName() {
     return this.fnName.caller.name;
-  }
-
-  parseEvent(event: ethers.ethers.EventLog | ethers.ethers.Log): ethers.ethers.LogDescription {
-    const correctlyTypedEvent: { topics: Array<string>; data: string } = {
-      topics: [...event.topics],
-      data: event.data
-    };
-
-    const logParsed = new ethers.Interface(UniswapV3Pair__factory.abi).parseLog(correctlyTypedEvent);
-    if (logParsed == null) {
-      throw new Error('Could not parse logs');
-    }
-
-    return logParsed;
   }
 
   async fetchInitializeData(poolAddress: string, univ3PairContract: UniswapV3Pair): Promise<BlockWithTick> {
