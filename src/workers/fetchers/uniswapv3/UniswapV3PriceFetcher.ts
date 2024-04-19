@@ -20,7 +20,7 @@ import { TokenData } from '../../configuration/TokenData';
 
 export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
   constructor(runEveryMinutes: number) {
-    super('uniswapv3', 'Uniswapv3 Price Fetcher', runEveryMinutes);
+    super('uniswapv3', 'UniswapV3 Price Fetcher', runEveryMinutes);
   }
 
   async runSpecific(): Promise<void> {
