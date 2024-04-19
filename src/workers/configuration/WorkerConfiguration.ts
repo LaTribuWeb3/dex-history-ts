@@ -99,15 +99,18 @@ export interface SushiSwapV2WorkerConfiguration extends FetcherConfiguration {
   placeholder: string;
 }
 
-export interface FetcherConfiguration {
+export interface FetcherConfiguration extends WorkerConfiguration {
   configType: string;
 }
+
+export abstract class WorkerConfiguration {}
 
 export interface WorkerMainConfiguration {
   name: string;
   configuration: FetcherConfiguration;
 }
 
+// Main class for the configuration file workers.json
 export interface WorkersConfiguration {
   workers: WorkerMainConfiguration[];
 }

@@ -28,10 +28,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
 
     console.log(`${this.workerName}: getting pools to fetch`);
 
-    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(
-      this.workerName,
-      this.workerConfiguration
-    );
+    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(this.workerName, this.configuration);
 
     const poolsToFetchGroupedByPair: { [pair: string]: { pairToFetch: UniswapV3PairConfiguration; pools: string[] } } =
       {};
@@ -50,11 +47,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
     let promises = [];
     for (const groupedFetchConfig of Object.values(poolsToFetchGroupedByPair)) {
       promises.push(
-        this.FetchUniswapV3PriceHistoryForPair(
-          groupedFetchConfig.pairToFetch,
-          groupedFetchConfig.pools,
-          currentBlock
-        )
+        this.FetchUniswapV3PriceHistoryForPair(groupedFetchConfig.pairToFetch, groupedFetchConfig.pools, currentBlock)
       );
 
       await sleep(1000);
@@ -149,7 +142,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
         toBlock = currentBlock;
       }
 
-      const tradesByPool: { [poolAddress: string]: { block: number; price: number; }[] } = {};
+      const tradesByPool: { [poolAddress: string]: { block: number; price: number }[] } = {};
       console.log(`${label}: fetching events for blocks [${fromBlock}-${toBlock}]`);
 
       for (const poolAddress of pools) {
@@ -172,7 +165,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
         continue;
       }
 
-      let allSwaps: { block: number; price: number; }[] = tradesByPool[mainPool];
+      let allSwaps: { block: number; price: number }[] = tradesByPool[mainPool];
       console.log(`${label}: [pool ${mainPool}]: ${mainPoolTradeCount} swaps`);
 
       for (const poolAddress of pools) {
@@ -221,7 +214,7 @@ async function fetchEvents(
   let blockStep = initBlockStep;
   let fromBlock = startBlock;
   let toBlock = 0;
-  const swapResults: { block: number, price: number }[] = [];
+  const swapResults: { block: number; price: number }[] = [];
   while (toBlock < endBlock) {
     toBlock = fromBlock + blockStep - 1;
     if (toBlock > endBlock) {
@@ -267,7 +260,7 @@ async function fetchEvents(
         });
       }
 
-      // try to find the blockstep to reach 9000 events per call as the RPC limit is 10 000, 
+      // try to find the blockstep to reach 9000 events per call as the RPC limit is 10 000,
       // this try to change the blockstep by increasing it when the pool is not very used
       // or decreasing it when the pool is very used
       blockStep = Math.min(1_000_000, Math.round((blockStep * 8000) / events.length));

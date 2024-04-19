@@ -27,7 +27,7 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
     this.createPriceDataDirForWorker();
 
     const promises = [];
-    for (const balancerPoolConfig of this.workerConfiguration.pools) {
+    for (const balancerPoolConfig of this.configuration.pools) {
       if (!balancerPoolConfig.computePrice) {
         continue;
       }
@@ -46,7 +46,7 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
     endBlock: number
   ) {
     const logLabel = `fetchPriceBalancerPool[${balancerPoolConfig.name}]`;
-    const balancerVaultContract = BalancerVault__factory.connect(this.workerConfiguration.vaultAddress, web3Provider);
+    const balancerVaultContract = BalancerVault__factory.connect(this.configuration.vaultAddress, web3Provider);
 
     const lastFetchPoolFilename = generateLastFetchFileName(this.workerName, balancerPoolConfig.name);
 

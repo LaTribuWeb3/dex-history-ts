@@ -41,7 +41,7 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
     const promises = [];
     const poolsData: PoolData[] = [];
 
-    for (const balancerPoolConfig of this.workerConfiguration.pools) {
+    for (const balancerPoolConfig of this.configuration.pools) {
       console.log(`Start fetching pool data for ${balancerPoolConfig.name}`);
       const promise = this.fetchBalancerPool(balancerPoolConfig, endBlock, minStartBlock);
       poolsData.push({
@@ -65,7 +65,7 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
 
     fs.writeFileSync(generateFetcherResultFilename(this.workerName), JSON.stringify(fetcherResult, null, 2));
 
-    for (const balancerPoolConfig of this.workerConfiguration.pools) {
+    for (const balancerPoolConfig of this.configuration.pools) {
       console.log(`Start generating unified pool data for ${balancerPoolConfig.name}`);
       await this.generateUnifiedData(balancerPoolConfig);
     }
@@ -133,7 +133,7 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
       counter++;
       const fetchAndWriteData = async () => {
         const multicallProvider = MulticallWrapper.wrap(this.web3Provider);
-        const vaultContract = BalancerVault__factory.connect(this.workerConfiguration.vaultAddress, multicallProvider);
+        const vaultContract = BalancerVault__factory.connect(this.configuration.vaultAddress, multicallProvider);
         const poolContract = BalancerMetaStablePool__factory.connect(balancerPoolConfig.address, multicallProvider);
 
         const [poolTokensResult, scalingFactorsResult, ampResult, swapFeePercentageResult] = await Promise.all([
@@ -182,7 +182,7 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
       counter++;
       const fetchAndWriteData = async () => {
         const multicallProvider = MulticallWrapper.wrap(this.web3Provider);
-        const vaultContract = BalancerVault__factory.connect(this.workerConfiguration.vaultAddress, multicallProvider);
+        const vaultContract = BalancerVault__factory.connect(this.configuration.vaultAddress, multicallProvider);
         const poolContract = BalancerWeightedPool2Tokens__factory.connect(
           balancerPoolConfig.address,
           multicallProvider
