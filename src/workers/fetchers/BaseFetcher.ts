@@ -24,7 +24,7 @@ export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfigura
   web3Provider: ethers.JsonRpcProvider;
 
   // Assuming workers is an array of worker configurations
-  protected static findWorkerByName(name: string): T {
+  protected static findWorkerByName<T extends WorkerConfiguration.FetcherConfiguration>(name: string): T {
     const foundWorker = workers.workers.find((worker) => worker.name === name);
     if (foundWorker === undefined) {
       throw new Error('Could not find worker with name: ' + name);
