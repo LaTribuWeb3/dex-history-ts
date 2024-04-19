@@ -1,4 +1,4 @@
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import {
   CurvePricePairConfiguration,
   CurveWorkerConfiguration,
@@ -18,7 +18,7 @@ import { GetContractCreationBlockNumber } from '../../../utils/Web3Utils';
 import { UniswapV3Pair, UniswapV3Pair__factory } from '../../../contracts/types';
 import { TokenData } from '../../configuration/TokenData';
 
-export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
+export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
   constructor(runEveryMinutes: number) {
     super('uniswapv3', 'Uniswapv3 Price Fetcher', runEveryMinutes);
   }

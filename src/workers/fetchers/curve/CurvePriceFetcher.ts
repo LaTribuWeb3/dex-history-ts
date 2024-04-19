@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { getConfTokenBySymbol, normalize, sleep } from '../../../utils/Utils';
 import * as Web3Utils from '../../../utils/Web3Utils';
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import { readLastLine } from '../../configuration/Helper';
 import { TokenData } from '../../configuration/TokenData';
 import {
@@ -15,7 +15,7 @@ import {
 } from '../../configuration/WorkerConfiguration';
 import { CurveContract, CurveUtils } from './CurveContract';
 
-export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
+export class CurvePriceFetcher extends BaseFetcher<CurveWorkerConfiguration> {
   constructor(runEveryMinutes: number) {
     super('curve', 'Curve Price Fetcher', runEveryMinutes);
   }

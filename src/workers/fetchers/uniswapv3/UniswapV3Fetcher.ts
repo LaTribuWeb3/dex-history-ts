@@ -7,7 +7,7 @@ import { BlockWithTick, SlippageMap } from '../../../models/datainterface/BlockD
 import retry, { getConfTokenBySymbol } from '../../../utils/Utils';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import { getBlocknumberForTimestamp } from '../../../utils/Web3Utils';
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import { readLastLine } from '../../configuration/Helper';
 import {
   UniSwapV3WorkerConfiguration,
@@ -23,7 +23,7 @@ import {
 import { UniswapV3Constants } from './UniswapV3Constants';
 import { getAllPoolsToFetch, parseEvent, translateTopicFilters } from './UniswapV3Utils';
 
-export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
+export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
   constructor(runEveryMinutes: number) {
     super('uniswapv3', 'UniswapV3 Fetcher', runEveryMinutes);
   }

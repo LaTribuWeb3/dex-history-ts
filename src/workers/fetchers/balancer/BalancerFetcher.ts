@@ -1,4 +1,4 @@
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import * as ethers from 'ethers';
 import * as fs from 'fs';
 import * as Constants from '../../../utils/Constants';
@@ -24,7 +24,7 @@ import { computeBalancerUnifiedDataForPair } from './BalancerUtils';
 import { FetcherResults, PoolData } from '../../../models/dashboard/FetcherResult';
 BigNumber.config({ EXPONENTIAL_AT: 1e9 }); // this is needed to interract with the balancer sor package
 
-export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
+export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
   constructor(runEveryMinutes: number, workerName = 'balancer', monitoringName = 'Balancer Fetcher') {
     super(workerName, monitoringName, runEveryMinutes);
   }

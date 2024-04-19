@@ -1,4 +1,4 @@
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import * as ethers from 'ethers';
 import * as fs from 'fs';
 import * as Web3Utils from '../../../utils/Web3Utils';
@@ -15,7 +15,7 @@ import { TypedContractEvent, TypedEventLog } from '../../../contracts/types/comm
 import { SwapEvent } from '../../../contracts/types/balancer/BalancerVault';
 BigNumber.config({ EXPONENTIAL_AT: 1e9 }); // this is needed to interract with the balancer sor package
 
-export class BalancerPriceFetcher extends BaseWorker<BalancerWorkerConfiguration> {
+export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
   constructor(runEveryMinutes: number, workerName = 'balancer', monitoringName = 'Balancer Price Fetcher') {
     super(workerName, monitoringName, runEveryMinutes);
   }

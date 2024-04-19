@@ -1,4 +1,4 @@
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import * as ethers from 'ethers';
 import * as fs from 'fs';
 import * as Constants from '../../../utils/Constants';
@@ -22,7 +22,7 @@ import {
 import { ComputeLiquidityXYKPool, ComputeXYKPrice } from '../../../library/XYKLibrary';
 import { FetcherResults, PoolData } from '../../../models/dashboard/FetcherResult';
 
-export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
+export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> {
   constructor(runEveryMinutes: number, workerName = 'uniswapv2', monitoringName = 'UniswapV2 Fetcher') {
     super(workerName, monitoringName, runEveryMinutes);
   }

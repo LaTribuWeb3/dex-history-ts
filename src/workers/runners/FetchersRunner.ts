@@ -1,7 +1,7 @@
 import { SYNC_FILENAMES, UpdateSyncFile, WaitUntilDone } from '../../utils/Sync';
 import { sleep } from '../../utils/Utils';
-import { BaseWorker } from '../BaseWorker';
-import { WorkerConfiguration } from '../configuration/WorkerConfiguration';
+import { BaseFetcher } from '../fetchers/BaseFetcher';
+import { FetcherConfiguration } from '../configuration/WorkerConfiguration';
 import { BalancerFetcher } from '../fetchers/balancer/BalancerFetcher';
 import { BalancerPriceFetcher } from '../fetchers/balancer/BalancerPriceFetcher';
 import { CurveFetcher } from '../fetchers/curve/CurveFetcher';
@@ -12,7 +12,7 @@ import { UniswapV3Fetcher } from '../fetchers/uniswapv3/UniswapV3Fetcher';
 import { UniswapV3PriceFetcher } from '../fetchers/uniswapv3/UniswapV3PriceFetcher';
 
 const RUN_EVERY_MINUTES = 60;
-const fetchersToLaunch: BaseWorker<WorkerConfiguration>[] = [
+const fetchersToLaunch: BaseFetcher<FetcherConfiguration>[] = [
   new UniswapV2Fetcher(RUN_EVERY_MINUTES),
   new SushiswapV2Fetcher(RUN_EVERY_MINUTES),
   new CurveFetcher(RUN_EVERY_MINUTES),

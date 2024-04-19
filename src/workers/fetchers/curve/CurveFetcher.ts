@@ -1,4 +1,4 @@
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import {
   CurvePairConfiguration,
   CurveWorkerConfiguration,
@@ -55,7 +55,7 @@ type CurveData = {
   };
 };
 
-export class CurveFetcher extends BaseWorker<CurveWorkerConfiguration> {
+export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
   constructor(runEveryMinutes: number) {
     super('curve', 'Curve Fetcher', runEveryMinutes);
   }

@@ -1,21 +1,21 @@
-import * as Constants from '../utils/Constants';
-import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils/MonitoringHelper';
+import * as Constants from '../../utils/Constants';
+import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../../utils/MonitoringHelper';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as WorkerConfiguration from './configuration/WorkerConfiguration';
-import { TokenList } from './configuration/TokenData';
-import workers from '../config/workers.json';
-import tokens from '../config/tokens.json';
+import * as WorkerConfiguration from '../configuration/WorkerConfiguration';
+import { TokenList } from '../configuration/TokenData';
+import workers from '../../config/workers.json';
+import tokens from '../../config/tokens.json';
 import * as dotenv from 'dotenv';
 import * as ethers from 'ethers';
-import * as Web3Utils from '../utils/Web3Utils';
+import * as Web3Utils from '../../utils/Web3Utils';
 dotenv.config();
 
 /**
  * This is the base worker class
  * It is used to log monitoring
  */
-export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfiguration> {
+export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfiguration> {
   workerName: string;
   runEveryMinutes: number;
   workerConfiguration: T;
