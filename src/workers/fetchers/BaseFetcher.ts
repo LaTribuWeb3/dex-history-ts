@@ -15,7 +15,7 @@ dotenv.config();
  * This is the base worker class
  * It is used to log monitoring
  */
-export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfiguration> {
+export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfiguration> extends BaseWorker<T> {
   workerName: string;
   runEveryMinutes: number;
   workerConfiguration: T;
@@ -33,6 +33,8 @@ export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfigura
   }
 
   constructor(workerName: string, monitoringName: string, runEveryMinutes: number) {
+    super();
+
     this.web3Provider = Web3Utils.getJsonRPCProvider();
     this.tokens = tokens;
     this.workerName = workerName;
