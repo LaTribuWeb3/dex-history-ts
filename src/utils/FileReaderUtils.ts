@@ -1,5 +1,5 @@
-import { readDataFromFile } from './Utils';
 import * as fs from 'fs';
+import { readDataFromFile } from './Utils';
 
 export class FileReaderUtils {
   static readAllPricesFromFilename(fullFilename: string, fromBlock: number, toBlock: number) {
