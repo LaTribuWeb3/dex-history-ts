@@ -1,17 +1,21 @@
 import { MonitoringStatusEnum, MonitoringData, RecordMonitoring } from '../utils/MonitoringHelper';
 import * as WorkerConfiguration from './configuration/WorkerConfiguration';
+import * as ethers from 'ethers';
+import * as Web3Utils from '../utils/Web3Utils';
 
 export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfiguration> {
   configuration: T;
   workerName: string;
   monitoringName: string;
   runEveryMinutes: number;
+  web3Provider: ethers.JsonRpcProvider;
 
   constructor(config: T, workerName: string, monitoringName: string, runEveryMinutes: number) {
     this.configuration = config;
     this.workerName = workerName;
     this.monitoringName = monitoringName;
     this.runEveryMinutes = runEveryMinutes;
+    this.web3Provider = Web3Utils.getJsonRPCProvider();
   }
 
   /**

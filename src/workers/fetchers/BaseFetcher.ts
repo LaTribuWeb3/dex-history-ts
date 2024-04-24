@@ -18,7 +18,6 @@ dotenv.config();
  */
 export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfiguration> extends BaseWorker<T> {
   tokens: TokenList;
-  web3Provider: ethers.JsonRpcProvider;
 
   // Assuming workers is an array of worker configurations
   protected static findWorkerConfigurationByName<T extends WorkerConfiguration.FetcherConfiguration>(name: string): T {
@@ -32,7 +31,6 @@ export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfigura
   constructor(workerName: string, monitoringName: string, runEveryMinutes: number) {
     super(BaseFetcher.findWorkerConfigurationByName<T>(workerName), workerName, monitoringName, runEveryMinutes);
 
-    this.web3Provider = Web3Utils.getJsonRPCProvider();
     this.tokens = tokens;
     console.log(`worker name: ${this.workerName}`);
   }

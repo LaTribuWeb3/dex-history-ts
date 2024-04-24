@@ -107,6 +107,24 @@ export abstract class WorkerConfiguration {}
 
 export interface PrecomputerConfiguration extends WorkerConfiguration {
   platforms: string[];
+  watchedPairs: WatchedPair[];
+}
+
+export interface WatchedPair {
+  base: string;
+  quotes: PairQuote[];
+}
+
+export interface PairQuote {
+  quote: string;
+  exportToInternalDashboard: boolean;
+  pivots?: string[];
+  pivotsSpecific?: SpecificPivot[];
+}
+
+export interface SpecificPivot {
+  platform: string;
+  pivots: string[];
 }
 
 export interface PrecomputersConfiguration {
@@ -233,16 +251,18 @@ export function getUniswapV3BaseFolder() {
 }
 
 export function ensureCurvePrecomputedPresent() {
-  const dir = `${Constants.DATA_DIR}/precomputed/curve`;
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+  createDirectoryIfItDoesNotExist(`${Constants.DATA_DIR}/precomputed/curve`);
 }
 
 export function ensureBalancerPrecomputedPresent() {
-  const dir = `${Constants.DATA_DIR}/precomputed/balancer`;
+  createDirectoryIfItDoesNotExist(`${Constants.DATA_DIR}/precomputed/balancer`);
+}
 
+export function getMedianPlatformDirectory(platform: string) {
+  return `${Constants.DATA_DIR}/precomputed/median/` + platform;
+}
+
+export function createDirectoryIfItDoesNotExist(dir: string) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }

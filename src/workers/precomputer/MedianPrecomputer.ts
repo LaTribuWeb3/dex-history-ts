@@ -2,6 +2,7 @@ import { BaseWorker } from '../BaseWorker';
 import * as WorkerConfiguration from '../configuration/WorkerConfiguration';
 import precomputers from '../../config/precomputers.json';
 import { sleep } from '../../utils/Utils';
+import { createDirectoryIfItDoesNotExist, getMedianPlatformDirectory } from '../configuration/WorkerConfiguration';
 
 export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.PrecomputerConfiguration> {
   // Assuming workers is an array of worker configurations
@@ -26,7 +27,32 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
 
   async runSpecific() {
     for (const platform of this.configuration.platforms) {
-      console.log(platform);
+      const directory = getMedianPlatformDirectory(platform);
+      createDirectoryIfItDoesNotExist(directory);
+
+      const currentBlock = (await this.web3Provider.getBlockNumber()) - 10;
+
+      for (const { base, quotes: quotesConfig } of this.configuration.watchedPairs) {
+        for (const quoteConfig of quotesConfig) {
+          let pivots;
+
+          if (
+            quoteConfig.pivotsSpecific &&
+            quoteConfig.pivotsSpecific.filter((_) => _.platform == platform).length !== 0
+          ) {
+            pivots = quoteConfig.pivotsSpecific.filter((_) => _.platform == platform)[0].pivots;
+          } else {
+            pivots = quoteConfig.pivots;
+          }
+
+          // await precomputeAndSaveMedianPrices(directory, platform, base, quoteConfig.quote, currentBlock, pivots);
+          console.log(
+            'await precomputeAndSaveMedianPrices(directory, platform, base, quoteConfig.quote, currentBlock, pivots)'
+          );
+        }
+      }
+
+      console.log(directory);
     }
     await sleep(100);
   }
