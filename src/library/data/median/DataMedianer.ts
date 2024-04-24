@@ -1,9 +1,9 @@
 import { median } from 'simple-statistics';
 import { MEDIAN_OVER_BLOCK } from '../DataInterfaceConstants';
-import { BlockUtils } from '../../../../utils/BlockUtils';
+import { BlockUtils } from '../../../utils/BlockUtils';
 
 export class DataMedianer {
-  static medianPricesOverBlocks(pricesAtBlock: { block: number; price: number }[], baseBlock: number | undefined) {
+  static medianPricesOverBlocks(pricesAtBlock: { block: number; price: number; }[], baseBlock: number | undefined) {
     let currBlock = baseBlock || pricesAtBlock[0].block;
     const lastPrice = pricesAtBlock.at(-1);
     if (lastPrice == undefined) {

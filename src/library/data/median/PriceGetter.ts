@@ -1,10 +1,10 @@
-import { PLATFORMS } from '../../../../utils/Constants';
-import { DataPairUtils } from '../../../../utils/DataPairUtils';
-import { FileReaderUtils } from '../../../../utils/FileReaderUtils';
-import { logFnDuration, logFnDurationWithLabel } from '../../../../utils/MonitoringHelper';
-import { generatePriceCSVFilePath } from '../../../configuration/WorkerConfiguration';
+import { PLATFORMS } from '../../../utils/Constants';
+import { DataPairUtils } from '../../../utils/DataPairUtils';
+import { FileReaderUtils } from '../../../utils/FileReaderUtils';
+import { logFnDuration, logFnDurationWithLabel } from '../../../utils/MonitoringHelper';
+import { generatePriceCSVFilePath } from '../../../workers/configuration/WorkerConfiguration';
 import { MEDIAN_OVER_BLOCK } from '../DataInterfaceConstants';
-import { DataMedianer } from './DataMedianer';
+import { DataMedianer } from '../../../library/data/median/DataMedianer';
 
 export class PriceGetter {
   static getMedianPricesAllPlatforms(
@@ -166,7 +166,7 @@ export class PriceGetter {
       platform == 'uniswapv3' &&
       ((actualFrom == 'stETH' && actualTo == 'WETH') || (actualFrom == 'WETH' && actualTo == 'stETH'))
     ) {
-      const prices = DataMedianer.generateFakePriceForStETHWETHUniswapV3(Math.max(fromBlock, 10_000_000), toBlock);
+      const prices = DataMedianer.generateFakePriceForStETHWETHUniswapV3(Math.max(fromBlock, 10000000), toBlock);
       logFnDurationWithLabel(workerName, start, `[${actualFrom}->${actualTo}] [${fromBlock}-${toBlock}] [${platform}]`);
       return prices;
     } else {
