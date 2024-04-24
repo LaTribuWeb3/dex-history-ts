@@ -6,7 +6,7 @@ import { BaseWorker } from '../BaseWorker';
 import { readLastLine } from '../configuration/Helper';
 import * as WorkerConfiguration from '../configuration/WorkerConfiguration';
 import { checkIfFileExists, getMedianPricesFilenamesForPlatform } from '../configuration/WorkerConfiguration';
-import { PriceGetter } from '../../library/data/median/PriceGetter';
+import { PriceGetter } from './data/median/PriceGetter';
 
 export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.PrecomputerConfiguration> {
   // Assuming workers is an array of worker configurations
