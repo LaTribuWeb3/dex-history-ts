@@ -30,7 +30,7 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
   }
 
   async runSpecific(): Promise<void> {
-    const endBlock: number = (await this.web3Provider.getBlockNumber()) - 10;
+    const endBlock: number = await Web3Utils.getCurrentBlock();
 
     // by default, fetch for the last 380 days (a bit more than 1 year)
     const startDate = Math.round(Date.now() / 1000) - 380 * 24 * 60 * 60;

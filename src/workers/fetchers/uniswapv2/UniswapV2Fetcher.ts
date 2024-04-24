@@ -28,7 +28,7 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
   }
 
   async runSpecific(): Promise<void> {
-    const endBlock: number = (await this.web3Provider.getBlockNumber()) - 10;
+    const endBlock: number = await Web3Utils.getCurrentBlock();
 
     this.createDataDirForWorker();
 

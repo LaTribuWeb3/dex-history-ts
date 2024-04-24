@@ -35,6 +35,7 @@ import {
 } from '../../../library/CurveLibrary';
 import { CurveUtils, CurveContract } from './CurveContract';
 import { FetcherResults, PoolData } from '../../../models/dashboard/FetcherResult';
+import * as Web3Utils from '../../../utils/Web3Utils';
 
 type BlockData = {
   ampFactor: bigint;
@@ -63,7 +64,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
   SAVE_BLOCK_STEP = 50;
 
   async runSpecific(): Promise<void> {
-    const currentBlock = (await this.web3Provider.getBlockNumber()) - 10;
+    const currentBlock = await Web3Utils.getCurrentBlock();
     const fetchPromises: Promise<TokenWithReserve>[] = [];
     for (const fetchConfig of this.configuration.pairs) {
       fetchPromises.push(this.FetchHistory(fetchConfig, currentBlock));
