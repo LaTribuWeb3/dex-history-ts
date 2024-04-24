@@ -1,0 +1,10 @@
+{
+  "precomputers": [
+    {
+      "name": "median",
+      "configuration": {
+        "platforms": ["uniswapv2", "curve", "uniswapv3", "sushiswapv2", "balancer", "all"]
+      }
+    }
+  ]
+}
