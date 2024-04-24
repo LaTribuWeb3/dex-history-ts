@@ -1,19 +1,21 @@
-import { BaseWorker } from '../BaseWorker';
-import * as WorkerConfiguration from '../configuration/WorkerConfiguration';
+import * as fs from 'fs';
 import precomputers from '../../config/precomputers.json';
-import { readDataFromFile, sleep } from '../../utils/Utils';
+import { PLATFORMS } from '../../utils/Constants';
+import { DataPairUtils } from '../../utils/DataPairUtils';
+import { FileReaderUtils } from '../../utils/FileReaderUtils';
+import { logFnDuration, logFnDurationWithLabel } from '../../utils/MonitoringHelper';
+import { sleep } from '../../utils/Utils';
+import * as Web3Utils from '../../utils/Web3Utils';
+import { BaseWorker } from '../BaseWorker';
+import { readLastLine } from '../configuration/Helper';
+import * as WorkerConfiguration from '../configuration/WorkerConfiguration';
 import {
   checkIfFileExists,
   generatePriceCSVFilePath,
   getMedianPricesFilenamesForPlatform
 } from '../configuration/WorkerConfiguration';
-import { readLastLine } from '../configuration/Helper';
-import * as fs from 'fs';
-import { PLATFORMS } from '../../utils/Constants';
-import { median } from 'simple-statistics';
-import { logFnDuration, logFnDurationWithLabel } from '../../utils/MonitoringHelper';
 import { MEDIAN_OVER_BLOCK } from './data/DataInterfaceConstants';
-import * as Web3Utils from '../../utils/Web3Utils';
+import { DataMedianer } from './data/median/DataMedianer';
 
 export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.PrecomputerConfiguration> {
   // Assuming workers is an array of worker configurations
@@ -158,7 +160,7 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
     console.log(`sorting ${allPrices.length} prices`);
     allPrices.sort((a, b) => a.block - b.block);
     console.log(`${allPrices.length} prices sorted by blocks, starting median process`);
-    const medianed = this.medianPricesOverBlocks(
+    const medianed = DataMedianer.medianPricesOverBlocks(
       allPrices,
       fileAlreadyExists ? lastBlock + MEDIAN_OVER_BLOCK : undefined
     );
@@ -221,7 +223,7 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
     // we will use segment1 as the base for the blocknumbers in the returned object
     if (dataSegment1.length > dataSegment2.length) {
       // compute all the prices with blocks from segment1
-      const pricesAtBlock = this.ComputePriceViaPivot(dataSegment1, dataSegment2);
+      const pricesAtBlock = DataMedianer.ComputePriceViaPivot(dataSegment1, dataSegment2);
       logFnDurationWithLabel(
         this.workerName,
         start,
@@ -229,7 +231,7 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
       );
       return pricesAtBlock;
     } else {
-      const pricesAtBlock = this.ComputePriceViaPivot(dataSegment2, dataSegment1);
+      const pricesAtBlock = DataMedianer.ComputePriceViaPivot(dataSegment2, dataSegment1);
       logFnDurationWithLabel(
         this.workerName,
         start,
@@ -277,7 +279,7 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
     // we will use segment1 as the base for the blocknumbers in the returned object
     if (dataSegment1.length > dataSegment2.length) {
       // compute all the prices with blocks from segment1
-      const pricesAtBlock = this.ComputePriceViaPivot(dataSegment1, dataSegment2);
+      const pricesAtBlock = DataMedianer.ComputePriceViaPivot(dataSegment1, dataSegment2);
       logFnDurationWithLabel(
         this.workerName,
         start,
@@ -285,7 +287,7 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
       );
       return pricesAtBlock;
     } else {
-      const pricesAtBlock = this.ComputePriceViaPivot(dataSegment2, dataSegment1);
+      const pricesAtBlock = DataMedianer.ComputePriceViaPivot(dataSegment2, dataSegment1);
       logFnDurationWithLabel(
         this.workerName,
         start,
@@ -293,69 +295,6 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
       );
       return pricesAtBlock;
     }
-  }
-
-  ComputePriceViaPivot(
-    dataSegment1: {
-      block: number;
-      price: number;
-    }[],
-    dataSegment2: {
-      block: number;
-      price: number;
-    }[]
-  ) {
-    const priceAtBlock = [];
-    const keysSegment2 = dataSegment2.map((_) => _.block);
-    let currentBlockOtherSegmentIndex = 0;
-
-    for (const priceAtBlockData of dataSegment1) {
-      // for(const [blockNumber, priceSegment1] of Object.entries(dataSegment1)) {
-      const blockNumber = priceAtBlockData.block;
-      const priceSegment1 = priceAtBlockData.price;
-      const nearestBlockDataBefore = this.findNearestBlockBefore(
-        blockNumber,
-        keysSegment2,
-        currentBlockOtherSegmentIndex
-      );
-      if (!nearestBlockDataBefore) {
-        // console.log(`ignoring block ${blockNumber}`);
-        continue;
-      }
-
-      currentBlockOtherSegmentIndex = nearestBlockDataBefore.selectedIndex;
-
-      const priceSegment2 = dataSegment2[currentBlockOtherSegmentIndex].price;
-      const computedPrice = priceSegment1 * priceSegment2;
-      priceAtBlock.push({
-        block: blockNumber,
-        price: computedPrice
-      });
-    }
-
-    return priceAtBlock;
-  }
-
-  findNearestBlockBefore(targetBlock: number, blocks: number[], startIndex: number) {
-    let block = blocks[startIndex];
-    let selectedIndex = startIndex;
-    for (let i = startIndex + 1; i < blocks.length; i++) {
-      const nextBlock = blocks[i];
-      if (nextBlock > targetBlock) {
-        block = blocks[i - 1];
-        selectedIndex = i - 1;
-        break;
-      }
-
-      block = blocks[i];
-      selectedIndex = i;
-    }
-
-    if (block > targetBlock) {
-      return null;
-    }
-
-    return { block, selectedIndex };
   }
 
   getPricesAtBlockForInterval(
@@ -368,7 +307,7 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
     block: number;
     price: number;
   }[] {
-    const { actualFrom, actualTo } = this.GetPairToUse(fromSymbol, toSymbol);
+    const { actualFrom, actualTo } = DataPairUtils.GetPairToUse(fromSymbol, toSymbol);
     const start = Date.now();
 
     // specific case for univ3 and stETH/WETH pair
@@ -377,7 +316,7 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
       platform == 'uniswapv3' &&
       ((actualFrom == 'stETH' && actualTo == 'WETH') || (actualFrom == 'WETH' && actualTo == 'stETH'))
     ) {
-      const prices = this.generateFakePriceForStETHWETHUniswapV3(Math.max(fromBlock, 10_000_000), toBlock);
+      const prices = DataMedianer.generateFakePriceForStETHWETHUniswapV3(Math.max(fromBlock, 10_000_000), toBlock);
       logFnDurationWithLabel(
         this.workerName,
         start,
@@ -386,7 +325,7 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
       return prices;
     } else {
       const fullFilename = generatePriceCSVFilePath(platform, `${actualFrom}-${actualTo}`);
-      const prices = this.readAllPricesFromFilename(fullFilename, fromBlock, toBlock);
+      const prices = FileReaderUtils.readAllPricesFromFilename(fullFilename, fromBlock, toBlock);
       logFnDurationWithLabel(
         this.workerName,
         start,
@@ -394,72 +333,6 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
       );
       return prices;
     }
-  }
-
-  readAllPricesFromFilename(fullFilename: string, fromBlock: number, toBlock: number) {
-    if (!fs.existsSync(fullFilename)) {
-      console.warn('File ' + fullFilename + ' not found while reading all prices.');
-      return [];
-    }
-
-    const pricesAtBlock = [];
-    const fileContent = readDataFromFile(fullFilename);
-    for (let i = 1; i < fileContent.length - 1; i++) {
-      const lineContent = fileContent[i];
-      const blockNumber = Number(lineContent.split(',')[0]);
-
-      if (blockNumber < fromBlock) {
-        continue;
-      }
-
-      if (blockNumber > toBlock) {
-        break;
-      }
-
-      const splt = lineContent.split(',');
-      const price = Number(splt[1]);
-
-      pricesAtBlock.push({
-        block: blockNumber,
-        price: price
-      });
-    }
-
-    return pricesAtBlock;
-  }
-
-  // TODO rewrite this with a map of exceptions in the configuration
-  GetPairToUse(
-    from: string | undefined,
-    to: string | undefined
-  ): { actualFrom: string | undefined; actualTo: string | undefined } {
-    let actualFrom = from;
-    let actualTo = to;
-
-    if (from == 'sDAI') {
-      actualFrom = 'DAI';
-    }
-    if (to == 'sDAI') {
-      actualTo = 'DAI';
-    }
-
-    return { actualFrom, actualTo };
-  }
-
-  // TODO rewrite this with list comprehension
-  generateFakePriceForStETHWETHUniswapV3(fromBlock: number, toBlock: number) {
-    const pricesAtBlock = [];
-    let currBlock = fromBlock;
-    while (currBlock <= toBlock) {
-      pricesAtBlock.push({
-        block: currBlock,
-        price: 1
-      });
-
-      currBlock += MEDIAN_OVER_BLOCK;
-    }
-
-    return pricesAtBlock;
   }
 
   getMedianPricesForPlatform(
@@ -498,41 +371,15 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
       return [];
     }
 
-    const medianed = this.medianPricesOverBlocks(prices, fileAlreadyExists ? lastBlock + MEDIAN_OVER_BLOCK : undefined);
-    return medianed;
-  }
-
-  medianPricesOverBlocks(pricesAtBlock: { block: number; price: number }[], baseBlock: number | undefined) {
     const start = Date.now();
 
-    let currBlock = baseBlock || pricesAtBlock[0].block;
-    const lastPrice = pricesAtBlock.at(-1);
-    if (lastPrice == undefined) {
-      throw 'Block ' + baseBlock + ' is undefined.';
-    }
-    console.log(`starting median prices since block ${currBlock} to ${lastPrice.block}`);
-    const medianPricesAtBlock = [];
-    while (currBlock <= lastPrice.block) {
-      const stepTargetBlock = currBlock + MEDIAN_OVER_BLOCK;
-      // only median full block ranges
-      if (stepTargetBlock > lastPrice.block) {
-        break;
-      }
-      const blocksToMedian = pricesAtBlock.filter((_) => _.block >= currBlock && _.block < stepTargetBlock);
-      if (blocksToMedian.length > 0) {
-        const medianPrice = median(blocksToMedian.map((_) => _.price));
-        if (medianPrice > 0) {
-          medianPricesAtBlock.push({
-            block: currBlock,
-            price: medianPrice
-          });
-        }
-      }
+    const medianed = DataMedianer.medianPricesOverBlocks(
+      prices,
+      fileAlreadyExists ? lastBlock + MEDIAN_OVER_BLOCK : undefined
+    );
 
-      currBlock = stepTargetBlock;
-    }
+    logFnDuration(this.workerName, start, medianed.length);
 
-    logFnDuration(this.workerName, start, pricesAtBlock.length);
-    return medianPricesAtBlock;
+    return medianed;
   }
 }
