@@ -1,14 +1,13 @@
 import BigNumber from 'bignumber.js';
 import * as ethers from 'ethers';
 import * as fs from 'fs';
-import { UniswapV3Factory, UniswapV3Pair, UniswapV3Pair__factory } from '../../../contracts/types';
-import { UniswapV3Factory__factory } from '../../../contracts/types/factories/uniswapv3/UniswapV3Factory__factory';
+import { UniswapV3Pair, UniswapV3Pair__factory } from '../../../contracts/types';
 import { Uniswapv3Library } from '../../../library/Uniswapv3Library';
 import { BlockWithTick, SlippageMap } from '../../../models/datainterface/BlockData';
 import retry, { getConfTokenBySymbol } from '../../../utils/Utils';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import { getBlocknumberForTimestamp } from '../../../utils/Web3Utils';
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import { readLastLine } from '../../configuration/Helper';
 import {
   UniSwapV3WorkerConfiguration,
@@ -24,17 +23,15 @@ import {
 import { UniswapV3Constants } from './UniswapV3Constants';
 import { getAllPoolsToFetch, parseEvent, translateTopicFilters } from './UniswapV3Utils';
 
-export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
+export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
   constructor(runEveryMinutes: number) {
     super('uniswapv3', 'UniswapV3 Fetcher', runEveryMinutes);
   }
   async runSpecific(): Promise<void> {
-    const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
-
     this.createDataDirForWorker();
 
     const poolsData = [];
-    const currentBlock = (await web3Provider.getBlockNumber()) - 10;
+    const currentBlock = (await this.web3Provider.getBlockNumber()) - 10;
 
     // this is used to only keep 380 days of data, but still need to fetch trade data since the pool initialize block
     // computing the data is CPU heavy so this avoid computing too old data that we don't use
@@ -45,22 +42,14 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
 
     console.log(`${this.workerName}: getting pools to fetch`);
 
-    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(
-      this.workerName,
-      this.workerConfiguration
-    );
+    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(this.workerName, this.configuration);
 
     console.log(
-      `${this.workerName}: found ${poolsToFetch.length} pools to fetch from ${this.workerConfiguration.pairs.length} pairs in config`
+      `${this.workerName}: found ${poolsToFetch.length} pools to fetch from ${this.configuration.pairs.length} pairs in config`
     );
 
     for (const fetchConfig of poolsToFetch) {
-      const pairAddress = await this.FetchUniswapV3HistoryForPair(
-        fetchConfig,
-        web3Provider,
-        currentBlock,
-        minStartBlock
-      );
+      const pairAddress = await this.FetchUniswapV3HistoryForPair(fetchConfig, currentBlock, minStartBlock);
       if (pairAddress) {
         poolsData.push({
           tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
@@ -416,7 +405,6 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
 
   async FetchUniswapV3HistoryForPair(
     pairWithFeesAndPool: Univ3PairWithFeesAndPool,
-    web3Provider: ethers.ethers.JsonRpcProvider,
     currentBlock: number,
     minStartBlock: number
   ) {
@@ -431,7 +419,7 @@ export class UniswapV3Fetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
 
     const univ3PairContract: UniswapV3Pair = UniswapV3Pair__factory.connect(
       pairWithFeesAndPool.poolAddress,
-      web3Provider
+      this.web3Provider
     );
 
     let latestData: BlockWithTick;

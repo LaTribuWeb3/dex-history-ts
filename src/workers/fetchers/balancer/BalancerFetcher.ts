@@ -1,4 +1,4 @@
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import * as ethers from 'ethers';
 import * as fs from 'fs';
 import * as Constants from '../../../utils/Constants';
@@ -24,14 +24,13 @@ import { computeBalancerUnifiedDataForPair } from './BalancerUtils';
 import { FetcherResults, PoolData } from '../../../models/dashboard/FetcherResult';
 BigNumber.config({ EXPONENTIAL_AT: 1e9 }); // this is needed to interract with the balancer sor package
 
-export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
+export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
   constructor(runEveryMinutes: number, workerName = 'balancer', monitoringName = 'Balancer Fetcher') {
     super(workerName, monitoringName, runEveryMinutes);
   }
 
   async runSpecific(): Promise<void> {
-    const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
-    const endBlock: number = (await web3Provider.getBlockNumber()) - 10;
+    const endBlock: number = (await this.web3Provider.getBlockNumber()) - 10;
 
     // by default, fetch for the last 380 days (a bit more than 1 year)
     const startDate = Math.round(Date.now() / 1000) - 380 * 24 * 60 * 60;
@@ -42,9 +41,9 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
     const promises = [];
     const poolsData: PoolData[] = [];
 
-    for (const balancerPoolConfig of this.workerConfiguration.pools) {
+    for (const balancerPoolConfig of this.configuration.pools) {
       console.log(`Start fetching pool data for ${balancerPoolConfig.name}`);
-      const promise = this.fetchBalancerPool(balancerPoolConfig, web3Provider, endBlock, minStartBlock);
+      const promise = this.fetchBalancerPool(balancerPoolConfig, endBlock, minStartBlock);
       poolsData.push({
         address: balancerPoolConfig.address,
         tokens: balancerPoolConfig.tokenSymbols,
@@ -66,18 +65,13 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
 
     fs.writeFileSync(generateFetcherResultFilename(this.workerName), JSON.stringify(fetcherResult, null, 2));
 
-    for (const balancerPoolConfig of this.workerConfiguration.pools) {
+    for (const balancerPoolConfig of this.configuration.pools) {
       console.log(`Start generating unified pool data for ${balancerPoolConfig.name}`);
       await this.generateUnifiedData(balancerPoolConfig);
     }
   }
 
-  async fetchBalancerPool(
-    balancerPoolConfig: BalancerPoolConfiguration,
-    web3Provider: ethers.ethers.JsonRpcProvider,
-    endBlock: number,
-    minStartBlock: number
-  ) {
+  async fetchBalancerPool(balancerPoolConfig: BalancerPoolConfiguration, endBlock: number, minStartBlock: number) {
     const logLabel = `fetchBalancerPool[${balancerPoolConfig.name}]`;
 
     const historyFileName = generateRawCSVFilePathForBalancerPool(this.workerName, balancerPoolConfig.name);
@@ -110,22 +104,10 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
         throw new Error(`Unknown type: ${balancerPoolConfig.type}`);
       case BalancerPoolTypeEnum.META_STABLE_POOL:
       case BalancerPoolTypeEnum.COMPOSABLE_STABLE_POOL:
-        lineCounter = await this.fetchMetaStablePool(
-          balancerPoolConfig,
-          historyFileName,
-          web3Provider,
-          startBlock,
-          endBlock
-        );
+        lineCounter = await this.fetchMetaStablePool(balancerPoolConfig, historyFileName, startBlock, endBlock);
         break;
       case BalancerPoolTypeEnum.WEIGHTED_POOL_2_TOKENS:
-        lineCounter = await this.fetchWeightedPool2Tokens(
-          balancerPoolConfig,
-          historyFileName,
-          web3Provider,
-          startBlock,
-          endBlock
-        );
+        lineCounter = await this.fetchWeightedPool2Tokens(balancerPoolConfig, historyFileName, startBlock, endBlock);
         break;
     }
 
@@ -135,7 +117,6 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
   async fetchMetaStablePool(
     balancerPoolConfig: BalancerPoolConfiguration,
     historyFileName: string,
-    web3Provider: ethers.ethers.JsonRpcProvider,
     startBlock: number,
     endBlock: number
   ): Promise<number> {
@@ -151,8 +132,8 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
     for (let block = startBlock; block <= endBlock; block += Constants.DEFAULT_STEP_BLOCK) {
       counter++;
       const fetchAndWriteData = async () => {
-        const multicallProvider = MulticallWrapper.wrap(web3Provider);
-        const vaultContract = BalancerVault__factory.connect(this.workerConfiguration.vaultAddress, multicallProvider);
+        const multicallProvider = MulticallWrapper.wrap(this.web3Provider);
+        const vaultContract = BalancerVault__factory.connect(this.configuration.vaultAddress, multicallProvider);
         const poolContract = BalancerMetaStablePool__factory.connect(balancerPoolConfig.address, multicallProvider);
 
         const [poolTokensResult, scalingFactorsResult, ampResult, swapFeePercentageResult] = await Promise.all([
@@ -184,7 +165,6 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
   async fetchWeightedPool2Tokens(
     balancerPoolConfig: BalancerPoolConfiguration,
     historyFileName: string,
-    web3Provider: ethers.ethers.JsonRpcProvider,
     startBlock: number,
     endBlock: number
   ): Promise<number> {
@@ -201,8 +181,8 @@ export class BalancerFetcher extends BaseWorker<BalancerWorkerConfiguration> {
     for (let block = startBlock; block <= endBlock; block += Constants.DEFAULT_STEP_BLOCK) {
       counter++;
       const fetchAndWriteData = async () => {
-        const multicallProvider = MulticallWrapper.wrap(web3Provider);
-        const vaultContract = BalancerVault__factory.connect(this.workerConfiguration.vaultAddress, multicallProvider);
+        const multicallProvider = MulticallWrapper.wrap(this.web3Provider);
+        const vaultContract = BalancerVault__factory.connect(this.configuration.vaultAddress, multicallProvider);
         const poolContract = BalancerWeightedPool2Tokens__factory.connect(
           balancerPoolConfig.address,
           multicallProvider

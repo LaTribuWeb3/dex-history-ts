@@ -27,16 +27,16 @@ export enum BalancerPoolTypeEnum {
   WEIGHTED_POOL_2_TOKENS = 'WeightedPool2Tokens'
 }
 
-export interface CurveFetcherWorkerConfiguration extends WorkerConfiguration {
+export interface CurveFetcherWorkerConfiguration extends FetcherConfiguration {
   placeholder: string;
 }
 
-export interface UniSwapV2WorkerConfiguration extends WorkerConfiguration {
+export interface UniSwapV2WorkerConfiguration extends FetcherConfiguration {
   factoryAddress: string;
   pairs: UniSwapV2PairConfiguration[];
 }
 
-export interface BalancerWorkerConfiguration extends WorkerConfiguration {
+export interface BalancerWorkerConfiguration extends FetcherConfiguration {
   vaultAddress: string;
   pools: BalancerPoolConfiguration[];
 }
@@ -70,13 +70,13 @@ export interface CurvePricePairConfiguration {
   pairs: CurveTokenPair[];
 }
 
-export interface CurveWorkerConfiguration extends WorkerConfiguration {
+export interface CurveWorkerConfiguration extends FetcherConfiguration {
   factoryAddress: string;
   pairs: CurvePairConfiguration[];
   pricePairs: CurvePricePairConfiguration[];
 }
 
-export interface UniSwapV3WorkerConfiguration extends WorkerConfiguration {
+export interface UniSwapV3WorkerConfiguration extends FetcherConfiguration {
   factoryAddress: string;
   startBlockNumber?: number;
   pairs: UniswapV3PairConfiguration[];
@@ -95,19 +95,22 @@ export type Univ3PairWithFeesAndPool = {
   poolAddress: string;
 };
 
-export interface SushiSwapV2WorkerConfiguration extends WorkerConfiguration {
+export interface SushiSwapV2WorkerConfiguration extends FetcherConfiguration {
   placeholder: string;
 }
 
-export interface WorkerConfiguration {
+export interface FetcherConfiguration extends WorkerConfiguration {
   configType: string;
 }
 
+export abstract class WorkerConfiguration {}
+
 export interface WorkerMainConfiguration {
   name: string;
-  configuration: WorkerConfiguration;
+  configuration: FetcherConfiguration;
 }
 
+// Main class for the configuration file workers.json
 export interface WorkersConfiguration {
   workers: WorkerMainConfiguration[];
 }

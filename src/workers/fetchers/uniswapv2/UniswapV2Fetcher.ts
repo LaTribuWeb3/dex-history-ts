@@ -1,4 +1,4 @@
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import * as ethers from 'ethers';
 import * as fs from 'fs';
 import * as Constants from '../../../utils/Constants';
@@ -22,21 +22,20 @@ import {
 import { ComputeLiquidityXYKPool, ComputeXYKPrice } from '../../../library/XYKLibrary';
 import { FetcherResults, PoolData } from '../../../models/dashboard/FetcherResult';
 
-export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
+export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> {
   constructor(runEveryMinutes: number, workerName = 'uniswapv2', monitoringName = 'UniswapV2 Fetcher') {
     super(workerName, monitoringName, runEveryMinutes);
   }
 
   async runSpecific(): Promise<void> {
-    const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
-    const endBlock: number = (await web3Provider.getBlockNumber()) - 10;
+    const endBlock: number = (await this.web3Provider.getBlockNumber()) - 10;
 
     this.createDataDirForWorker();
 
     let startBlock = 0;
     const stalePools = [];
     const poolsData: PoolData[] = [];
-    for (const pairKey of this.workerConfiguration.pairs) {
+    for (const pairKey of this.configuration.pairs) {
       if (pairKey.startBlock != undefined) {
         startBlock = pairKey.startBlock;
       } else {
@@ -86,15 +85,13 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
   //
 
   async FetchHistoryForPair(pairKey: string, currentBlock: number, minStartBlock: number) {
-    const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
-
     const historyFileName = generateRawCSVFilePathForPair(this.workerName, pairKey);
 
     const token0Symbol = pairKey.split('-')[0];
     const token0Address: string = this.tokens[token0Symbol].address;
     const token1Symbol = pairKey.split('-')[1];
     const token1Address: string = this.tokens[token1Symbol].address;
-    const uniswapV2Factory = UniswapV2Factory__factory.connect(this.workerConfiguration.factoryAddress, web3Provider);
+    const uniswapV2Factory = UniswapV2Factory__factory.connect(this.configuration.factoryAddress, this.web3Provider);
 
     const pairAddress: string = await uniswapV2Factory.getPair(token0Address, token1Address);
 
@@ -102,7 +99,7 @@ export class UniswapV2Fetcher extends BaseWorker<UniSwapV2WorkerConfiguration> {
       throw new Error(`Could not find address with tokens  ${token0Symbol} and ${token1Symbol}`);
     }
 
-    const pairContract = UniswapV2Pair__factory.connect(pairAddress, web3Provider);
+    const pairContract = UniswapV2Pair__factory.connect(pairAddress, this.web3Provider);
 
     const contractToken0: string = await pairContract.token0();
 

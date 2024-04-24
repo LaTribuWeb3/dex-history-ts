@@ -1,4 +1,4 @@
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import * as ethers from 'ethers';
 import * as fs from 'fs';
 import * as Web3Utils from '../../../utils/Web3Utils';
@@ -15,7 +15,7 @@ import { TypedContractEvent, TypedEventLog } from '../../../contracts/types/comm
 import { SwapEvent } from '../../../contracts/types/balancer/BalancerVault';
 BigNumber.config({ EXPONENTIAL_AT: 1e9 }); // this is needed to interract with the balancer sor package
 
-export class BalancerPriceFetcher extends BaseWorker<BalancerWorkerConfiguration> {
+export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
   constructor(runEveryMinutes: number, workerName = 'balancer', monitoringName = 'Balancer Price Fetcher') {
     super(workerName, monitoringName, runEveryMinutes);
   }
@@ -27,7 +27,7 @@ export class BalancerPriceFetcher extends BaseWorker<BalancerWorkerConfiguration
     this.createPriceDataDirForWorker();
 
     const promises = [];
-    for (const balancerPoolConfig of this.workerConfiguration.pools) {
+    for (const balancerPoolConfig of this.configuration.pools) {
       if (!balancerPoolConfig.computePrice) {
         continue;
       }
@@ -46,7 +46,7 @@ export class BalancerPriceFetcher extends BaseWorker<BalancerWorkerConfiguration
     endBlock: number
   ) {
     const logLabel = `fetchPriceBalancerPool[${balancerPoolConfig.name}]`;
-    const balancerVaultContract = BalancerVault__factory.connect(this.workerConfiguration.vaultAddress, web3Provider);
+    const balancerVaultContract = BalancerVault__factory.connect(this.configuration.vaultAddress, web3Provider);
 
     const lastFetchPoolFilename = generateLastFetchFileName(this.workerName, balancerPoolConfig.name);
 

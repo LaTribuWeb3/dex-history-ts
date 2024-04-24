@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { getConfTokenBySymbol, normalize, sleep } from '../../../utils/Utils';
 import * as Web3Utils from '../../../utils/Web3Utils';
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import { readLastLine } from '../../configuration/Helper';
 import { TokenData } from '../../configuration/TokenData';
 import {
@@ -15,21 +15,17 @@ import {
 } from '../../configuration/WorkerConfiguration';
 import { CurveContract, CurveUtils } from './CurveContract';
 
-export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
+export class CurvePriceFetcher extends BaseFetcher<CurveWorkerConfiguration> {
   constructor(runEveryMinutes: number) {
     super('curve', 'Curve Price Fetcher', runEveryMinutes);
   }
 
   async runSpecific(): Promise<void> {
-    const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
-
-    const currentBlock = (await web3Provider.getBlockNumber()) - 10;
+    const currentBlock = (await this.web3Provider.getBlockNumber()) - 10;
     let i = 1;
-    for (const fetchConfig of this.workerConfiguration.pricePairs) {
-      console.log(
-        `[${fetchConfig.poolName}] (${i++}/${this.workerConfiguration.pricePairs.length}): Start fetching history`
-      );
-      await this.FetchPriceHistory(fetchConfig, currentBlock, web3Provider);
+    for (const fetchConfig of this.configuration.pricePairs) {
+      console.log(`[${fetchConfig.poolName}] (${i++}/${this.configuration.pricePairs.length}): Start fetching history`);
+      await this.FetchPriceHistory(fetchConfig, currentBlock);
     }
   }
 
@@ -43,13 +39,8 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
    * Takes a fetchConfig from curve.config.js and outputs liquidity file in /data
    * @param {{poolAddress: string, poolName: string, version: number, abi: string, ampFactor: number, additionnalTransferEvents: {[symbol: string]: string[]}}} curvePricePairConfiguration
    * @param {number} currentBlock
-   * @param {StaticJsonRpcProvider} web3Provider
    */
-  async FetchPriceHistory(
-    curvePricePairConfiguration: CurvePricePairConfiguration,
-    currentBlock: number,
-    web3Provider: ethers.JsonRpcProvider
-  ) {
+  async FetchPriceHistory(curvePricePairConfiguration: CurvePricePairConfiguration, currentBlock: number) {
     const historyFileName = generateLastFetchFileName(this.workerName, curvePricePairConfiguration.poolName);
     let startBlock = 0;
 
@@ -66,7 +57,7 @@ export class CurvePriceFetcher extends BaseWorker<CurveWorkerConfiguration> {
     const curveContract: CurveContract = CurveUtils.getCurveContractFromABIAsString(
       curvePricePairConfiguration.abi,
       curvePricePairConfiguration.poolAddress,
-      web3Provider
+      this.web3Provider
     );
 
     let fromBlock = startBlock;

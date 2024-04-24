@@ -1,4 +1,4 @@
-import { BaseWorker } from '../../BaseWorker';
+import { BaseFetcher } from '../BaseFetcher';
 import {
   CurvePricePairConfiguration,
   CurveWorkerConfiguration,
@@ -18,26 +18,17 @@ import { GetContractCreationBlockNumber } from '../../../utils/Web3Utils';
 import { UniswapV3Pair, UniswapV3Pair__factory } from '../../../contracts/types';
 import { TokenData } from '../../configuration/TokenData';
 
-export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfiguration> {
+export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
   constructor(runEveryMinutes: number) {
     super('uniswapv3', 'UniswapV3 Price Fetcher', runEveryMinutes);
   }
 
   async runSpecific(): Promise<void> {
-    const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
-
-    const univ3Factory = UniswapV3Factory__factory.connect(
-      this.workerConfiguration.factoryAddress,
-      Web3Utils.getMulticallProvider()
-    );
-    const currentBlock = (await web3Provider.getBlockNumber()) - 10;
+    const currentBlock = (await this.web3Provider.getBlockNumber()) - 10;
 
     console.log(`${this.workerName}: getting pools to fetch`);
 
-    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(
-      this.workerName,
-      this.workerConfiguration
-    );
+    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(this.workerName, this.configuration);
 
     const poolsToFetchGroupedByPair: { [pair: string]: { pairToFetch: UniswapV3PairConfiguration; pools: string[] } } =
       {};
@@ -56,12 +47,7 @@ export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfigurati
     let promises = [];
     for (const groupedFetchConfig of Object.values(poolsToFetchGroupedByPair)) {
       promises.push(
-        this.FetchUniswapV3PriceHistoryForPair(
-          groupedFetchConfig.pairToFetch,
-          groupedFetchConfig.pools,
-          web3Provider,
-          currentBlock
-        )
+        this.FetchUniswapV3PriceHistoryForPair(groupedFetchConfig.pairToFetch, groupedFetchConfig.pools, currentBlock)
       );
 
       await sleep(1000);
@@ -89,7 +75,6 @@ export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfigurati
   async FetchUniswapV3PriceHistoryForPair(
     pairToFetch: UniswapV3PairConfiguration,
     pools: string[],
-    web3Provider: ethers.ethers.JsonRpcProvider,
     currentBlock: number
   ): Promise<{ lastBlockWithData: number; token0: string; token1: string }> {
     const token0Conf = getConfTokenBySymbol(pairToFetch.token0);
@@ -144,7 +129,7 @@ export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfigurati
     // initializes the pools contracts
     const contracts: { [address: string]: UniswapV3Pair } = {};
     for (const poolAddress of pools) {
-      contracts[poolAddress] = UniswapV3Pair__factory.connect(poolAddress, web3Provider);
+      contracts[poolAddress] = UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
     }
 
     const step = 100_000;
@@ -157,11 +142,11 @@ export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfigurati
         toBlock = currentBlock;
       }
 
-      const tradesByPool: { [poolAddress: string]: { block: number; price: number; }[] } = {};
+      const tradesByPool: { [poolAddress: string]: { block: number; price: number }[] } = {};
       console.log(`${label}: fetching events for blocks [${fromBlock}-${toBlock}]`);
 
       for (const poolAddress of pools) {
-        const univ3PairContract: UniswapV3Pair = UniswapV3Pair__factory.connect(poolAddress, web3Provider);
+        const univ3PairContract: UniswapV3Pair = UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
         tradesByPool[poolAddress] = await fetchEvents(fromBlock, toBlock, univ3PairContract, token0Conf, token1Conf);
       }
 
@@ -180,7 +165,7 @@ export class UniswapV3PriceFetcher extends BaseWorker<UniSwapV3WorkerConfigurati
         continue;
       }
 
-      let allSwaps: { block: number; price: number; }[] = tradesByPool[mainPool];
+      let allSwaps: { block: number; price: number }[] = tradesByPool[mainPool];
       console.log(`${label}: [pool ${mainPool}]: ${mainPoolTradeCount} swaps`);
 
       for (const poolAddress of pools) {
@@ -229,7 +214,7 @@ async function fetchEvents(
   let blockStep = initBlockStep;
   let fromBlock = startBlock;
   let toBlock = 0;
-  const swapResults: { block: number, price: number }[] = [];
+  const swapResults: { block: number; price: number }[] = [];
   while (toBlock < endBlock) {
     toBlock = fromBlock + blockStep - 1;
     if (toBlock > endBlock) {
@@ -275,7 +260,7 @@ async function fetchEvents(
         });
       }
 
-      // try to find the blockstep to reach 9000 events per call as the RPC limit is 10 000, 
+      // try to find the blockstep to reach 9000 events per call as the RPC limit is 10 000,
       // this try to change the blockstep by increasing it when the pool is not very used
       // or decreasing it when the pool is very used
       blockStep = Math.min(1_000_000, Math.round((blockStep * 8000) / events.length));
