@@ -11,8 +11,7 @@ import { readLastLine } from '../configuration/Helper';
 import * as fs from 'fs';
 import { PLATFORMS } from '../../utils/Constants';
 import { median } from 'simple-statistics';
-import { logFnDuration } from '../../utils/MonitoringHelper';
-import { logFnDurationWithLabel } from './data/DataInterfaceHelper';
+import { logFnDuration, logFnDurationWithLabel } from '../../utils/MonitoringHelper';
 import { MEDIAN_OVER_BLOCK } from './data/DataInterfaceConstants';
 import * as Web3Utils from '../../utils/Web3Utils';
 
