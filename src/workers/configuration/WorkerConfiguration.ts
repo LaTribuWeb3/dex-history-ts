@@ -105,14 +105,27 @@ export interface FetcherConfiguration extends WorkerConfiguration {
 
 export abstract class WorkerConfiguration {}
 
-export interface WorkerMainConfiguration {
+export interface PrecomputerConfiguration extends WorkerConfiguration {
+  platforms: string[];
+}
+
+export interface PrecomputersConfiguration {
+  precomputers: PrecomputerConfiguration;
+}
+
+export interface WorkerMainConfiguration<T extends WorkerConfiguration> extends NamedWorkerConfiguration<T> {
   name: string;
-  configuration: FetcherConfiguration;
+  configuration: T;
+}
+
+export interface NamedWorkerConfiguration<T extends WorkerConfiguration> {
+  name: string;
+  configuration: T;
 }
 
 // Main class for the configuration file workers.json
-export interface WorkersConfiguration {
-  workers: WorkerMainConfiguration[];
+export interface WorkersConfiguration<T extends WorkerConfiguration> {
+  workers: WorkerMainConfiguration<T>[];
 }
 
 const directoryStructureVersion = process.env.DIRECTORY_STRUCTURE_VERSION || 0;
