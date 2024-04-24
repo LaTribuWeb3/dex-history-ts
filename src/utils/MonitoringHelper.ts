@@ -44,3 +44,29 @@ export async function RecordMonitoring(monitoringData: MonitoringData) {
     console.error('error when sending monitoring data', e);
   }
 }
+
+/**
+ * Logs the duration of a function
+ * @param {number} dtStart unix timestamp ms
+ * @param {number} jobCount the number of job done, to be displayed as nbjob/sec if set
+ * @param {number} jobName the name for the jobs done
+ */
+export function logFnDuration(
+  callerName: string,
+  dtStart: number,
+  jobCount: number | undefined = undefined,
+  jobName = 'job'
+) {
+  if (!process.env.DEBUG_DURATION) return;
+  const secDuration = (Date.now() - dtStart) / 1000;
+  if (jobCount) {
+    console.log(`${callerName} duration: ${roundTo(secDuration, 6)} s. ${jobCount / secDuration} ${jobName}/sec`);
+  } else {
+    console.log(`${callerName} duration: ${roundTo(secDuration, 6)} s`);
+  }
+}
+
+function roundTo(num: number, dec = 2) {
+  const pow = Math.pow(10, dec);
+  return Math.round((num + Number.EPSILON) * pow) / pow;
+}

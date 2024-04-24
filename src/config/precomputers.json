@@ -220,20 +220,26 @@
               },
               {
                 "quote": "sUSD",
-                "pivotsSpecific": {
-                  "uniswapv2": [
-                    "WETH"
-                  ]
-                },
+                "pivotsSpecific": [
+                  {
+                    "platform": "uniswapv2",
+                    "pivots": [
+                      "WETH"
+                    ]
+                  }
+                ],
                 "exportToInternalDashboard": false
               },
               {
                 "quote": "USDT",
-                "pivotsSpecific": {
-                  "sushiswapv2": [
-                    "WETH"
-                  ]
-                },
+                "pivotsSpecific": [
+                  {
+                    "platform": "sushiswapv2",
+                    "pivots": [
+                      "WETH"
+                    ]
+                  }
+                ],
                 "exportToInternalDashboard": true
               },
               {

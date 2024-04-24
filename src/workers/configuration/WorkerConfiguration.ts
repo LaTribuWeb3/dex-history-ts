@@ -262,6 +262,20 @@ export function getMedianPlatformDirectory(platform: string) {
   return `${Constants.DATA_DIR}/precomputed/median/` + platform;
 }
 
+export function getMedianPricesFilenamesForPlatform(platform: string, base: string, quote: string) {
+  const platformDirectory = getMedianPlatformDirectory(platform);
+  createDirectoryIfItDoesNotExist(platformDirectory);
+
+  return {
+    basequote: path.join(platformDirectory, `${base}-${quote}-median-prices.csv`),
+    quotebase: path.join(platformDirectory, `${quote}-${base}-median-prices.csv`)
+  };
+}
+
+export function checkIfFileExists(filename: string) {
+  return fs.existsSync(filename);
+}
+
 export function createDirectoryIfItDoesNotExist(dir: string) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });

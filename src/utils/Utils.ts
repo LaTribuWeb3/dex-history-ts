@@ -76,3 +76,7 @@ export function getConfTokenByAddress(address: string): TokenData {
 
   throw new Error(`Could not find token with address ${address}`);
 }
+
+export function readDataFromFile(fullFilename: string) {
+  return fs.readFileSync(fullFilename, 'utf-8').split('\n');
+}
