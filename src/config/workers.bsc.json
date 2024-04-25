@@ -1,0 +1,54 @@
+{
+    "workers": [
+        {
+            "name": "curve",
+            "configuration": {
+                "configType": "curvePrice",
+                "factoryAddress": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+                "pairs": [
+                    {
+                        "poolAddress": "0x85dE3ADd465a219EE25E04d22c39aB027cF5C12E",
+                        "poolName": "ezEthWETHPool",
+                        "lpTokenAddress": "0x85dE3ADd465a219EE25E04d22c39aB027cF5C12E",
+                        "lpTokenName": "ezETH-WETH",
+                        "abi": "curvestable",
+                        "minBlock": 19121403,
+                        "tokens": [
+                            {
+                                "symbol": "ezETH",
+                                "address": "0xbf5495efe5db9ce00f80364c8b423567e58d2110"
+                            },
+                            {
+                                "symbol": "WETH",
+                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+                            }
+                        ]
+                    }
+                ],
+                "pricePairs": [
+                    {
+                        "poolAddress": "0x85dE3ADd465a219EE25E04d22c39aB027cF5C12E",
+                        "poolName": "ezEthWETHPool",
+                        "abi": "curvestable",
+                        "tokens": [
+                            {
+                                "symbol": "ezETH",
+                                "address": "0xbf5495efe5db9ce00f80364c8b423567e58d2110"
+                            },
+                            {
+                                "symbol": "WETH",
+                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+                            }
+                        ],
+                        "pairs": [
+                            {
+                                "token0": "ezETH",
+                                "token1": "WETH"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
