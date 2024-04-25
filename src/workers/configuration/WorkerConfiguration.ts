@@ -105,14 +105,45 @@ export interface FetcherConfiguration extends WorkerConfiguration {
 
 export abstract class WorkerConfiguration {}
 
-export interface WorkerMainConfiguration {
+export interface PrecomputerConfiguration extends WorkerConfiguration {
+  platforms: string[];
+  watchedPairs: WatchedPair[];
+}
+
+export interface WatchedPair {
+  base: string;
+  quotes: PairQuote[];
+}
+
+export interface PairQuote {
+  quote: string;
+  exportToInternalDashboard: boolean;
+  pivots?: string[];
+  pivotsSpecific?: SpecificPivot[];
+}
+
+export interface SpecificPivot {
+  platform: string;
+  pivots: string[];
+}
+
+export interface PrecomputersConfiguration {
+  precomputers: PrecomputerConfiguration;
+}
+
+export interface WorkerMainConfiguration<T extends WorkerConfiguration> extends NamedWorkerConfiguration<T> {
   name: string;
-  configuration: FetcherConfiguration;
+  configuration: T;
+}
+
+export interface NamedWorkerConfiguration<T extends WorkerConfiguration> {
+  name: string;
+  configuration: T;
 }
 
 // Main class for the configuration file workers.json
-export interface WorkersConfiguration {
-  workers: WorkerMainConfiguration[];
+export interface WorkersConfiguration<T extends WorkerConfiguration> {
+  workers: WorkerMainConfiguration<T>[];
 }
 
 const directoryStructureVersion = process.env.DIRECTORY_STRUCTURE_VERSION || 0;
@@ -220,16 +251,32 @@ export function getUniswapV3BaseFolder() {
 }
 
 export function ensureCurvePrecomputedPresent() {
-  const dir = `${Constants.DATA_DIR}/precomputed/curve`;
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+  createDirectoryIfItDoesNotExist(`${Constants.DATA_DIR}/precomputed/curve`);
 }
 
 export function ensureBalancerPrecomputedPresent() {
-  const dir = `${Constants.DATA_DIR}/precomputed/balancer`;
+  createDirectoryIfItDoesNotExist(`${Constants.DATA_DIR}/precomputed/balancer`);
+}
 
+export function getMedianPlatformDirectory(platform: string) {
+  return `${Constants.DATA_DIR}/precomputed/median/` + platform;
+}
+
+export function getMedianPricesFilenamesForPlatform(platform: string, base: string, quote: string) {
+  const platformDirectory = getMedianPlatformDirectory(platform);
+  createDirectoryIfItDoesNotExist(platformDirectory);
+
+  return {
+    basequote: path.join(platformDirectory, `${base}-${quote}-median-prices.csv`),
+    quotebase: path.join(platformDirectory, `${quote}-${base}-median-prices.csv`)
+  };
+}
+
+export function checkIfFileExists(filename: string) {
+  return fs.existsSync(filename);
+}
+
+export function createDirectoryIfItDoesNotExist(dir: string) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }

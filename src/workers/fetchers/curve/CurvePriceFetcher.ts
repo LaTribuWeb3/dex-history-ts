@@ -4,7 +4,6 @@ import path from 'path';
 import { getConfTokenBySymbol, normalize, sleep } from '../../../utils/Utils';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import { BaseFetcher } from '../BaseFetcher';
-import { readLastLine } from '../../configuration/Helper';
 import { TokenData } from '../../configuration/TokenData';
 import {
   CurvePricePairConfiguration,
@@ -21,7 +20,7 @@ export class CurvePriceFetcher extends BaseFetcher<CurveWorkerConfiguration> {
   }
 
   async runSpecific(): Promise<void> {
-    const currentBlock = (await this.web3Provider.getBlockNumber()) - 10;
+    const currentBlock = await Web3Utils.getCurrentBlock();
     let i = 1;
     for (const fetchConfig of this.configuration.pricePairs) {
       console.log(`[${fetchConfig.poolName}] (${i++}/${this.configuration.pricePairs.length}): Start fetching history`);

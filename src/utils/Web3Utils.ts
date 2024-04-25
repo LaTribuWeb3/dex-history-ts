@@ -70,3 +70,13 @@ export async function getBlocknumberForTimestamp(timestamp: number): Promise<num
     return resp.data.height as number;
   }
 }
+
+let currentBlock: number | undefined;
+
+export async function getCurrentBlock() {
+  if (currentBlock == undefined) {
+    const web3Provider = getJsonRPCProvider();
+    currentBlock = (await web3Provider.getBlockNumber()) - 10;
+  }
+  return currentBlock;
+}
