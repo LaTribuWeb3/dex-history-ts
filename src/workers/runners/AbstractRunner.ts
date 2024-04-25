@@ -15,6 +15,8 @@ export class AbstractRunner {
   async run() {
     // eslint-disable-next-line no-constant-condition
     while (true) {
+      await Promise.all(this.fetchersToLaunch.map((fetcher) => fetcher.init()));
+
       const start = Date.now();
       await WaitUntilDone(SYNC_FILENAMES.FETCHERS_LAUNCHER);
       UpdateSyncFile(SYNC_FILENAMES.FETCHERS_LAUNCHER, true);

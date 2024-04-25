@@ -1,21 +1,47 @@
-import { MonitoringStatusEnum, MonitoringData, RecordMonitoring } from '../utils/MonitoringHelper';
-import * as WorkerConfiguration from './configuration/WorkerConfiguration';
 import * as ethers from 'ethers';
+import { Configuration } from '../config/Configuration';
+import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils/MonitoringHelper';
 import * as Web3Utils from '../utils/Web3Utils';
+import * as WorkerConfiguration from './configuration/WorkerConfiguration';
+import { WorkersConfiguration } from './configuration/WorkerConfiguration';
 
 export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfiguration> {
-  configuration: T;
+  configuration: T | undefined = undefined;
   workerName: string;
   monitoringName: string;
   runEveryMinutes: number;
   web3Provider: ethers.JsonRpcProvider;
 
-  constructor(config: T, workerName: string, monitoringName: string, runEveryMinutes: number) {
-    this.configuration = config;
+  constructor(workerName: string, monitoringName: string, runEveryMinutes: number) {
     this.workerName = workerName;
     this.monitoringName = monitoringName;
     this.runEveryMinutes = runEveryMinutes;
     this.web3Provider = Web3Utils.getJsonRPCProvider();
+  }
+
+  setConfiguration(config: T): void {
+    this.configuration = config;
+  }
+
+  getConfiguration(): T {
+    if (this.configuration === undefined) throw 'Worker not initialized. Please call "init" before using';
+    return this.configuration;
+  }
+
+  async init() {
+    const configVersion = 'default';
+    const workersConfigFile =
+      process.env.WORKERS_CONFIG_FILE ||
+      `https://raw.githubusercontent.com/LaTribuWeb3/dex-history-ts/main/src/config/workers.${configVersion}.json`;
+    const workers = await Configuration.loadConfig<WorkersConfiguration<WorkerConfiguration.FetcherConfiguration>>(
+      workersConfigFile
+    );
+
+    const foundWorker = workers.workers.find((worker) => worker.name === this.workerName);
+    if (foundWorker === undefined) {
+      throw new Error('Could not find worker with name: ' + this.workerName);
+    }
+    this.setConfiguration(foundWorker.configuration as unknown as T);
   }
 
   /**
