@@ -68,6 +68,7 @@ export interface CurvePricePairConfiguration {
   abi: string;
   tokens: CurveToken[];
   pairs: CurveTokenPair[];
+  minBlock?: number;
 }
 
 export interface CurveWorkerConfiguration extends FetcherConfiguration {

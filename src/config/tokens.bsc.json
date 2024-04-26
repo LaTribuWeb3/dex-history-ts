@@ -1,0 +1,14 @@
+{
+    "ETH": {
+        "symbol": "ETH",
+        "decimals": 18,
+        "address": "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
+        "dustAmount": 0.0001
+    },
+    "ezETH": {
+        "symbol": "ezETH",
+        "decimals": 18,
+        "address": "0x2416092f143378750bb29b79eD961ab195CcEea5",
+        "dustAmount": 0.001
+    }
+}

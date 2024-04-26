@@ -7,43 +7,44 @@
                 "factoryAddress": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
                 "pairs": [
                     {
-                        "poolAddress": "0x85dE3ADd465a219EE25E04d22c39aB027cF5C12E",
-                        "poolName": "ezEthWETHPool",
-                        "lpTokenAddress": "0x85dE3ADd465a219EE25E04d22c39aB027cF5C12E",
+                        "poolAddress": "0xeBAFB74a98Ba14430eedC716c0034123C3040CA4",
+                        "poolName": "ezEthETHPool",
+                        "lpTokenAddress": "0xeBAFB74a98Ba14430eedC716c0034123C3040CA4",
                         "lpTokenName": "ezETH-WETH",
                         "abi": "curvestable",
-                        "minBlock": 19121403,
+                        "minBlock": 36942028,
                         "tokens": [
                             {
                                 "symbol": "ezETH",
-                                "address": "0xbf5495efe5db9ce00f80364c8b423567e58d2110"
+                                "address": "0x2416092f143378750bb29b79eD961ab195CcEea5"
                             },
                             {
-                                "symbol": "WETH",
-                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+                                "symbol": "ETH",
+                                "address": "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"
                             }
                         ]
                     }
                 ],
                 "pricePairs": [
                     {
-                        "poolAddress": "0x85dE3ADd465a219EE25E04d22c39aB027cF5C12E",
-                        "poolName": "ezEthWETHPool",
+                        "poolAddress": "0xeBAFB74a98Ba14430eedC716c0034123C3040CA4",
+                        "poolName": "ezEthETHPool",
                         "abi": "curvestable",
+                        "minBlock": 36942028,
                         "tokens": [
                             {
                                 "symbol": "ezETH",
-                                "address": "0xbf5495efe5db9ce00f80364c8b423567e58d2110"
+                                "address": "0x2416092f143378750bb29b79eD961ab195CcEea5"
                             },
                             {
-                                "symbol": "WETH",
-                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+                                "symbol": "ETH",
+                                "address": "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"
                             }
                         ],
                         "pairs": [
                             {
                                 "token0": "ezETH",
-                                "token1": "WETH"
+                                "token1": "ETH"
                             }
                         ]
                     }
