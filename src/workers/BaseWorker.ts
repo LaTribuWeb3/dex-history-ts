@@ -3,10 +3,9 @@ import { Configuration } from '../config/Configuration';
 import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils/MonitoringHelper';
 import * as Web3Utils from '../utils/Web3Utils';
 import * as WorkerConfiguration from './configuration/WorkerConfiguration';
-import { WorkersConfiguration } from './configuration/WorkerConfiguration';
 
 export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfiguration> {
-  configuration: T | undefined = undefined;
+  configuration: T | WorkerConfiguration.EmptyConfiguration;
   workerName: string;
   monitoringName: string;
   runEveryMinutes: number;
@@ -17,6 +16,7 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
     this.monitoringName = monitoringName;
     this.runEveryMinutes = runEveryMinutes;
     this.web3Provider = Web3Utils.getJsonRPCProvider();
+    this.configuration = new WorkerConfiguration.EmptyConfiguration();
   }
 
   setConfiguration(config: T): void {
@@ -24,16 +24,21 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
   }
 
   getConfiguration(): T {
-    if (this.configuration === undefined) throw 'Worker not initialized. Please call "init" before using';
+    if (this.configuration instanceof WorkerConfiguration.EmptyConfiguration)
+      throw 'Worker not initialized. Please call "init" before using';
     return this.configuration;
   }
 
   async init() {
     const workers = await Configuration.getWorkersConfiguration();
 
+    if (workers.workers == undefined) {
+      return;
+    }
+
     const foundWorker = workers.workers.find((worker) => worker.name === this.workerName);
     if (foundWorker === undefined) {
-      throw new Error('Could not find worker with name: ' + this.workerName);
+      return;
     }
     this.setConfiguration(foundWorker.configuration as unknown as T);
   }

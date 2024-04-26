@@ -103,7 +103,9 @@ export interface FetcherConfiguration extends WorkerConfiguration {
   configType: string;
 }
 
-export abstract class WorkerConfiguration {}
+export abstract class WorkerConfiguration { }
+
+export class EmptyConfiguration extends WorkerConfiguration {}
 
 export interface PrecomputerConfiguration extends WorkerConfiguration {
   platforms: string[];
