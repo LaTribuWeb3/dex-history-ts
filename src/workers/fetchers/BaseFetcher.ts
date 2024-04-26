@@ -1,4 +1,3 @@
-import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import tokens from '../../config/tokens.json';
@@ -6,7 +5,6 @@ import * as Constants from '../../utils/Constants';
 import { BaseWorker } from '../BaseWorker';
 import { TokenList } from '../configuration/TokenData';
 import * as WorkerConfiguration from '../configuration/WorkerConfiguration';
-dotenv.config();
 
 /**
  * This is the base worker class
@@ -35,4 +33,3 @@ export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfigura
     }
   }
 }
-
