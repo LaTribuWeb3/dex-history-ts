@@ -23,7 +23,9 @@ export class CurvePriceFetcher extends BaseFetcher<CurveWorkerConfiguration> {
     const currentBlock = await Web3Utils.getCurrentBlock();
     let i = 1;
     for (const fetchConfig of this.getConfiguration().pricePairs) {
-      console.log(`[${fetchConfig.poolName}] (${i++}/${this.getConfiguration().pricePairs.length}): Start fetching history`);
+      console.log(
+        `[${fetchConfig.poolName}] (${i++}/${this.getConfiguration().pricePairs.length}): Start fetching history`
+      );
       await this.FetchPriceHistory(fetchConfig, currentBlock);
     }
   }
@@ -47,9 +49,10 @@ export class CurvePriceFetcher extends BaseFetcher<CurveWorkerConfiguration> {
       const historyFile: HistoryFile = JSON.parse(fs.readFileSync(historyFileName, 'utf-8'));
       startBlock = historyFile.lastBlockFetched + 1;
     } else {
-      startBlock =
-        (await Web3Utils.GetContractCreationBlockNumber(curvePricePairConfiguration.poolAddress, this.workerName)) +
-        100_000;
+      startBlock = curvePricePairConfiguration.minBlock
+        ? curvePricePairConfiguration.minBlock
+        : (await Web3Utils.GetContractCreationBlockNumber(curvePricePairConfiguration.poolAddress, this.workerName)) +
+          100_000;
     }
 
     // fetch all blocks where an event occured since startBlock
