@@ -176,7 +176,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
     const lastLine = await readLastLine(historyFileName);
     const lastData: TokenWithReserve = {};
     for (let i = 0; i < fetchConfig.tokens.length; i++) {
-      const symbolAndReserve = extractFetchConfigAndNormalize(fetchConfig, i, lastLine, fetchConfig.isCryptoV2 ? 5 : 3);
+      const symbolAndReserve = await extractFetchConfigAndNormalize(fetchConfig, i, lastLine, fetchConfig.isCryptoV2 ? 5 : 3);
       lastData[symbolAndReserve.tokenSymbol] = symbolAndReserve.tokenReserve;
     }
 
@@ -404,14 +404,14 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
   }
 }
 
-function extractFetchConfigAndNormalize(
+async function extractFetchConfigAndNormalize(
   fetchConfig: CurvePairConfiguration,
   i: number,
   lastLine: string,
   indexOffset: number
-): { tokenSymbol: string; tokenReserve: number } {
+): Promise<{ tokenSymbol: string; tokenReserve: number }> {
   const tokenSymbol = fetchConfig.tokens[i].symbol;
-  const confToken = getConfTokenBySymbol(tokenSymbol);
+  const confToken = await getConfTokenBySymbol(tokenSymbol);
   const tokenReserve = normalize(lastLine.split(',')[i + indexOffset], confToken.decimals);
   return {
     tokenSymbol: tokenSymbol,
@@ -497,11 +497,11 @@ async function createUnifiedFileForPair(
     if (poolData.isCryptoV2) {
       const precisions = [];
       for (const token of poolData.poolTokens) {
-        const tokenConf = getConfTokenBySymbol(token);
+        const tokenConf = await getConfTokenBySymbol(token);
         precisions.push(10n ** BigInt(18 - tokenConf.decimals));
       }
 
-      priceAndSlippage = computePriceAndSlippageMapForReserveValueCryptoV2(
+      priceAndSlippage = await computePriceAndSlippageMapForReserveValueCryptoV2(
         base,
         quote,
         poolData.poolTokens,
@@ -513,7 +513,7 @@ async function createUnifiedFileForPair(
         dataForBlock.priceScale.map((n) => BigInt(n))
       );
     } else {
-      priceAndSlippage = computePriceAndSlippageMapForReserveValue(
+      priceAndSlippage = await computePriceAndSlippageMapForReserveValue(
         base,
         quote,
         poolData.poolTokens,

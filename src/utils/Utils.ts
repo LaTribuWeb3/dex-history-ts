@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js';
 import * as fs from 'fs';
 import path from 'path';
-import tokens from '../config/tokens.json';
 import { TokenData } from '../workers/configuration/TokenData';
+import { Configuration } from '../config/Configuration';
 
 /**
  * Retries a function n number of times before giving up
@@ -55,19 +55,18 @@ export function writeContentToFile(syncFilename: string, content: string) {
   fs.writeFileSync(syncFilename, content);
 }
 
-export function getConfTokenBySymbol(symbol: string): TokenData {
-  type ObjectKey = keyof typeof tokens;
-  const objectKey = symbol as ObjectKey;
-  const tokenConf = tokens[objectKey] as TokenData;
+export async function getConfTokenBySymbol(symbol: string): Promise<TokenData> {
+  const tokens = await Configuration.getTokensConfiguration();
+  const tokenConf = tokens[symbol] as TokenData;
   if (!tokenConf) {
     throw new Error(`Cannot find token with symbol ${symbol}`);
   }
 
-  tokenConf.symbol = symbol;
   return tokenConf;
 }
 
-export function getConfTokenByAddress(address: string): TokenData {
+export async function getConfTokenByAddress(address: string): Promise<TokenData> {
+  const tokens = await Configuration.getTokensConfiguration();
   for (const token of Object.values(tokens)) {
     if (address.toLowerCase() == token.address.toLowerCase()) {
       return token as TokenData;

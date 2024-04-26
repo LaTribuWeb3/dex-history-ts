@@ -423,8 +423,8 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     );
 
     let latestData: BlockWithTick;
-    const token0 = getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token0);
-    const token1 = getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token1);
+    const token0 = await getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token0);
+    const token1 = await getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token1);
 
     if (fs.existsSync(latestDataFilePath)) {
       // if the file exists, set its value to latestData
@@ -519,7 +519,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     return latestData.poolAddress;
   }
 
-  processEvents(
+  async processEvents(
     events: (ethers.ethers.EventLog | ethers.ethers.Log)[],
     latestData: BlockWithTick,
     pairWithFeesAndPool: Univ3PairWithFeesAndPool,
@@ -527,8 +527,8 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     dataFileName: string,
     minStartBlock: number
   ) {
-    const token0 = getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token0);
-    const token1 = getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token1);
+    const token0 = await getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token0);
+    const token1 = await getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token1);
 
     const dtStart = Date.now();
     const saveData = [];

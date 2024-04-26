@@ -49,7 +49,7 @@ export async function computeBalancerUnifiedDataForPair(
       continue;
     }
 
-    const dataToWrite: BlockData = computeSlippageMapForBalancerPool(
+    const dataToWrite: BlockData = await computeSlippageMapForBalancerPool(
       balancerPoolConfig,
       dataLine,
       balancerPoolConfig.tokenSymbols.indexOf(base),

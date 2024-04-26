@@ -3,6 +3,7 @@ import axios, { AxiosResponse } from 'axios';
 import retry from '../utils/Utils';
 import * as WorkerConfiguration from '../workers/configuration/WorkerConfiguration';
 import { WorkersConfiguration } from '../workers/configuration/WorkerConfiguration';
+import { TokenList } from '../workers/configuration/TokenData';
 
 export class Configuration {
   static async loadConfig<T>(fileOrURL: string): Promise<T> {
@@ -30,6 +31,15 @@ export class Configuration {
     const workers = await Configuration.loadConfig<WorkersConfiguration<WorkerConfiguration.FetcherConfiguration>>(
       workersConfigFile
     );
+    return workers;
+  }
+
+  static async getTokensConfiguration() {
+    const configVersion = 'default';
+    const tokensConfigFile =
+      process.env.TOKENS_CONFIG_FILE ||
+      `https://raw.githubusercontent.com/LaTribuWeb3/dex-history-ts/main/src/config/tokens.${configVersion}.json`;
+    const workers = await Configuration.loadConfig<TokenList>(tokensConfigFile);
     return workers;
   }
 }

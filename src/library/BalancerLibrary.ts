@@ -18,36 +18,36 @@ const baseAmountMap: { [token: string]: BigNumber } = {
   WBTC: new BigNumber((4n * 10n ** 6n).toString(10)) // 0.04 WBTC ~= 1000$
 };
 
-export function computeSlippageMapForBalancerPool(
+export async function computeSlippageMapForBalancerPool(
   balancerPoolConfig: BalancerPoolConfiguration,
   dataLine: string,
   indexFrom: number,
   indexTo: number
-): BlockData {
+): Promise<BlockData> {
   switch (balancerPoolConfig.type) {
     default:
       throw new Error(`Unknown type: ${balancerPoolConfig.type}`);
     case BalancerPoolTypeEnum.META_STABLE_POOL:
     case BalancerPoolTypeEnum.COMPOSABLE_STABLE_POOL:
-      return computeSlippageMapForComposableStablePool(balancerPoolConfig, dataLine, indexFrom, indexTo);
+      return await computeSlippageMapForComposableStablePool(balancerPoolConfig, dataLine, indexFrom, indexTo);
     case BalancerPoolTypeEnum.WEIGHTED_POOL_2_TOKENS:
-      return computeSlippageMapForWeightedPool2Tokens(balancerPoolConfig, dataLine, indexFrom, indexTo);
+      return await computeSlippageMapForWeightedPool2Tokens(balancerPoolConfig, dataLine, indexFrom, indexTo);
   }
 }
 
-function computeSlippageMapForComposableStablePool(
+async function computeSlippageMapForComposableStablePool(
   balancerPoolConfig: BalancerPoolConfiguration,
   dataLine: string,
   indexFrom: number,
   indexTo: number
-): BlockData {
+): Promise<BlockData> {
   /* example line for a metastable pool:
     blocknumber,ampFactor,fee,rETH_balance,rETH_scale,WETH_balance,WETH_scale
     19382078,50000,400000000000000,12832601570293918646361,1100122216571627535,14876939679682766068291,1000000000000000000
   */
 
-  const confTokenFrom = getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[indexFrom]);
-  const confTokenTo = getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[indexTo]);
+  const confTokenFrom = await getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[indexFrom]);
+  const confTokenTo = await getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[indexTo]);
 
   const split = dataLine.split(',');
   // const blockNumber = Number(split[0]);
@@ -60,7 +60,7 @@ function computeSlippageMapForComposableStablePool(
     scales.push(split[i + 1]);
   }
 
-  const { pool, poolPairData } = getPoolAndPairDataComposableStable(
+  const { pool, poolPairData } = await getPoolAndPairDataComposableStable(
     balancerPoolConfig,
     balances,
     scales,
@@ -82,7 +82,7 @@ function computeSlippageMapForComposableStablePool(
   let lastAmount = baseAmountIn;
   for (let slippageBps = 50; slippageBps <= 2000; slippageBps += 50) {
     const targetPrice = basePrice - (basePrice * slippageBps) / 10000;
-    const liquidityObj = computeLiquidityForSlippageMetaStable(
+    const liquidityObj = await computeLiquidityForSlippageMetaStable(
       balancerPoolConfig,
       baseAmountIn,
       lastAmount,
@@ -113,19 +113,19 @@ function computeSlippageMapForComposableStablePool(
   };
 }
 
-function computeSlippageMapForWeightedPool2Tokens(
+async function computeSlippageMapForWeightedPool2Tokens(
   balancerPoolConfig: BalancerPoolConfiguration,
   dataLine: string,
   indexFrom: number,
   indexTo: number
-): BlockData {
+): Promise<BlockData> {
   /* example line for a weighted pool 2 tokens:
     blocknumber,fee,WBTC_balance,WBTC_weight,WETH_balance,WETH_weight
     16683142,2500000000000000,4943965229,500000000000000000,726967649838511257622,500000000000000000
   */
 
-  const confTokenFrom = getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[indexFrom]);
-  const confTokenTo = getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[indexTo]);
+  const confTokenFrom = await getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[indexFrom]);
+  const confTokenTo = await getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[indexTo]);
 
   const split = dataLine.split(',');
   // const blockNumber = Number(split[0]);
@@ -137,7 +137,7 @@ function computeSlippageMapForWeightedPool2Tokens(
     weights.push(split[i + 1]);
   }
 
-  const { pool, poolPairData } = getPoolAndPairDataWeighted2Tokens(
+  const { pool, poolPairData } = await getPoolAndPairDataWeighted2Tokens(
     balancerPoolConfig,
     balances,
     weights,
@@ -158,7 +158,7 @@ function computeSlippageMapForWeightedPool2Tokens(
   let lastAmount = baseAmountIn;
   for (let slippageBps = 50; slippageBps <= 2000; slippageBps += 50) {
     const targetPrice = basePrice - (basePrice * slippageBps) / 10000;
-    const liquidityObj = computeLiquidityForSlippageWeighted2Tokens(
+    const liquidityObj = await computeLiquidityForSlippageWeighted2Tokens(
       balancerPoolConfig,
       baseAmountIn,
       lastAmount,
@@ -188,7 +188,7 @@ function computeSlippageMapForWeightedPool2Tokens(
   };
 }
 
-function getPoolAndPairDataComposableStable(
+async function getPoolAndPairDataComposableStable(
   balancerPoolConfig: BalancerPoolConfiguration,
   balances: string[],
   scales: string[],
@@ -200,7 +200,7 @@ function getPoolAndPairDataComposableStable(
   const tokens: { address: string; balance: string; decimals: number; priceRate: string }[] = [];
   const tokenList: string[] = [];
   for (let i = 0; i < balancerPoolConfig.tokenSymbols.length; i++) {
-    const confToken = getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[i]);
+    const confToken = await getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[i]);
     tokens.push({
       address: confToken.address,
       balance: balances[i],
@@ -228,7 +228,7 @@ function getPoolAndPairDataComposableStable(
   return { pool, poolPairData };
 }
 
-function getPoolAndPairDataWeighted2Tokens(
+async function getPoolAndPairDataWeighted2Tokens(
   balancerPoolConfig: BalancerPoolConfiguration,
   balances: string[],
   weights: string[],
@@ -240,7 +240,7 @@ function getPoolAndPairDataWeighted2Tokens(
   const tokenList: string[] = [];
   let totalWeight = new BigNumber(0);
   for (let i = 0; i < balancerPoolConfig.tokenSymbols.length; i++) {
-    const confToken = getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[i]);
+    const confToken = await getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[i]);
     tokens.push({
       address: confToken.address,
       balance: balances[i],
@@ -269,7 +269,7 @@ function getPoolAndPairDataWeighted2Tokens(
   return { pool, poolPairData };
 }
 
-function computeLiquidityForSlippageMetaStable(
+async function computeLiquidityForSlippageMetaStable(
   balancerPoolConfig: BalancerPoolConfiguration,
   baseAmountIn: BigNumber,
   baseQty: BigNumber,
@@ -282,7 +282,7 @@ function computeLiquidityForSlippageMetaStable(
   confTokenFrom: TokenData,
   indexTo: number,
   confTokenTo: TokenData
-): { base: BigNumber; quote: BigNumber } {
+): Promise<{ base: BigNumber; quote: BigNumber }> {
   let low = undefined;
   let high = undefined;
   let lowTo = undefined;
@@ -291,7 +291,7 @@ function computeLiquidityForSlippageMetaStable(
   const exitBoundsDiff = 0.1 / 100; // exit binary search when low and high bound have less than this amount difference
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const { pool, poolPairData } = getPoolAndPairDataComposableStable(
+    const { pool, poolPairData } = await getPoolAndPairDataComposableStable(
       balancerPoolConfig,
       balances,
       scales,
@@ -312,7 +312,7 @@ function computeLiquidityForSlippageMetaStable(
     newBalances[indexFrom] = new BigNumber(newBalances[indexFrom]).plus(new BigNumber(qtyFrom)).toFixed(6);
     newBalances[indexTo] = new BigNumber(newBalances[indexTo]).minus(new BigNumber(qtyTo)).toFixed(6);
 
-    const newPoolData = getPoolAndPairDataComposableStable(
+    const newPoolData = await getPoolAndPairDataComposableStable(
       balancerPoolConfig,
       newBalances,
       scales,
@@ -369,7 +369,7 @@ function computeLiquidityForSlippageMetaStable(
   }
 }
 
-function computeLiquidityForSlippageWeighted2Tokens(
+async function computeLiquidityForSlippageWeighted2Tokens(
   balancerPoolConfig: BalancerPoolConfiguration,
   baseAmountIn: BigNumber,
   baseQty: BigNumber,
@@ -381,7 +381,7 @@ function computeLiquidityForSlippageWeighted2Tokens(
   confTokenFrom: TokenData,
   indexTo: number,
   confTokenTo: TokenData
-): { base: BigNumber; quote: BigNumber } {
+): Promise<{ base: BigNumber; quote: BigNumber }> {
   let low = undefined;
   let high = undefined;
   let lowTo = undefined;
@@ -390,7 +390,7 @@ function computeLiquidityForSlippageWeighted2Tokens(
   const exitBoundsDiff = 0.1 / 100; // exit binary search when low and high bound have less than this amount difference
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const { pool, poolPairData } = getPoolAndPairDataWeighted2Tokens(
+    const { pool, poolPairData } = await getPoolAndPairDataWeighted2Tokens(
       balancerPoolConfig,
       balances,
       weights,
@@ -410,7 +410,7 @@ function computeLiquidityForSlippageWeighted2Tokens(
     newBalances[indexFrom] = new BigNumber(newBalances[indexFrom]).plus(new BigNumber(qtyFrom)).toFixed(6);
     newBalances[indexTo] = new BigNumber(newBalances[indexTo]).minus(new BigNumber(qtyTo)).toFixed(6);
 
-    const newPoolData = getPoolAndPairDataWeighted2Tokens(
+    const newPoolData = await getPoolAndPairDataWeighted2Tokens(
       balancerPoolConfig,
       newBalances,
       weights,
@@ -484,7 +484,7 @@ function debugMetaStable() {
 }
 // debugMetaStable();
 
-function debugWeightedPoolTwoTokens() {
+async function debugWeightedPoolTwoTokens() {
   const line = '16683142,2500000000000000,4943965229,500000000000000000,726967649838511257622,500000000000000000';
   const cfg: BalancerPoolConfiguration = {
     name: 'Balancer-50-WBTC-50-WETH',
@@ -497,7 +497,7 @@ function debugWeightedPoolTwoTokens() {
     computePrice: false
   };
 
-  const result = computeSlippageMapForBalancerPool(cfg, line, 0, 1);
+  const result = await computeSlippageMapForBalancerPool(cfg, line, 0, 1);
   console.log(result);
 }
 
