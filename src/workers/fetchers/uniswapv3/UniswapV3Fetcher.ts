@@ -42,10 +42,10 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
 
     console.log(`${this.workerName}: getting pools to fetch`);
 
-    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(this.workerName, this.configuration);
+    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(this.workerName, this.getConfiguration());
 
     console.log(
-      `${this.workerName}: found ${poolsToFetch.length} pools to fetch from ${this.configuration.pairs.length} pairs in config`
+      `${this.workerName}: found ${poolsToFetch.length} pools to fetch from ${this.getConfiguration().pairs.length} pairs in config`
     );
 
     for (const fetchConfig of poolsToFetch) {

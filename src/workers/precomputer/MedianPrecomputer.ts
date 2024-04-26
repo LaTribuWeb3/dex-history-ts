@@ -21,19 +21,14 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.Precompute
   }
 
   constructor(runEveryMinute: number) {
-    super(
-      MedianPrecomputer.findPrecomputerConfigurationByName('median'),
-      'median',
-      'Median Precomputer',
-      runEveryMinute
-    );
+    super('median', 'Median Precomputer', runEveryMinute);
   }
 
   async runSpecific() {
-    for (const platform of this.configuration.platforms) {
+    for (const platform of this.getConfiguration().platforms) {
       const currentBlock = await Web3Utils.getCurrentBlock();
 
-      for (const { base, quotes: quotesConfig } of this.configuration.watchedPairs) {
+      for (const { base, quotes: quotesConfig } of this.getConfiguration().watchedPairs) {
         for (const quoteConfig of quotesConfig) {
           let pivots: string[] = [];
 

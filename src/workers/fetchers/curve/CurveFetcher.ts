@@ -66,7 +66,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
   async runSpecific(): Promise<void> {
     const currentBlock = await Web3Utils.getCurrentBlock();
     const fetchPromises: Promise<TokenWithReserve>[] = [];
-    for (const fetchConfig of this.configuration.pairs) {
+    for (const fetchConfig of this.getConfiguration().pairs) {
       fetchPromises.push(this.FetchHistory(fetchConfig, currentBlock));
       await Promise.all(fetchPromises);
       sleep(2000);
@@ -78,7 +78,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
     let cpt = 0;
 
     const lastResults: { [poolName: string]: TokenWithReserve } = {};
-    for (const fetchConfig of this.configuration.pairs) {
+    for (const fetchConfig of this.getConfiguration().pairs) {
       const lastData = lastDataResults[cpt];
       lastResults[`${fetchConfig.poolName}`] = lastData;
       const poolData = {

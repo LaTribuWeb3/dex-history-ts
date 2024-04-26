@@ -31,7 +31,7 @@
         "simple-statistics": "^7.8.3",
         "ts-node": "^10.9.2",
         "typechain": "^8.3.2",
-        "typescript": "^5.3.3"
+        "typescript": "^5.4.5"
     },
     "dependencies": {
         "@balancer-labs/sor": "^4.1.1-beta.17",

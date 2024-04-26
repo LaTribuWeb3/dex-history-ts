@@ -1,21 +1,48 @@
-import { MonitoringStatusEnum, MonitoringData, RecordMonitoring } from '../utils/MonitoringHelper';
-import * as WorkerConfiguration from './configuration/WorkerConfiguration';
 import * as ethers from 'ethers';
+import { Configuration } from '../config/Configuration';
+import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils/MonitoringHelper';
 import * as Web3Utils from '../utils/Web3Utils';
+import * as WorkerConfiguration from './configuration/WorkerConfiguration';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfiguration> {
-  configuration: T;
+  configuration: T | WorkerConfiguration.EmptyConfiguration;
   workerName: string;
   monitoringName: string;
   runEveryMinutes: number;
   web3Provider: ethers.JsonRpcProvider;
 
-  constructor(config: T, workerName: string, monitoringName: string, runEveryMinutes: number) {
-    this.configuration = config;
+  constructor(workerName: string, monitoringName: string, runEveryMinutes: number) {
     this.workerName = workerName;
-    this.monitoringName = monitoringName;
+    this.monitoringName = '[' + (process.env.NETWORK || 'ETH') + '] ' + monitoringName;
     this.runEveryMinutes = runEveryMinutes;
     this.web3Provider = Web3Utils.getJsonRPCProvider();
+    this.configuration = new WorkerConfiguration.EmptyConfiguration();
+  }
+
+  setConfiguration(config: T): void {
+    this.configuration = config;
+  }
+
+  getConfiguration(): T {
+    if (this.configuration instanceof WorkerConfiguration.EmptyConfiguration)
+      throw 'Worker not initialized. Please call "init" before using';
+    return this.configuration;
+  }
+
+  async init() {
+    const workers = await Configuration.getWorkersConfiguration();
+
+    if (workers.workers == undefined) {
+      return;
+    }
+
+    const foundWorker = workers.workers.find((worker) => worker.name === this.workerName);
+    if (foundWorker === undefined) {
+      return;
+    }
+    this.setConfiguration(foundWorker.configuration as unknown as T);
   }
 
   /**
@@ -125,3 +152,4 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
     return Math.round((num + Number.EPSILON) * pow) / pow;
   }
 }
+

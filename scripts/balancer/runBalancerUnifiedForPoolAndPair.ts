@@ -1,10 +1,11 @@
 import {
   BalancerPoolConfiguration,
+  BalancerWorkerConfiguration,
   generateRawCSVFilePathForBalancerPool
 } from '../../src/workers/configuration/WorkerConfiguration';
 import fs from 'fs';
-import workers from '../../src/config/workers.json';
 import { computeBalancerUnifiedDataForPair } from '../../src/workers/fetchers/balancer/BalancerUtils';
+import { Configuration } from '../../src/config/Configuration';
 
 // run with 'npx ts-node .\scripts\balancer\runBalancerUnifiedForPoolAndPair.ts Balancer-rETH-Stable-Pool rETH WETH'
 // or launching 'runAllBalancerMultiThread'
@@ -19,7 +20,7 @@ async function runBalancerUnifiedForPoolAndPair() {
     throw new Error(`Cannot find raw data history file: ${rawDataFilePath}`);
   }
 
-  const cfg = findPoolConfigByName(poolName);
+  const cfg = await findPoolConfigByName(poolName);
   if (!cfg) {
     throw new Error(`find pool config for name ${poolName}`);
   }
@@ -29,8 +30,10 @@ async function runBalancerUnifiedForPoolAndPair() {
 
 runBalancerUnifiedForPoolAndPair();
 
-function findPoolConfigByName(poolName: string): BalancerPoolConfiguration | undefined {
-  return workers.workers
-    .find((_) => _.name == 'balancer')
-    ?.configuration.pools?.find((_) => _.name == poolName) as BalancerPoolConfiguration;
+async function findPoolConfigByName(poolName: string): Promise<BalancerPoolConfiguration | undefined> {
+  const workers = await Configuration.getWorkersConfiguration();
+
+  return (workers.workers.find((_) => _.name == 'balancer')?.configuration as BalancerWorkerConfiguration).pools?.find(
+    (_) => _.name == poolName
+  ) as BalancerPoolConfiguration;
 }

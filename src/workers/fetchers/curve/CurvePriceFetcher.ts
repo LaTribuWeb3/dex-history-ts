@@ -22,8 +22,8 @@ export class CurvePriceFetcher extends BaseFetcher<CurveWorkerConfiguration> {
   async runSpecific(): Promise<void> {
     const currentBlock = await Web3Utils.getCurrentBlock();
     let i = 1;
-    for (const fetchConfig of this.configuration.pricePairs) {
-      console.log(`[${fetchConfig.poolName}] (${i++}/${this.configuration.pricePairs.length}): Start fetching history`);
+    for (const fetchConfig of this.getConfiguration().pricePairs) {
+      console.log(`[${fetchConfig.poolName}] (${i++}/${this.getConfiguration().pricePairs.length}): Start fetching history`);
       await this.FetchPriceHistory(fetchConfig, currentBlock);
     }
   }
