@@ -1,11 +1,12 @@
 import { exec } from 'child_process';
-import workers from '../../src/config/workers.json';
 import { BalancerWorkerConfiguration } from '../../src/workers/configuration/WorkerConfiguration';
 import { sleep } from '../../src/utils/Utils';
+import { Configuration } from '../../src/config/Configuration';
 
 // run with 'npx ts-node .\scripts\balancer\runAllBalancerMultiThread.ts'
 // only to be used in debug mode
 async function runAllBalancerMultiThread() {
+  const workers = await Configuration.getWorkersConfiguration();
   const balancerConf = workers.workers.find((_) => _.name == 'balancer')?.configuration as BalancerWorkerConfiguration;
   const allChilds = [];
 

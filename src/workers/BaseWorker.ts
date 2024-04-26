@@ -29,13 +29,7 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
   }
 
   async init() {
-    const configVersion = 'default';
-    const workersConfigFile =
-      process.env.WORKERS_CONFIG_FILE ||
-      `https://raw.githubusercontent.com/LaTribuWeb3/dex-history-ts/main/src/config/workers.${configVersion}.json`;
-    const workers = await Configuration.loadConfig<WorkersConfiguration<WorkerConfiguration.FetcherConfiguration>>(
-      workersConfigFile
-    );
+    const workers = await Configuration.getWorkersConfiguration();
 
     const foundWorker = workers.workers.find((worker) => worker.name === this.workerName);
     if (foundWorker === undefined) {
@@ -151,3 +145,4 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
     return Math.round((num + Number.EPSILON) * pow) / pow;
   }
 }
+

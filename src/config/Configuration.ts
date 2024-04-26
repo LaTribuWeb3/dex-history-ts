@@ -1,6 +1,8 @@
 import { readFileSync } from 'fs';
 import axios, { AxiosResponse } from 'axios';
 import retry from '../utils/Utils';
+import * as WorkerConfiguration from '../workers/configuration/WorkerConfiguration';
+import { WorkersConfiguration } from '../workers/configuration/WorkerConfiguration';
 
 export class Configuration {
   static async loadConfig<T>(fileOrURL: string): Promise<T> {
@@ -18,5 +20,16 @@ export class Configuration {
     const axiosResp: AxiosResponse<T> = (await retry(axios.get, [url, config])) as AxiosResponse<T>;
 
     return axiosResp.data;
+  }
+
+  static async getWorkersConfiguration() {
+    const configVersion = 'default';
+    const workersConfigFile =
+      process.env.WORKERS_CONFIG_FILE ||
+      `https://raw.githubusercontent.com/LaTribuWeb3/dex-history-ts/main/src/config/workers.${configVersion}.json`;
+    const workers = await Configuration.loadConfig<WorkersConfiguration<WorkerConfiguration.FetcherConfiguration>>(
+      workersConfigFile
+    );
+    return workers;
   }
 }

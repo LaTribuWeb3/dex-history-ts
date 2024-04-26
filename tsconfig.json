@@ -1,5 +1,5 @@
 {
-    "include": ["src"],
+    "include": ["src", "src/config/workers.bsc.json", "src/config/workers.default.json"], // The bsc and default conf have to be added because they are not imported using "import" anywhere.
     "compilerOptions": {
       /* Visit https://aka.ms/tsconfig to read more about this file */
   
