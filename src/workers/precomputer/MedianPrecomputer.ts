@@ -12,7 +12,7 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.MedianPrec
   // Assuming workers is an array of worker configurations
   public static async findPrecomputerConfigurationByName<T extends WorkerConfiguration.WorkerConfiguration>(
     name: string
-  ): T {
+  ): Promise<T> {
     const precomputersConfiguration = await Configuration.getPrecomputersConfiguration();
     const foundWorker = precomputersConfiguration.precomputers.find((worker) => worker.name === name);
     if (foundWorker === undefined) {
@@ -36,7 +36,7 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.MedianPrec
     if (foundWorker === undefined) {
       return;
     }
-    this.setConfiguration(foundWorker.configuration as unknown as T);
+    this.setConfiguration(foundWorker.configuration as unknown as WorkerConfiguration.MedianPrecomputerConfiguration);
   }
 
   async runSpecific() {

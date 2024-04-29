@@ -8,7 +8,7 @@ import { UniswapV3Fetcher } from '../fetchers/uniswapv3/UniswapV3Fetcher';
 import { UniswapV3PriceFetcher } from '../fetchers/uniswapv3/UniswapV3PriceFetcher';
 import { AbstractRunner } from './AbstractRunner';
 
-class FetchersRunner extends AbstractRunner {
+export class FetchersRunner extends AbstractRunner {
   constructor() {
     super([
       new UniswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES),

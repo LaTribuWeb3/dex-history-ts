@@ -2,9 +2,12 @@ import { AdditionalLiquidityPrecomputer } from '../precomputer/AdditionalLiquidi
 import { MedianPrecomputer } from '../precomputer/MedianPrecomputer';
 import { AbstractRunner } from './AbstractRunner';
 
-class ComputersRunner extends AbstractRunner {
+export class ComputersRunner extends AbstractRunner {
   constructor() {
-    super([new AdditionalLiquidityPrecomputer(AbstractRunner.RUN_EVERY_MINUTES)]);
+    super([
+      new MedianPrecomputer(AbstractRunner.RUN_EVERY_MINUTES),
+      new AdditionalLiquidityPrecomputer(AbstractRunner.RUN_EVERY_MINUTES)
+    ]);
   }
 }
 
