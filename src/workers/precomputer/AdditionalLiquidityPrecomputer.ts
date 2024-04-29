@@ -24,15 +24,15 @@ export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfigurati
 
   async runSpecific(): Promise<void> {
     // get config to know what tokens to transform
-    for (const platformedAdditionalLiquidities of this.getConfiguration().platformedAdditionalLiquidities) {
-      console.log(`working on ${platformedAdditionalLiquidities.platform}`);
-      console.log(`${JSON.stringify(platformedAdditionalLiquidities)}`);
+    for (const platformedAdditionLiquidities of this.getConfiguration().platformedAdditionalLiquidities) {
+      console.log(`working on ${platformedAdditionLiquidities.platform}`);
+      console.log(`${JSON.stringify(platformedAdditionLiquidities)}`);
 
-      for (const onePlatformConfig of platformedAdditionalLiquidities.additionalLiquidities) {
+      for (const onePlatformConfig of platformedAdditionLiquidities.additionalLiquidities) {
         const itemsToTransform = this.getFilesForPlatform(
           onePlatformConfig.from,
           onePlatformConfig.pivot,
-          platformedAdditionalLiquidities.platform
+          platformedAdditionLiquidities.platform
         );
         console.log(
           `Working on ${itemsToTransform.length} files: ${itemsToTransform.map((_) => _.filename).join(',')}`
@@ -40,7 +40,7 @@ export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfigurati
 
         for (const itemToTransform of itemsToTransform) {
           await this.transformLiquidityDataForFilename(
-            platformedAdditionalLiquidities.platform,
+            platformedAdditionLiquidities.platform,
             onePlatformConfig,
             itemToTransform
           );

@@ -26,19 +26,17 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.MedianPrec
   }
 
   override async init() {
-    const precomputers = await Configuration.getPrecomputersConfiguration();
+    const workers = await Configuration.getWorkersConfiguration();
 
-    if (precomputers.precomputers == undefined) {
+    if (workers.workers == undefined) {
       return;
     }
 
-    const foundPrecomputer = precomputers.precomputers.find((precomputer) => precomputer.name === this.workerName);
-    if (foundPrecomputer === undefined) {
+    const foundWorker = workers.workers.find((worker) => worker.name === this.workerName);
+    if (foundWorker === undefined) {
       return;
     }
-    this.setConfiguration(
-      foundPrecomputer.configuration as unknown as WorkerConfiguration.MedianPrecomputerConfiguration
-    );
+    this.setConfiguration(foundWorker.configuration as unknown as WorkerConfiguration.MedianPrecomputerConfiguration);
   }
 
   async runSpecific() {

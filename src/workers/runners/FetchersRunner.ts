@@ -22,3 +22,6 @@ export class FetchersRunner extends AbstractRunner {
     ]);
   }
 }
+
+const fetchersRunner = new FetchersRunner();
+fetchersRunner.run();

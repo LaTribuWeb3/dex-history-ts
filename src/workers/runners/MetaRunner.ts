@@ -2,12 +2,12 @@ import { ComputersRunner } from './ComputersRunner';
 import { FetchersRunner } from './FetchersRunner';
 
 export class MetaRunner {
-  static async run() {
-    // const fetchersRunner = new FetchersRunner();
-    // await fetchersRunner.runOnce();
+  static run() {
+    const fetchersRunner = new FetchersRunner();
+    fetchersRunner.run();
 
     const computerRunner = new ComputersRunner();
-    await computerRunner.runOnce();
+    computerRunner.run();
   }
 }
 
