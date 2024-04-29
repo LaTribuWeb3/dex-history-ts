@@ -4,21 +4,27 @@ import { BaseWorker } from '../BaseWorker';
 import * as WorkerConfiguration from '../configuration/WorkerConfiguration';
 import * as fs from 'fs';
 import { generatePreComputedForWorker, getAllPreComputed } from '../configuration/WorkerConfiguration';
-import { MedianPrecomputer } from './MedianPrecomputer';
+import { Configuration } from '../../config/Configuration';
 
 export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfiguration.AdditionalLiquidityPrecomputerConfiguration> {
   constructor(runEveryMinute: number) {
-    super(
-      MedianPrecomputer.findPrecomputerConfigurationByName('additionalLiquidityProvider'),
-      'additionalLiquidityProvider',
-      'Additional Liquidity Provider',
-      runEveryMinute
+    super('additionalLiquidityProvider', 'Additional Liquidity Provider', runEveryMinute);
+  }
+
+  override async init() {
+    const precomputers: WorkerConfiguration.PrecomputersConfiguration =
+      await Configuration.getPrecomputersConfiguration();
+    const precomputerConfiguration = precomputers.precomputers.find(
+      (precomputer) => precomputer.name == this.workerName
     );
+    if (precomputerConfiguration == undefined)
+      throw 'Could not find configuration for precomputer additionalLiquidityProvider';
+    this.configuration = precomputerConfiguration.configuration;
   }
 
   async runSpecific(): Promise<void> {
     // get config to know what tokens to transform
-    for (const platformedAdditionLiquidities of this.configuration.platformedAdditionalLiquidities) {
+    for (const platformedAdditionLiquidities of this.getConfiguration().platformedAdditionalLiquidities) {
       console.log(`working on ${platformedAdditionLiquidities.platform}`);
 
       for (const onePlatformConfig of platformedAdditionLiquidities.additionalLiquidities) {

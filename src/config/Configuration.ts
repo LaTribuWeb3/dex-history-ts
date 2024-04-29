@@ -32,4 +32,14 @@ export class Configuration {
     );
     return workers;
   }
+
+  static async getPrecomputersConfiguration(): Promise<WorkerConfiguration.PrecomputersConfiguration> {
+    const configVersion = 'default';
+    const precomputersConfigFile =
+      process.env.PRECOMPUTERS_CONFIG_FILE ||
+      `https://raw.githubusercontent.com/LaTribuWeb3/dex-history-ts/main/src/config/precomputers.${configVersion}.json`;
+    const precomputers: WorkerConfiguration.PrecomputersConfiguration =
+      await Configuration.loadConfig<WorkerConfiguration.PrecomputersConfiguration>(precomputersConfigFile);
+    return precomputers;
+  }
 }

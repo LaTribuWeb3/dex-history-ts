@@ -31,19 +31,7 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
     return this.configuration;
   }
 
-  async init() {
-    const workers = await Configuration.getWorkersConfiguration();
-
-    if (workers.workers == undefined) {
-      return;
-    }
-
-    const foundWorker = workers.workers.find((worker) => worker.name === this.workerName);
-    if (foundWorker === undefined) {
-      return;
-    }
-    this.setConfiguration(foundWorker.configuration as unknown as T);
-  }
+  abstract init(): Promise<void>;
 
   /**
    * Asynchronous method representing the main execution logic for a worker task.

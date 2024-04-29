@@ -106,7 +106,8 @@ export interface FetcherConfiguration extends WorkerConfiguration {
 
 export abstract class WorkerConfiguration { }
 
-export class EmptyConfiguration extends WorkerConfiguration {}
+export class EmptyConfiguration extends WorkerConfiguration { }
+export class PrecomputerConfiguration extends WorkerConfiguration { }
 
 export interface MedianPrecomputerConfiguration extends WorkerConfiguration {
   platforms: string[];
@@ -131,7 +132,7 @@ export interface SpecificPivot {
 }
 
 export interface PrecomputersConfiguration {
-  precomputers: MedianPrecomputerConfiguration;
+  precomputers: { name: string; configuration: PrecomputerConfiguration }[];
 }
 
 export interface WorkerMainConfiguration<T extends WorkerConfiguration> extends NamedWorkerConfiguration<T> {
@@ -150,10 +151,10 @@ export interface WorkersConfiguration<T extends WorkerConfiguration> {
 }
 
 export interface AdditionalLiquidityPrecomputerConfiguration extends WorkerConfiguration {
-  platformedAdditionalLiquidities: PlatformedAdditionLiquidities[];
+  platformedAdditionalLiquidities: PlatformedAdditionalLiquidities[];
 }
 
-export interface PlatformedAdditionLiquidities {
+export interface PlatformedAdditionalLiquidities {
   platform: string;
   additionalLiquidities: AdditionalLiquidity[];
 }

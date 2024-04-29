@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import precomputers from '../../config/precomputers.json';
 import { sleep } from '../../utils/Utils';
 import * as Web3Utils from '../../utils/Web3Utils';
 import { BaseWorker } from '../BaseWorker';
@@ -7,11 +6,15 @@ import { readLastLine } from '../configuration/Helper';
 import * as WorkerConfiguration from '../configuration/WorkerConfiguration';
 import { checkIfFileExists, getMedianPricesFilenamesForPlatform } from '../configuration/WorkerConfiguration';
 import { PriceGetter } from './data/median/PriceGetter';
+import { Configuration } from '../../config/Configuration';
 
 export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.MedianPrecomputerConfiguration> {
   // Assuming workers is an array of worker configurations
-  public static findPrecomputerConfigurationByName<T extends WorkerConfiguration.WorkerConfiguration>(name: string): T {
-    const foundWorker = precomputers.precomputers.find((worker) => worker.name === name);
+  public static async findPrecomputerConfigurationByName<T extends WorkerConfiguration.WorkerConfiguration>(
+    name: string
+  ): T {
+    const precomputersConfiguration = await Configuration.getPrecomputersConfiguration();
+    const foundWorker = precomputersConfiguration.precomputers.find((worker) => worker.name === name);
     if (foundWorker === undefined) {
       throw new Error('Could not find worker with name: ' + name);
     }
@@ -20,6 +23,20 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.MedianPrec
 
   constructor(runEveryMinute: number) {
     super('median', 'Median Precomputer', runEveryMinute);
+  }
+
+  override async init() {
+    const workers = await Configuration.getWorkersConfiguration();
+
+    if (workers.workers == undefined) {
+      return;
+    }
+
+    const foundWorker = workers.workers.find((worker) => worker.name === this.workerName);
+    if (foundWorker === undefined) {
+      return;
+    }
+    this.setConfiguration(foundWorker.configuration as unknown as T);
   }
 
   async runSpecific() {
