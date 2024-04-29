@@ -1,4 +1,5 @@
 import { SlippageMap } from '../models/datainterface/BlockData';
+import * as fs from 'fs';
 
 export class SlippageMapUtils {
   /**
@@ -22,5 +23,9 @@ export class SlippageMapUtils {
       price: Number(price),
       slippageMap: slippageMap
     };
+  }
+
+  static getDataFromCSVFile(csvFile: string) {
+    return fs.readFileSync(csvFile, 'utf-8').split('\n').slice(1);
   }
 }

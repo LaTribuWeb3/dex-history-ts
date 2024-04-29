@@ -26,6 +26,7 @@ export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfigurati
     // get config to know what tokens to transform
     for (const platformedAdditionLiquidities of this.getConfiguration().platformedAdditionalLiquidities) {
       console.log(`working on ${platformedAdditionLiquidities.platform}`);
+      console.log(`${JSON.stringify(platformedAdditionLiquidities)}`);
 
       for (const onePlatformConfig of platformedAdditionLiquidities.additionalLiquidities) {
         const itemsToTransform = this.getFilesForPlatform(
@@ -50,8 +51,10 @@ export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfigurati
 
   getFilesForPlatform(from: string, to: string, platform: string) {
     const filenamesToTransform = [];
-    const filenames = getAllPreComputed(platform);
+    const allPreComputedFiles = getAllPreComputed(platform);
+    const filenames = allPreComputedFiles.map((compo) => compo.split('\\').pop());
     for (const filename of filenames) {
+      if (filename == undefined) continue;
       const base = filename.split('-')[0];
       const quote = filename.split('-')[1];
 
@@ -79,7 +82,9 @@ export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfigurati
   ) {
     console.log(`Working on ${platform} for file ${itemToTransform.filename}`);
 
-    const csvLines = generatePreComputedForWorker(platform) + '/' + itemToTransform.filename;
+    const csvLines = SlippageMapUtils.getDataFromCSVFile(
+      generatePreComputedForWorker(platform) + '/' + itemToTransform.filename
+    );
     const prices = MedianUtils.readMedianPricesFile(config.priceSource, config.priceFrom, config.priceTo);
 
     const reverse = config.from == itemToTransform.quote;
@@ -113,7 +118,8 @@ export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfigurati
     }
 
     if (linesToWrite.length >= 0) {
-      fs.writeFileSync(generatePreComputedForWorker(platform) + '/' + targetFileName, linesToWrite.join(''));
+      const fullFileName = generatePreComputedForWorker(platform) + '/' + targetFileName;
+      fs.writeFileSync(fullFileName, linesToWrite.join(''));
     }
   }
 }
