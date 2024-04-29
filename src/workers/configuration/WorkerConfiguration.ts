@@ -149,6 +149,24 @@ export interface WorkersConfiguration<T extends WorkerConfiguration> {
   workers: WorkerMainConfiguration<T>[];
 }
 
+export interface AdditionalLiquidityPrecomputerConfiguration extends WorkerConfiguration {
+  platformedAdditionalLiquidities: PlatformedAdditionLiquidities[];
+}
+
+export interface PlatformedAdditionLiquidities {
+  platform: string;
+  additionalLiquidities: AdditionalLiquidity[];
+}
+
+export interface AdditionalLiquidity {
+  from: string;
+  pivot: string;
+  to: string;
+  priceSource: string;
+  priceFrom: string;
+  priceTo: string;
+}
+
 const directoryStructureVersion = process.env.DIRECTORY_STRUCTURE_VERSION || 0;
 
 export function generateCSVFolderPath(type = '', worker: string) {

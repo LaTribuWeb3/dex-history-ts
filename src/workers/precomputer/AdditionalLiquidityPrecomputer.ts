@@ -1,0 +1,113 @@
+import { MedianUtils } from '../../utils/MedianUtils';
+import { SlippageMapUtils } from '../../utils/SlippageMapUtils';
+import { BaseWorker } from '../BaseWorker';
+import * as WorkerConfiguration from '../configuration/WorkerConfiguration';
+import * as fs from 'fs';
+import { generatePreComputedForWorker, getAllPreComputed } from '../configuration/WorkerConfiguration';
+import { MedianPrecomputer } from './MedianPrecomputer';
+
+export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfiguration.AdditionalLiquidityPrecomputerConfiguration> {
+  constructor(runEveryMinute: number) {
+    super(
+      MedianPrecomputer.findPrecomputerConfigurationByName('additionalLiquidityProvider'),
+      'additionalLiquidityProvider',
+      'Additional Liquidity Provider',
+      runEveryMinute
+    );
+  }
+
+  async runSpecific(): Promise<void> {
+    // get config to know what tokens to transform
+    for (const platformedAdditionLiquidities of this.configuration.platformedAdditionalLiquidities) {
+      console.log(`working on ${platformedAdditionLiquidities.platform}`);
+
+      for (const onePlatformConfig of platformedAdditionLiquidities.additionalLiquidities) {
+        const itemsToTransform = this.getFilesForPlatform(
+          onePlatformConfig.from,
+          onePlatformConfig.pivot,
+          platformedAdditionLiquidities.platform
+        );
+        console.log(
+          `Working on ${itemsToTransform.length} files: ${itemsToTransform.map((_) => _.filename).join(',')}`
+        );
+
+        for (const itemToTransform of itemsToTransform) {
+          await this.transformLiquidityDataForFilename(
+            platformedAdditionLiquidities.platform,
+            onePlatformConfig,
+            itemToTransform
+          );
+        }
+      }
+    }
+  }
+
+  getFilesForPlatform(from: string, to: string, platform: string) {
+    const filenamesToTransform = [];
+    const filenames = getAllPreComputed(platform);
+    for (const filename of filenames) {
+      const base = filename.split('-')[0];
+      const quote = filename.split('-')[1];
+
+      if (base == from && quote == to) {
+        filenamesToTransform.push({ filename, reversed: false, base, quote });
+      }
+
+      if (base == to && quote == from) {
+        filenamesToTransform.push({ filename, reversed: true, base, quote });
+      }
+    }
+
+    return filenamesToTransform;
+  }
+
+  async transformLiquidityDataForFilename(
+    platform: string,
+    config: WorkerConfiguration.AdditionalLiquidity,
+    itemToTransform: {
+      filename: string;
+      reversed: boolean;
+      base: string;
+      quote: string;
+    }
+  ) {
+    console.log(`Working on ${platform} for file ${itemToTransform.filename}`);
+
+    const csvLines = generatePreComputedForWorker(platform) + '/' + itemToTransform.filename;
+    const prices = MedianUtils.readMedianPricesFile(config.priceSource, config.priceFrom, config.priceTo);
+
+    const reverse = config.from == itemToTransform.quote;
+    // stETH-WETH-stETHngPool-unified-data.csv
+    const targetFileName = itemToTransform.filename.replace(config.from, config.to);
+    const linesToWrite = [];
+    linesToWrite.push('blocknumber,price,slippagemap\n');
+
+    for (let i = 0; i < csvLines.length - 1; i++) {
+      const lineToTransform = csvLines[i];
+      const unifiedData = SlippageMapUtils.extractDataFromUnifiedLine(lineToTransform);
+      const closestPrice = MedianUtils.getClosestPrice(prices, unifiedData.blockNumber);
+      if (!closestPrice) {
+        continue;
+      }
+
+      const targetUnifiedData = structuredClone(unifiedData);
+      targetUnifiedData.price = reverse ? unifiedData.price / closestPrice : unifiedData.price * closestPrice;
+      for (const slippageBps of Object.keys(targetUnifiedData.slippageMap)) {
+        if (reverse) {
+          targetUnifiedData.slippageMap[slippageBps].quote /= closestPrice;
+        } else {
+          targetUnifiedData.slippageMap[slippageBps].base /= closestPrice;
+        }
+      }
+
+      const lineToWrite = `${targetUnifiedData.blockNumber},${targetUnifiedData.price},${JSON.stringify(
+        targetUnifiedData.slippageMap
+      )}\n`;
+      linesToWrite.push(lineToWrite);
+    }
+
+    if (linesToWrite.length >= 0) {
+      fs.writeFileSync(generatePreComputedForWorker(platform) + '/' + targetFileName, linesToWrite.join(''));
+    }
+  }
+}

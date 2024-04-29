@@ -10,9 +10,7 @@ import { PriceGetter } from './data/median/PriceGetter';
 
 export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.MedianPrecomputerConfiguration> {
   // Assuming workers is an array of worker configurations
-  protected static findPrecomputerConfigurationByName<T extends WorkerConfiguration.MedianPrecomputerConfiguration>(
-    name: string
-  ): T {
+  public static findPrecomputerConfigurationByName<T extends WorkerConfiguration.WorkerConfiguration>(name: string): T {
     const foundWorker = precomputers.precomputers.find((worker) => worker.name === name);
     if (foundWorker === undefined) {
       throw new Error('Could not find worker with name: ' + name);
