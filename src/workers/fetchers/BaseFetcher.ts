@@ -5,6 +5,7 @@ import * as Constants from '../../utils/Constants';
 import { BaseWorker } from '../BaseWorker';
 import { TokenList } from '../configuration/TokenData';
 import * as WorkerConfiguration from '../configuration/WorkerConfiguration';
+import { Configuration } from '../../config/Configuration';
 
 /**
  * This is the base worker class
@@ -24,6 +25,20 @@ export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfigura
     if (!fs.existsSync(path.join(Constants.DATA_DIR, this.workerName))) {
       fs.mkdirSync(path.join(Constants.DATA_DIR, this.workerName), { recursive: true });
     }
+  }
+
+  override async init() {
+    const workers = await Configuration.getWorkersConfiguration();
+
+    if (workers.workers == undefined) {
+      return;
+    }
+
+    const foundWorker = workers.workers.find((worker) => worker.name === this.workerName);
+    if (foundWorker === undefined) {
+      return;
+    }
+    this.setConfiguration(foundWorker.configuration as unknown as T);
   }
 
   async createPriceDataDirForWorker() {
