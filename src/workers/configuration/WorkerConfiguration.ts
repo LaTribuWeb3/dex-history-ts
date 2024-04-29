@@ -108,7 +108,7 @@ export abstract class WorkerConfiguration { }
 
 export class EmptyConfiguration extends WorkerConfiguration {}
 
-export interface PrecomputerConfiguration extends WorkerConfiguration {
+export interface MedianPrecomputerConfiguration extends WorkerConfiguration {
   platforms: string[];
   watchedPairs: WatchedPair[];
 }
@@ -131,7 +131,7 @@ export interface SpecificPivot {
 }
 
 export interface PrecomputersConfiguration {
-  precomputers: PrecomputerConfiguration;
+  precomputers: MedianPrecomputerConfiguration;
 }
 
 export interface WorkerMainConfiguration<T extends WorkerConfiguration> extends NamedWorkerConfiguration<T> {
