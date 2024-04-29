@@ -10,6 +10,3 @@ export class ComputersRunner extends AbstractRunner {
     ]);
   }
 }
-
-const fetchersRunner = new ComputersRunner();
-fetchersRunner.run();
