@@ -20,7 +20,7 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
     super(workerName, monitoringName, runEveryMinutes);
   }
 
-  async runSpecific(): Promise<void> {
+  async runOnce(): Promise<void> {
     const web3Provider: ethers.JsonRpcProvider = Web3Utils.getJsonRPCProvider();
     const endBlock: number = (await web3Provider.getBlockNumber()) - 10;
 

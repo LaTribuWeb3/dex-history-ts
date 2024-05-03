@@ -19,7 +19,7 @@ export class CurvePriceFetcher extends BaseFetcher<CurveWorkerConfiguration> {
     super('curve', 'Curve Price Fetcher', runEveryMinutes);
   }
 
-  async runSpecific(): Promise<void> {
+  async runOnce(): Promise<void> {
     const currentBlock = await Web3Utils.getCurrentBlock();
     let i = 1;
     for (const fetchConfig of this.getConfiguration().pricePairs) {

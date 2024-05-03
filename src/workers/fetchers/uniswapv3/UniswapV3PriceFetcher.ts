@@ -23,7 +23,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
     super('uniswapv3', 'UniswapV3 Price Fetcher', runEveryMinutes);
   }
 
-  async runSpecific(): Promise<void> {
+  async runOnce(): Promise<void> {
     const currentBlock = await Web3Utils.getCurrentBlock();
 
     console.log(`${this.workerName}: getting pools to fetch`);

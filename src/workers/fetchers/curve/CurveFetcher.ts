@@ -63,7 +63,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
 
   SAVE_BLOCK_STEP = 50;
 
-  async runSpecific(): Promise<void> {
+  async runOnce(): Promise<void> {
     const currentBlock = await Web3Utils.getCurrentBlock();
     const fetchPromises: Promise<TokenWithReserve>[] = [];
     for (const fetchConfig of this.getConfiguration().pairs) {

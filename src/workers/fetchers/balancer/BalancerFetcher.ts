@@ -29,7 +29,7 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
     super(workerName, monitoringName, runEveryMinutes);
   }
 
-  async runSpecific(): Promise<void> {
+  async runOnce(): Promise<void> {
     const endBlock: number = await Web3Utils.getCurrentBlock();
 
     // by default, fetch for the last 380 days (a bit more than 1 year)

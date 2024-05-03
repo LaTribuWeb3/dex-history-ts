@@ -71,7 +71,7 @@ export abstract class AbstractRunner implements Runnable {
   async runOneWorker(fetcherToLaunch: RunWorkable) {
     for (let i = 0; i < 10; i++) {
       try {
-        await fetcherToLaunch.run();
+        await fetcherToLaunch.runOnce();
         break;
       } catch (error) {
         const errorMsg = `An exception occurred: ${error}`;

@@ -27,7 +27,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
   constructor(runEveryMinutes: number) {
     super('uniswapv3', 'UniswapV3 Fetcher', runEveryMinutes);
   }
-  async runSpecific(): Promise<void> {
+  async runOnce(): Promise<void> {
     this.createDataDirForWorker();
 
     const poolsData = [];

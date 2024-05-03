@@ -41,7 +41,7 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.MedianPrec
     );
   }
 
-  async runSpecific() {
+  async runOnce() {
     for (const platform of this.getConfiguration().platforms) {
       const currentBlock = await Web3Utils.getCurrentBlock();
 
