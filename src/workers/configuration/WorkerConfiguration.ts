@@ -107,7 +107,9 @@ export interface FetcherConfiguration extends WorkerConfiguration {
 export abstract class WorkerConfiguration { }
 
 export class EmptyConfiguration extends WorkerConfiguration { }
-export class PrecomputerConfiguration extends WorkerConfiguration { }
+export class FetchersRunnerConfiguration extends EmptyConfiguration { }
+export class PrecomputerConfiguration extends EmptyConfiguration { }
+export class ComputersRunnerConfiguration extends EmptyConfiguration { }
 
 export interface MedianPrecomputerConfiguration extends WorkerConfiguration {
   platforms: string[];

@@ -78,5 +78,5 @@ export async function getCurrentBlock() {
     const web3Provider = getJsonRPCProvider();
     currentBlock = (await web3Provider.getBlockNumber()) - 10;
   }
-  return currentBlock;
+  return 19781789;
 }

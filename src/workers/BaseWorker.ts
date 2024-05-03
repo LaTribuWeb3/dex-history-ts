@@ -4,9 +4,10 @@ import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils
 import * as Web3Utils from '../utils/Web3Utils';
 import * as WorkerConfiguration from './configuration/WorkerConfiguration';
 import * as dotenv from 'dotenv';
+import { Workable } from './runners/interfaces/Workable';
 dotenv.config();
 
-export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfiguration> {
+export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfiguration> implements Workable {
   configuration: T | WorkerConfiguration.EmptyConfiguration;
   workerName: string;
   monitoringName: string;
