@@ -18,14 +18,14 @@ export class FetchersRunner extends AbstractRunner implements RunWorkable {
   constructor() {
     super(
       [
-        new UniswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES) // ,
-        // new SushiswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        // new CurveFetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        // new CurvePriceFetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        // new UniswapV3Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        // new UniswapV3PriceFetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        // new BalancerFetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        // new BalancerPriceFetcher(AbstractRunner.RUN_EVERY_MINUTES)
+        new UniswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new SushiswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new CurveFetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new CurvePriceFetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new UniswapV3Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new UniswapV3PriceFetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new BalancerFetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new BalancerPriceFetcher(AbstractRunner.RUN_EVERY_MINUTES)
       ],
       true,
       false
