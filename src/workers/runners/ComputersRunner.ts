@@ -1,4 +1,4 @@
-import { ComputersRunnerConfiguration, WorkerConfiguration } from '../configuration/WorkerConfiguration';
+import { ComputersRunnerConfiguration } from '../configuration/WorkerConfiguration';
 import { AdditionalLiquidityPrecomputer } from '../precomputer/AdditionalLiquidityPrecomputer';
 import { MedianPrecomputer } from '../precomputer/MedianPrecomputer';
 import { AbstractRunner } from './AbstractRunner';

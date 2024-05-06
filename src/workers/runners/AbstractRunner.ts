@@ -1,9 +1,8 @@
 import { SYNC_FILENAMES, UpdateSyncFile, WaitUntilDone } from '../../utils/Sync';
 import { sleep } from '../../utils/Utils';
-import { EmptyConfiguration, WorkerConfiguration } from '../configuration/WorkerConfiguration';
+import { EmptyConfiguration } from '../configuration/WorkerConfiguration';
 import { RunWorkable } from './interfaces/RunWorkable';
 import { Runnable } from './interfaces/Runnable';
-import { Workable } from './interfaces/Workable';
 
 export abstract class AbstractRunner implements Runnable {
   static RUN_EVERY_MINUTES = 60;
