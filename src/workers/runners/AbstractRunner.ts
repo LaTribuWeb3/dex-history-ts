@@ -37,7 +37,7 @@ export abstract class AbstractRunner implements Runnable {
     while (true) {
       const start = Date.now();
 
-      await this.runOnce();
+      await this.runSpecific();
 
       if (this.shouldWait) {
         const runEndDate = Math.round(Date.now() / 1000);
@@ -52,7 +52,7 @@ export abstract class AbstractRunner implements Runnable {
     }
   }
 
-  async runOnce() {
+  async runSpecific() {
     if (this.mutex) await WaitUntilDone(SYNC_FILENAMES.FETCHERS_LAUNCHER);
 
     await this.init();
@@ -70,7 +70,7 @@ export abstract class AbstractRunner implements Runnable {
   async runOneWorker(fetcherToLaunch: RunWorkable) {
     for (let i = 0; i < 10; i++) {
       try {
-        await fetcherToLaunch.runOnce();
+        await fetcherToLaunch.runSpecific();
         break;
       } catch (error) {
         const errorMsg = `An exception occurred: ${error}`;
