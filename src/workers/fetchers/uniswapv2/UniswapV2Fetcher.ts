@@ -27,7 +27,7 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
     super(workerName, monitoringName, runEveryMinutes);
   }
 
-  async runOnce(): Promise<void> {
+  async runSpecific(): Promise<void> {
     const endBlock: number = await Web3Utils.getCurrentBlock();
 
     this.createDataDirForWorker();

@@ -22,7 +22,7 @@ export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfigurati
     this.configuration = precomputerConfiguration.configuration;
   }
 
-  async runOnce(): Promise<void> {
+  async runSpecific(): Promise<void> {
     // get config to know what tokens to transform
     for (const platformedAdditionalLiquidities of this.getConfiguration().platformedAdditionalLiquidities) {
       console.log(`working on ${platformedAdditionalLiquidities.platform}`);
