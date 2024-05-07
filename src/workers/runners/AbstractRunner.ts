@@ -16,12 +16,10 @@ export abstract class AbstractRunner implements Runnable {
       try {
         await fetcherToLaunch.init();
       } catch (e) {
-        console.warn('Could not load configuration for worker ' + fetcherToLaunch.monitoringName + '. Skipping it.');
-        continue;
+        throw 'Could not load configuration for worker ' + fetcherToLaunch.monitoringName + ': ' + e;
       }
       if (fetcherToLaunch.configuration instanceof EmptyConfiguration) {
-        console.warn('Configuration for worker ' + fetcherToLaunch.monitoringName + ' is empty. Skipping it.');
-        continue;
+        throw 'Configuration for worker ' + fetcherToLaunch.monitoringName + ' is empty.';
       }
     }
   }
