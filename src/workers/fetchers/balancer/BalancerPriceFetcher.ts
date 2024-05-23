@@ -126,8 +126,8 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
         ) {
           continue;
         }
-        const baseToken = getConfTokenByAddress(swapEvent.args.tokenIn);
-        const quoteToken = getConfTokenByAddress(swapEvent.args.tokenOut);
+        const baseToken = await getConfTokenByAddress(swapEvent.args.tokenIn);
+        const quoteToken = await getConfTokenByAddress(swapEvent.args.tokenOut);
 
         const amountSold = normalize(swapEvent.args.amountIn, baseToken.decimals);
         const amountBought = normalize(swapEvent.args.amountOut, quoteToken.decimals);

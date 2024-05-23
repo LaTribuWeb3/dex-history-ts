@@ -95,9 +95,9 @@ export class CurvePriceFetcher extends BaseFetcher<CurveWorkerConfiguration> {
         for (const e of events) {
           if (e instanceof ethers.ethers.EventLog) {
             const baseTokenSymbol = curvePricePairConfiguration.tokens[e.args.sold_id].symbol;
-            const baseToken: TokenData = getConfTokenBySymbol(baseTokenSymbol);
+            const baseToken: TokenData = await getConfTokenBySymbol(baseTokenSymbol);
             const quoteTokenSymbol = curvePricePairConfiguration.tokens[e.args.bought_id].symbol;
-            const quoteToken: TokenData = getConfTokenBySymbol(quoteTokenSymbol);
+            const quoteToken: TokenData = await getConfTokenBySymbol(quoteTokenSymbol);
 
             // check if in the list of pair to get
             // if baseToken = USDC and quoteToken = DAI

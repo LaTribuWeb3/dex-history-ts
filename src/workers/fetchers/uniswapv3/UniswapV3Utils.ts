@@ -16,8 +16,8 @@ export async function getAllPoolsToFetch(workerName: string, workerConfiguration
   const promises = [];
   for (const pairToFetch of workerConfiguration.pairs) {
     for (const fee of workerConfiguration.fees) {
-      const token0 = getConfTokenBySymbol(pairToFetch.token0);
-      const token1 = getConfTokenBySymbol(pairToFetch.token1);
+      const token0 = await getConfTokenBySymbol(pairToFetch.token0);
+      const token1 = await getConfTokenBySymbol(pairToFetch.token1);
 
       promises.push(univ3Factory.getPool(token0.address, token1.address, fee));
     }

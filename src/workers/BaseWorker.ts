@@ -4,6 +4,7 @@ import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils
 import * as Web3Utils from '../utils/Web3Utils';
 import * as WorkerConfiguration from './configuration/WorkerConfiguration';
 import * as dotenv from 'dotenv';
+import { TokenList } from './configuration/TokenData';
 import { Workable } from './runners/interfaces/Workable';
 dotenv.config();
 
@@ -13,6 +14,7 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
   monitoringName: string;
   runEveryMinutes: number;
   web3Provider: ethers.JsonRpcProvider;
+  tokens: TokenList;
 
   constructor(workerName: string, monitoringName: string, runEveryMinutes: number) {
     this.workerName = workerName;
@@ -20,6 +22,7 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
     this.runEveryMinutes = runEveryMinutes;
     this.web3Provider = Web3Utils.getJsonRPCProvider();
     this.configuration = new WorkerConfiguration.EmptyConfiguration();
+    this.tokens = {};
   }
 
   setConfiguration(config: T): void {
@@ -141,4 +144,3 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
     return Math.round((num + Number.EPSILON) * pow) / pow;
   }
 }
-

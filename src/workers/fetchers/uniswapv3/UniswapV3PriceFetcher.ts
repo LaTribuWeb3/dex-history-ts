@@ -77,8 +77,8 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
     pools: string[],
     currentBlock: number
   ): Promise<{ lastBlockWithData: number; token0: string; token1: string }> {
-    const token0Conf = getConfTokenBySymbol(pairToFetch.token0);
-    const token1Conf = getConfTokenBySymbol(pairToFetch.token1);
+    const token0Conf = await getConfTokenBySymbol(pairToFetch.token0);
+    const token1Conf = await getConfTokenBySymbol(pairToFetch.token1);
 
     const label = `[${token0Conf.symbol}-${token1Conf.symbol}]`;
 

@@ -17,7 +17,7 @@ const bigIntMax = (...args: bigint[]) => args.reduce((m, e) => (e > m ? e : m));
 
 const BIGINT_1e18 = BigInt(10) ** BigInt(18);
 
-export function computePriceAndSlippageMapForReserveValueCryptoV2(
+export async function computePriceAndSlippageMapForReserveValueCryptoV2(
   fromSymbol: string,
   toSymbol: string,
   poolTokens: string[],
@@ -40,8 +40,8 @@ export function computePriceAndSlippageMapForReserveValueCryptoV2(
 
   const indexFrom = poolTokens.indexOf(fromSymbol);
   const indexTo = poolTokens.indexOf(toSymbol);
-  const fromConf = getConfTokenBySymbol(fromSymbol);
-  const toConf = getConfTokenBySymbol(toSymbol);
+  const fromConf = await getConfTokenBySymbol(fromSymbol);
+  const toConf = await getConfTokenBySymbol(toSymbol);
   let baseAmount = baseAmountMap[fromSymbol];
   if (!baseAmount) {
     console.warn(`No base amount for ${fromSymbol}`);
@@ -368,7 +368,7 @@ function v2_computeLiquidityForSlippageCurvePoolCryptoV2(
   }
 }
 
-export function computePriceAndSlippageMapForReserveValue(
+export async function computePriceAndSlippageMapForReserveValue(
   fromSymbol: string,
   toSymbol: string,
   poolTokens: string[],
@@ -381,7 +381,7 @@ export function computePriceAndSlippageMapForReserveValue(
 
   const tokenConfs = [];
   for (const poolToken of poolTokens) {
-    tokenConfs.push(getConfTokenBySymbol(poolToken));
+    tokenConfs.push(await getConfTokenBySymbol(poolToken));
   }
 
   const reservesNorm18Dec = getReservesNormalizedTo18Decimals(tokenConfs, reserves);

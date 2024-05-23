@@ -91,7 +91,10 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
     const token0Address: string = this.tokens[token0Symbol].address;
     const token1Symbol = pairKey.split('-')[1];
     const token1Address: string = this.tokens[token1Symbol].address;
-    const uniswapV2Factory = UniswapV2Factory__factory.connect(this.getConfiguration().factoryAddress, this.web3Provider);
+    const uniswapV2Factory = UniswapV2Factory__factory.connect(
+      this.getConfiguration().factoryAddress,
+      this.web3Provider
+    );
 
     const pairAddress: string = await uniswapV2Factory.getPair(token0Address, token1Address);
 
