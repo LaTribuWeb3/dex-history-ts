@@ -13,6 +13,7 @@ export abstract class AbstractRunner implements Runnable {
 
   async init(): Promise<void> {
     for (const fetcherToLaunch of this.workersToLaunch) {
+      console.log(`INITIALIZATION FOR ${fetcherToLaunch.monitoringName}`);
       try {
         await fetcherToLaunch.init();
       } catch (e) {
