@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { TokenData } from '../workers/configuration/TokenData';
 import { Configuration } from '../config/Configuration';
+import axios, { AxiosResponse } from 'axios';
 
 /**
  * Retries a function n number of times before giving up
@@ -78,4 +79,11 @@ export async function getConfTokenByAddress(address: string): Promise<TokenData>
 
 export function readDataFromFile(fullFilename: string) {
   return fs.readFileSync(fullFilename, 'utf-8').split('\n');
+}
+
+export async function HttpGet<T>(url: string, config?: any): Promise<T> {
+  console.log(`HttpGet: trying on ${url}`);
+  const axiosResp: AxiosResponse<T> = (await retry(axios.get, [url, config])) as AxiosResponse<T>;
+
+  return axiosResp.data;
 }
