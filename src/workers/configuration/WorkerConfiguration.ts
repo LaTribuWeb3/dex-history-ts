@@ -106,9 +106,12 @@ export interface FetcherConfiguration extends WorkerConfiguration {
 
 export abstract class WorkerConfiguration { }
 
-export class EmptyConfiguration extends WorkerConfiguration {}
+export class EmptyConfiguration extends WorkerConfiguration { }
+export class FetchersRunnerConfiguration extends EmptyConfiguration { }
+export class PrecomputerConfiguration extends EmptyConfiguration { }
+export class ComputersRunnerConfiguration extends EmptyConfiguration { }
 
-export interface PrecomputerConfiguration extends WorkerConfiguration {
+export interface MedianPrecomputerConfiguration extends WorkerConfiguration {
   platforms: string[];
   watchedPairs: WatchedPair[];
 }
@@ -131,7 +134,7 @@ export interface SpecificPivot {
 }
 
 export interface PrecomputersConfiguration {
-  precomputers: PrecomputerConfiguration;
+  precomputers: { name: string; configuration: PrecomputerConfiguration }[];
 }
 
 export interface WorkerMainConfiguration<T extends WorkerConfiguration> extends NamedWorkerConfiguration<T> {
@@ -147,6 +150,24 @@ export interface NamedWorkerConfiguration<T extends WorkerConfiguration> {
 // Main class for the configuration file workers.json
 export interface WorkersConfiguration<T extends WorkerConfiguration> {
   workers: WorkerMainConfiguration<T>[];
+}
+
+export interface AdditionalLiquidityPrecomputerConfiguration extends WorkerConfiguration {
+  platformedAdditionalLiquidities: PlatformedAdditionalLiquidities[];
+}
+
+export interface PlatformedAdditionalLiquidities {
+  platform: string;
+  additionalLiquidities: AdditionalLiquidity[];
+}
+
+export interface AdditionalLiquidity {
+  from: string;
+  pivot: string;
+  to: string;
+  priceSource: string;
+  priceFrom: string;
+  priceTo: string;
 }
 
 const directoryStructureVersion = process.env.DIRECTORY_STRUCTURE_VERSION || 0;

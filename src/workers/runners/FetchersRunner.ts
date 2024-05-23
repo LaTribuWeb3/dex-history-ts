@@ -1,3 +1,4 @@
+import { FetchersRunnerConfiguration } from '../configuration/WorkerConfiguration';
 import { BalancerFetcher } from '../fetchers/balancer/BalancerFetcher';
 import { BalancerPriceFetcher } from '../fetchers/balancer/BalancerPriceFetcher';
 import { CurveFetcher } from '../fetchers/curve/CurveFetcher';
@@ -7,21 +8,27 @@ import { UniswapV2Fetcher } from '../fetchers/uniswapv2/UniswapV2Fetcher';
 import { UniswapV3Fetcher } from '../fetchers/uniswapv3/UniswapV3Fetcher';
 import { UniswapV3PriceFetcher } from '../fetchers/uniswapv3/UniswapV3PriceFetcher';
 import { AbstractRunner } from './AbstractRunner';
+import { RunWorkable } from './interfaces/RunWorkable';
 
-class FetchersRunner extends AbstractRunner {
+export class FetchersRunner extends AbstractRunner implements RunWorkable {
+  monitoringName = 'fetchers-runner';
+  configuration = new FetchersRunnerConfiguration();
+  workerName = 'fetchers-runner';
+
   constructor() {
-    super([
-      new UniswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
-      new SushiswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
-      new CurveFetcher(AbstractRunner.RUN_EVERY_MINUTES),
-      new CurvePriceFetcher(AbstractRunner.RUN_EVERY_MINUTES),
-      new UniswapV3Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
-      new UniswapV3PriceFetcher(AbstractRunner.RUN_EVERY_MINUTES),
-      new BalancerFetcher(AbstractRunner.RUN_EVERY_MINUTES),
-      new BalancerPriceFetcher(AbstractRunner.RUN_EVERY_MINUTES)
-    ]);
+    super(
+      [
+        new UniswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new SushiswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new CurveFetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new CurvePriceFetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new UniswapV3Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new UniswapV3PriceFetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new BalancerFetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        new BalancerPriceFetcher(AbstractRunner.RUN_EVERY_MINUTES)
+      ],
+      true,
+      false
+    );
   }
 }
-
-const fetchersRunner = new FetchersRunner();
-fetchersRunner.run();

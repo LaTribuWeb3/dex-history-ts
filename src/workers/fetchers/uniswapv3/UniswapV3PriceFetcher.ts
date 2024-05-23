@@ -109,7 +109,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
 
       if (sinceBlockReversed != sinceBlock) {
         // inconsistency, throw
-        throw new Error('Both price files not the same block ?');
+        throw new Error(`Both price files not the same block for ${pairToFetch.token1}-${pairToFetch.token0} ?`);
       }
     } else {
       fs.writeFileSync(priceHistoryFilename, 'blocknumber,price\n');

@@ -25,6 +25,20 @@ export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfigura
     }
   }
 
+  override async init() {
+    const workers = await Configuration.getWorkersConfiguration();
+
+    if (workers.workers == undefined) {
+      return;
+    }
+
+    const foundWorker = workers.workers.find((worker) => worker.name === this.workerName);
+    if (foundWorker === undefined) {
+      return;
+    }
+    this.setConfiguration(foundWorker.configuration as unknown as T);
+  }
+
   async createPriceDataDirForWorker() {
     const dirPath = path.join(Constants.DATA_DIR, 'precomputed', 'price', this.workerName);
     if (!fs.existsSync(dirPath)) {
