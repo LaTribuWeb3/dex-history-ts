@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "main": "index.ts",
     "scripts": {
-        "start:fetcher": "ts-node ./src/workers/runners/FetchersRunner.ts",
+        "start:fetcher": "ts-node ./src/workers/runners/MetaRunner.ts",
         "start": "ts-node ./src/index.ts",
         "start:fetchers": "ts-node ./src/runners/FetchersRunner.ts",
         "build": "rimraf ./build && tsc",
