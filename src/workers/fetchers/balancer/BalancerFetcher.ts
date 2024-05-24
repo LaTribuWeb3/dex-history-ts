@@ -25,8 +25,13 @@ import { FetcherResults, PoolData } from '../../../models/dashboard/FetcherResul
 BigNumber.config({ EXPONENTIAL_AT: 1e9 }); // this is needed to interract with the balancer sor package
 
 export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
-  constructor(runEveryMinutes: number, workerName = 'balancer', monitoringName = 'Balancer Fetcher') {
-    super(workerName, monitoringName, runEveryMinutes);
+  constructor(
+    runEveryMinutes: number,
+    configVersion: string,
+    workerName = 'balancer',
+    monitoringName = 'Balancer Fetcher'
+  ) {
+    super(workerName, monitoringName, runEveryMinutes, configVersion);
   }
 
   async runSpecific(): Promise<void> {

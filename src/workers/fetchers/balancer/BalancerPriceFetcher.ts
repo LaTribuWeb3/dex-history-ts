@@ -16,8 +16,13 @@ import { SwapEvent } from '../../../contracts/types/balancer/BalancerVault';
 BigNumber.config({ EXPONENTIAL_AT: 1e9 }); // this is needed to interract with the balancer sor package
 
 export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
-  constructor(runEveryMinutes: number, workerName = 'balancer', monitoringName = 'Balancer Price Fetcher') {
-    super(workerName, monitoringName, runEveryMinutes);
+  constructor(
+    runEveryMinutes: number,
+    configVersion: string,
+    workerName = 'balancer',
+    monitoringName = 'Balancer Price Fetcher'
+  ) {
+    super(workerName, monitoringName, runEveryMinutes, configVersion);
   }
 
   async runSpecific(): Promise<void> {
@@ -126,8 +131,8 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
         ) {
           continue;
         }
-        const baseToken = await getConfTokenByAddress(swapEvent.args.tokenIn);
-        const quoteToken = await getConfTokenByAddress(swapEvent.args.tokenOut);
+        const baseToken = await getConfTokenByAddress(swapEvent.args.tokenIn, this.tokens);
+        const quoteToken = await getConfTokenByAddress(swapEvent.args.tokenOut, this.tokens);
 
         const amountSold = normalize(swapEvent.args.amountIn, baseToken.decimals);
         const amountBought = normalize(swapEvent.args.amountOut, quoteToken.decimals);

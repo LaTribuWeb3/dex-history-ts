@@ -11,8 +11,8 @@ import { Configuration } from '../../config/Configuration';
  * It is used to log monitoring
  */
 export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfiguration> extends BaseWorker<T> {
-  constructor(workerName: string, monitoringName: string, runEveryMinutes: number) {
-    super(workerName, monitoringName, runEveryMinutes);
+  constructor(workerName: string, monitoringName: string, runEveryMinutes: number, configVersion: string) {
+    super(workerName, monitoringName, runEveryMinutes, configVersion);
 
     this.tokens = {};
     console.log(`worker name: ${this.workerName}`);
@@ -25,7 +25,7 @@ export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfigura
   }
 
   override async init() {
-    const workers = await Configuration.getWorkersConfiguration();
+    const workers = await Configuration.getWorkersConfiguration(this.configVersion);
 
     if (workers.workers == undefined) {
       return;
@@ -37,7 +37,7 @@ export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfigura
     }
 
     this.setConfiguration(foundWorker.configuration as unknown as T);
-    this.tokens = await Configuration.getTokensConfiguration();
+    this.tokens = await Configuration.getTokensConfiguration(this.configVersion);
   }
 
   async createPriceDataDirForWorker() {

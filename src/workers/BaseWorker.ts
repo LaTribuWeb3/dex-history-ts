@@ -5,7 +5,7 @@ import * as Web3Utils from '../utils/Web3Utils';
 import * as WorkerConfiguration from './configuration/WorkerConfiguration';
 import * as dotenv from 'dotenv';
 import { TokenList } from './configuration/TokenData';
-import { Workable } from './runners/interfaces/Workable';
+import { Workable } from '../runners/interfaces/Workable';
 import duration from 'duration-pretty';
 dotenv.config();
 
@@ -16,14 +16,16 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
   runEveryMinutes: number;
   web3Provider: ethers.JsonRpcProvider;
   tokens: TokenList;
+  configVersion: string;
 
-  constructor(workerName: string, monitoringName: string, runEveryMinutes: number) {
+  constructor(workerName: string, monitoringName: string, runEveryMinutes: number, configVersion: string) {
     this.workerName = workerName;
     this.monitoringName = '[' + (process.env.NETWORK || 'ETH') + '] ' + monitoringName;
     this.runEveryMinutes = runEveryMinutes;
     this.web3Provider = Web3Utils.getJsonRPCProvider();
     this.configuration = new WorkerConfiguration.EmptyConfiguration();
     this.tokens = {};
+    this.configVersion = configVersion;
   }
 
   setConfiguration(config: T): void {

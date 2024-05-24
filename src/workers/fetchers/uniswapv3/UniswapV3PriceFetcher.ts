@@ -17,8 +17,8 @@ import { UniswapV3Pair, UniswapV3Pair__factory } from '../../../contracts/types'
 import { TokenData } from '../../configuration/TokenData';
 
 export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
-  constructor(runEveryMinutes: number) {
-    super('uniswapv3', 'UniswapV3 Price Fetcher', runEveryMinutes);
+  constructor(runEveryMinutes: number, configVersion: string) {
+    super('uniswapv3', 'UniswapV3 Price Fetcher', runEveryMinutes, configVersion);
   }
 
   async runSpecific(): Promise<void> {

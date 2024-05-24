@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import * as fs from 'fs';
 import path from 'path';
-import { TokenData } from '../workers/configuration/TokenData';
+import { TokenData, TokenList } from '../workers/configuration/TokenData';
 import { Configuration } from '../config/Configuration';
 import axios, { AxiosResponse } from 'axios';
 
@@ -56,8 +56,7 @@ export function writeContentToFile(syncFilename: string, content: string) {
   fs.writeFileSync(syncFilename, content);
 }
 
-export async function getConfTokenByAddress(address: string): Promise<TokenData> {
-  const tokens = await Configuration.getTokensConfiguration();
+export async function getConfTokenByAddress(address: string, tokens: TokenList): Promise<TokenData> {
   for (const token of Object.values(tokens)) {
     if (address.toLowerCase() == token.address.toLowerCase()) {
       return token as TokenData;

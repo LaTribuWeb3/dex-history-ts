@@ -23,8 +23,13 @@ import { ComputeLiquidityXYKPool, ComputeXYKPrice } from '../../../library/XYKLi
 import { FetcherResults, PoolData } from '../../../models/dashboard/FetcherResult';
 
 export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> {
-  constructor(runEveryMinutes: number, workerName = 'uniswapv2', monitoringName = 'UniswapV2 Fetcher') {
-    super(workerName, monitoringName, runEveryMinutes);
+  constructor(
+    runEveryMinutes: number,
+    configVersion: string,
+    workerName = 'uniswapv2',
+    monitoringName = 'UniswapV2 Fetcher'
+  ) {
+    super(workerName, monitoringName, runEveryMinutes, configVersion);
   }
 
   async runSpecific(): Promise<void> {

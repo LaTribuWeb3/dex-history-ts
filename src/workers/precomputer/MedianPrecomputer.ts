@@ -9,24 +9,12 @@ import { PriceGetter } from './data/median/PriceGetter';
 import { Configuration } from '../../config/Configuration';
 
 export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.MedianPrecomputerConfiguration> {
-  // Assuming workers is an array of worker configurations
-  public static async findPrecomputerConfigurationByName<T extends WorkerConfiguration.WorkerConfiguration>(
-    name: string
-  ): Promise<T> {
-    const precomputersConfiguration = await Configuration.getPrecomputersConfiguration();
-    const foundWorker = precomputersConfiguration.precomputers.find((worker) => worker.name === name);
-    if (foundWorker === undefined) {
-      throw new Error('Could not find worker with name: ' + name);
-    }
-    return foundWorker.configuration as unknown as T;
-  }
-
-  constructor(runEveryMinute: number) {
-    super('median', 'Median Precomputer', runEveryMinute);
+  constructor(runEveryMinute: number, configVersion: string) {
+    super('median', 'Median Precomputer', runEveryMinute, configVersion);
   }
 
   override async init() {
-    const precomputers = await Configuration.getPrecomputersConfiguration();
+    const precomputers = await Configuration.getPrecomputersConfiguration(this.configVersion);
 
     if (precomputers.precomputers == undefined) {
       return;
@@ -40,7 +28,7 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.MedianPrec
       foundPrecomputer.configuration as unknown as WorkerConfiguration.MedianPrecomputerConfiguration
     );
 
-    this.tokens = await Configuration.getTokensConfiguration();
+    this.tokens = await Configuration.getTokensConfiguration(this.configVersion);
   }
 
   async runSpecific() {

@@ -24,8 +24,8 @@ import { UniswapV3Constants } from './UniswapV3Constants';
 import { getAllPoolsToFetch, parseEvent, translateTopicFilters } from './UniswapV3Utils';
 
 export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
-  constructor(runEveryMinutes: number) {
-    super('uniswapv3', 'UniswapV3 Fetcher', runEveryMinutes);
+  constructor(runEveryMinutes: number, configVersion: string) {
+    super('uniswapv3', 'UniswapV3 Fetcher', runEveryMinutes, configVersion);
   }
   async runSpecific(): Promise<void> {
     this.createDataDirForWorker();

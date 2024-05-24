@@ -500,7 +500,7 @@ async function debugMetaStable() {
     line,
     1,
     0,
-    await Configuration.getTokensConfiguration()
+    await Configuration.getTokensConfiguration('ethereum')
   );
   console.log(result);
 }
@@ -519,7 +519,13 @@ async function debugWeightedPoolTwoTokens() {
     computePrice: false
   };
 
-  const result = await computeSlippageMapForBalancerPool(cfg, line, 0, 1, await Configuration.getTokensConfiguration());
+  const result = await computeSlippageMapForBalancerPool(
+    cfg,
+    line,
+    0,
+    1,
+    await Configuration.getTokensConfiguration('ethereum')
+  );
   console.log(result);
 }
 

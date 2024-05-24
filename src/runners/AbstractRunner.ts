@@ -1,5 +1,5 @@
-import { SYNC_FILENAMES, UpdateSyncFile, WaitUntilDone } from '../../utils/Sync';
-import { sleep } from '../../utils/Utils';
+import { SYNC_FILENAMES, UpdateSyncFile, WaitUntilDone } from '../utils/Sync';
+import { sleep } from '../utils/Utils';
 import { RunWorkable } from './interfaces/RunWorkable';
 import { Runnable } from './interfaces/Runnable';
 import { duration } from 'duration-pretty';

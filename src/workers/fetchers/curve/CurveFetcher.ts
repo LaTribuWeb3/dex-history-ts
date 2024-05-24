@@ -57,8 +57,8 @@ type CurveData = {
 };
 
 export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
-  constructor(runEveryMinutes: number) {
-    super('curve', 'Curve Fetcher', runEveryMinutes);
+  constructor(runEveryMinutes: number, configVersion: string) {
+    super('curve', 'Curve Fetcher', runEveryMinutes, configVersion);
   }
 
   SAVE_BLOCK_STEP = 50;

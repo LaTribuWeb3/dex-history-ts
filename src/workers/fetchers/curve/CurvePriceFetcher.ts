@@ -15,8 +15,8 @@ import {
 import { CurveContract, CurveUtils } from './CurveContract';
 
 export class CurvePriceFetcher extends BaseFetcher<CurveWorkerConfiguration> {
-  constructor(runEveryMinutes: number) {
-    super('curve', 'Curve Price Fetcher', runEveryMinutes);
+  constructor(runEveryMinutes: number, configVersion: string) {
+    super('curve', 'Curve Price Fetcher', runEveryMinutes, configVersion);
   }
 
   async runSpecific(): Promise<void> {

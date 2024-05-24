@@ -19,7 +19,7 @@ export class Configuration {
   }
 
   static async getWorkersConfiguration(
-    configVersion = 'ethereum'
+    configVersion: string
   ): Promise<WorkersConfiguration<WorkerConfiguration.FetcherConfiguration>> {
     const configKey = `worker-${configVersion}`;
     const workersConfigFile =
@@ -35,7 +35,7 @@ export class Configuration {
     return workers;
   }
 
-  static async getTokensConfiguration(configVersion = 'ethereum'): Promise<TokenList> {
+  static async getTokensConfiguration(configVersion: string): Promise<TokenList> {
     const configKey = `tokens-${configVersion}`;
     const tokensConfigFile =
       process.env.TOKENS_CONFIG_FILE ||
@@ -51,7 +51,7 @@ export class Configuration {
   }
 
   static async getPrecomputersConfiguration(
-    configVersion = 'ethereum'
+    configVersion: string
   ): Promise<WorkerConfiguration.PrecomputersConfiguration> {
     const configKey = `precomputers-${configVersion}`;
     const precomputersConfigFile =
