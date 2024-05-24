@@ -57,7 +57,7 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
     }
 
     if (stalePools.length > 0) {
-      console.warn(`Stale pools: ${stalePools.join(',')}`);
+      console.warn(`[${this.monitoringName}] | Stale pools: ${stalePools.join(',')}`);
     }
 
     const fetcherResult: FetcherResults = {
@@ -99,7 +99,9 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
     const pairAddress: string = await uniswapV2Factory.getPair(token0Address, token1Address);
 
     if (pairAddress == ethers.ZeroAddress) {
-      throw new Error(`Could not find address with tokens  ${token0Symbol} and ${token1Symbol}`);
+      throw new Error(
+        `[${this.monitoringName}] | Could not find address with tokens  ${token0Symbol} and ${token1Symbol}`
+      );
     }
 
     const pairContract = UniswapV2Pair__factory.connect(pairAddress, this.web3Provider);
@@ -107,13 +109,13 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
     const contractToken0: string = await pairContract.token0();
 
     if (contractToken0.toLowerCase() != token0Address.toLowerCase()) {
-      throw new Error('Order mismatch between configuration and uniswapv2 pair');
+      throw new Error(`[${this.monitoringName}] | Order mismatch between configuration and uniswapv2 pair`);
     }
 
     const contractToken1: string = await pairContract.token1();
 
     if (contractToken1.toLowerCase() != token1Address.toLowerCase()) {
-      throw new Error('Order mismatch between configuration and uniswapv2 pair');
+      throw new Error(`[${this.monitoringName}] | Order mismatch between configuration and uniswapv2 pair`);
     }
 
     const initBlockStep = 500000;
@@ -134,7 +136,7 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
       const deployBlockNumber = await retry(Web3Utils.GetContractCreationBlockNumber, [pairAddress, this.workerName]);
 
       if (!deployBlockNumber) {
-        throw new Error('Deploy block is null when getting the pair address creation block');
+        throw new Error(`[${this.monitoringName}] | Deploy block is null when getting the pair address creation block`);
       }
       startBlock = deployBlockNumber + 100_000; // leave 100k blocks ~2 weeks after pool creation because many pools starts with weird data
     }
@@ -144,7 +146,7 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
     }
 
     console.log(
-      `${this.workerName}[${pairKey}]: start fetching data for ${
+      `[${this.monitoringName}] | [${pairKey}] | Start fetching data for ${
         currentBlock - startBlock
       } blocks to reach current block: ${currentBlock}`
     );
@@ -177,7 +179,7 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
       }
 
       console.log(
-        `${this.workerName}[${pairKey}]: [${fromBlock} - ${toBlock}] found ${
+        `[${this.monitoringName}] | [${pairKey}] | [${fromBlock} - ${toBlock}] found ${
           events.length
         } Sync events after ${cptError} errors (fetched ${toBlock - fromBlock + 1} blocks)`
       );
@@ -262,7 +264,7 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
     const allUnifiedFilesForDirectory: string[] = getAllPreComputed(platform);
 
     for (const unifiedFileToProcess of allUnifiedFilesForDirectory) {
-      console.log(`truncateUnifiedFiles: working on ${unifiedFileToProcess}`);
+      console.log(`[${this.monitoringName}] | TruncateUnifiedFiles: working on ${unifiedFileToProcess}`);
       const linesToKeep: string[] = ['blocknumber,price,slippagemap\n'];
       const linesToProcess: string[] = fs.readFileSync(unifiedFileToProcess, 'utf-8').split('\n'); // To put in the helper with a condition as well
       let deletedLines = 0;
@@ -280,14 +282,16 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
       }
 
       if (deletedLines === 0) {
-        console.log(`truncateUnifiedFiles: no data to be truncated from ${unifiedFileToProcess}`);
+        console.log(
+          `[${this.monitoringName}] | TruncateUnifiedFiles: no data to be truncated from ${unifiedFileToProcess}`
+        );
         continue;
       }
 
       const stagingFilepath: string = unifiedFileToProcess + '-staging';
       fs.writeFileSync(stagingFilepath, linesToKeep.join(''));
       console.log(
-        `truncateUnifiedFiles: ${unifiedFileToProcess} will be truncated from ${linesToProcess.length} to ${linesToKeep.length} lines`
+        `[${this.monitoringName}] | TruncateUnifiedFiles: ${unifiedFileToProcess} will be truncated from ${linesToProcess.length} to ${linesToKeep.length} lines`
       );
       // Adjust the retrySync function as per your project's implementation.
       fs.renameSync(stagingFilepath, unifiedFileToProcess);
@@ -319,7 +323,7 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
   }
 
   async createUnifiedFileForPair(endBlock: number, fromSymbol: string, toSymbol: string) {
-    console.log(`${this.workerName}: create/append for ${fromSymbol} ${toSymbol}`);
+    console.log(`[${this.monitoringName}] | Create/append for ${fromSymbol} ${toSymbol}`);
     const unifiedFullFilename = generateUnifiedCSVFilePath(this.workerName, fromSymbol + '-' + toSymbol);
     const unifiedFullFilenamePrice = generatePriceCSVFilePath(this.workerName, fromSymbol + '-' + toSymbol);
     let sinceBlock = 0;
@@ -341,7 +345,7 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
       fs.writeFileSync(unifiedFullFilenamePrice, 'blocknumber,price\n');
     }
 
-    console.log(`${this.workerName}: getting data since ${sinceBlock} to ${endBlock}`);
+    console.log(`[${this.monitoringName}] | Getting data since ${sinceBlock} to ${endBlock}`);
     const univ2Data: {
       [blockNumber: string]: {
         fromReserve: string;
@@ -382,13 +386,13 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
     }
 
     if (toWrite.length == 0) {
-      console.log(`${this.workerName}: nothing to add to file`);
+      console.log(`[${this.monitoringName}] | Nothing to add to file`);
     } else {
       fs.appendFileSync(unifiedFullFilename, toWrite.join(''));
     }
 
     if (toWritePrice.length == 0) {
-      console.log(`${this.workerName}: nothing to add to price file`);
+      console.log(`[${this.monitoringName}] | Nothing to add to price file`);
     } else {
       fs.appendFileSync(unifiedFullFilenamePrice, toWritePrice.join(''));
     }
@@ -402,7 +406,7 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
   ): { [blockNumber: string]: { fromReserve: string; toReserve: string } } {
     const fileInfo = this.getUniV2DataFile(fromSymbol, toSymbol);
     if (!fileInfo) {
-      throw new Error(`Could not find pool data for ${fromSymbol}/${toSymbol} on uniswapv2`);
+      throw new Error(`[${this.monitoringName}] | Could not find pool data for ${fromSymbol}/${toSymbol} on uniswapv2`);
     }
     // load the file in RAM
     const fileContent = fs.readFileSync(fileInfo.path, 'utf-8').split('\n');

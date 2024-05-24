@@ -42,10 +42,16 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
 
     console.log(`${this.workerName}: getting pools to fetch`);
 
-    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(this.workerName, this.getConfiguration());
+    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(
+      this.workerName,
+      this.getConfiguration(),
+      this.tokens
+    );
 
     console.log(
-      `${this.workerName}: found ${poolsToFetch.length} pools to fetch from ${this.getConfiguration().pairs.length} pairs in config`
+      `${this.workerName}: found ${poolsToFetch.length} pools to fetch from ${
+        this.getConfiguration().pairs.length
+      } pairs in config`
     );
 
     for (const fetchConfig of poolsToFetch) {
@@ -423,8 +429,8 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     );
 
     let latestData: BlockWithTick;
-    const token0 = await getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token0);
-    const token1 = await getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token1);
+    const token0 = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
+    const token1 = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
 
     if (fs.existsSync(latestDataFilePath)) {
       // if the file exists, set its value to latestData
@@ -527,8 +533,8 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     dataFileName: string,
     minStartBlock: number
   ) {
-    const token0 = await getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token0);
-    const token1 = await getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token1);
+    const token0 = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
+    const token1 = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
 
     const dtStart = Date.now();
     const saveData = [];

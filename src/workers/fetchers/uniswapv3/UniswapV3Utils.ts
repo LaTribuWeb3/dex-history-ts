@@ -2,10 +2,14 @@ import { UniswapV3Factory__factory } from '../../../contracts/types/factories/un
 import { UniSwapV3WorkerConfiguration } from '../../configuration/WorkerConfiguration';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import * as ethers from 'ethers';
-import { getConfTokenBySymbol } from '../../../utils/Utils';
 import { UniswapV3Pair__factory } from '../../../contracts/types/factories/uniswapv3/UniswapV3Pair__factory';
+import { TokenList } from '../../configuration/TokenData';
 
-export async function getAllPoolsToFetch(workerName: string, workerConfiguration: UniSwapV3WorkerConfiguration) {
+export async function getAllPoolsToFetch(
+  workerName: string,
+  workerConfiguration: UniSwapV3WorkerConfiguration,
+  tokens: TokenList
+) {
   const univ3Factory = UniswapV3Factory__factory.connect(
     workerConfiguration.factoryAddress,
     Web3Utils.getMulticallProvider()
@@ -16,8 +20,8 @@ export async function getAllPoolsToFetch(workerName: string, workerConfiguration
   const promises = [];
   for (const pairToFetch of workerConfiguration.pairs) {
     for (const fee of workerConfiguration.fees) {
-      const token0 = await getConfTokenBySymbol(pairToFetch.token0);
-      const token1 = await getConfTokenBySymbol(pairToFetch.token1);
+      const token0 = tokens[pairToFetch.token0];
+      const token1 = tokens[pairToFetch.token1];
 
       promises.push(univ3Factory.getPool(token0.address, token1.address, fee));
     }

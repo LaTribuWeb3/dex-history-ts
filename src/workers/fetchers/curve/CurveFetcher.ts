@@ -176,7 +176,12 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
     const lastLine = await readLastLine(historyFileName);
     const lastData: TokenWithReserve = {};
     for (let i = 0; i < fetchConfig.tokens.length; i++) {
-      const symbolAndReserve = await extractFetchConfigAndNormalize(fetchConfig, i, lastLine, fetchConfig.isCryptoV2 ? 5 : 3);
+      const symbolAndReserve = await this.extractFetchConfigAndNormalize(
+        fetchConfig,
+        i,
+        lastLine,
+        fetchConfig.isCryptoV2 ? 5 : 3
+      );
       lastData[symbolAndReserve.tokenSymbol] = symbolAndReserve.tokenReserve;
     }
 
@@ -402,21 +407,21 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
     const lineToWrite = promiseResults.map((_) => _.toString()).join(',');
     return lineToWrite;
   }
-}
 
-async function extractFetchConfigAndNormalize(
-  fetchConfig: CurvePairConfiguration,
-  i: number,
-  lastLine: string,
-  indexOffset: number
-): Promise<{ tokenSymbol: string; tokenReserve: number }> {
-  const tokenSymbol = fetchConfig.tokens[i].symbol;
-  const confToken = await getConfTokenBySymbol(tokenSymbol);
-  const tokenReserve = normalize(lastLine.split(',')[i + indexOffset], confToken.decimals);
-  return {
-    tokenSymbol: tokenSymbol,
-    tokenReserve: tokenReserve
-  };
+  async extractFetchConfigAndNormalize(
+    fetchConfig: CurvePairConfiguration,
+    i: number,
+    lastLine: string,
+    indexOffset: number
+  ): Promise<{ tokenSymbol: string; tokenReserve: number }> {
+    const tokenSymbol = fetchConfig.tokens[i].symbol;
+    const confToken = this.tokens[tokenSymbol];
+    const tokenReserve = normalize(lastLine.split(',')[i + indexOffset], confToken.decimals);
+    return {
+      tokenSymbol: tokenSymbol,
+      tokenReserve: tokenReserve
+    };
+  }
 }
 
 async function generateUnifiedFileCurve(currentBlock: number) {
@@ -485,6 +490,8 @@ async function createUnifiedFileForPair(
   );
   const poolData = getCurveDataforBlockIntervalAnyVersion(poolName, sinceBlock, endBlock);
 
+  const precisions = [];
+
   for (const blockNumber of Object.keys(poolData.reserveValues)) {
     const blockNumberInt = parseInt(blockNumber);
     const dataForBlock: BlockData = poolData.reserveValues[blockNumberInt];
@@ -495,10 +502,11 @@ async function createUnifiedFileForPair(
 
     let priceAndSlippage = undefined;
     if (poolData.isCryptoV2) {
-      const precisions = [];
-      for (const token of poolData.poolTokens) {
-        const tokenConf = await getConfTokenBySymbol(token);
-        precisions.push(10n ** BigInt(18 - tokenConf.decimals));
+      if (precisions.length == 0) {
+        for (const token of poolData.poolTokens) {
+          const tokenConf = await getConfTokenBySymbol(token);
+          precisions.push(10n ** BigInt(18 - tokenConf.decimals));
+        }
       }
 
       priceAndSlippage = await computePriceAndSlippageMapForReserveValueCryptoV2(

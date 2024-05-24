@@ -6,6 +6,7 @@ import * as WorkerConfiguration from './configuration/WorkerConfiguration';
 import * as dotenv from 'dotenv';
 import { TokenList } from './configuration/TokenData';
 import { Workable } from './runners/interfaces/Workable';
+import duration from 'duration-pretty';
 dotenv.config();
 
 export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfiguration> implements Workable {
@@ -61,34 +62,37 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
       const start = Date.now();
       await this.SendMonitoringData(MonitoringStatusEnum.RUNNING, Math.round(start / 1000));
 
-      console.log(`${this.workerName}: initializing`);
+      console.log(`[${this.monitoringName}] | Initializing`);
 
       await this.init();
 
       if (Object.keys(this.tokens).length == 0) {
-        throw new Error(`${this.workerName}: token list not initialized`);
+        throw new Error(`[${this.monitoringName}] | Token list not initialized`);
       }
 
       if (this.configuration instanceof WorkerConfiguration.EmptyConfiguration) {
-        throw new Error(`${this.workerName}: configuration not initialized`);
+        throw new Error(`[${this.monitoringName}] | Configuration not initialized`);
       }
 
       // Step 3: Log the start of the specific worker run
-      console.log(`${this.workerName}: starting run specific`);
+      console.log(`[${this.monitoringName}] | Starting run specific`);
 
       // Step 4: Execute the worker's specific logic
       await this.runSpecific();
 
       // Step 5: Log the completion of the specific worker run
-      console.log(`${this.workerName}: ending run specific`);
+      console.log(`[${this.monitoringName}] | Ending run specific`);
 
       // Step 6: Calculate duration and send monitoring data for "SUCCESS" status
       const runEndDate = Math.round(Date.now() / 1000);
       const durationSec = runEndDate - Math.round(start / 1000);
+      console.log(
+        `[${this.monitoringName}] | run duration: ${duration(durationSec, 'seconds').format('HH[h]mm[m]ss[s]')}`
+      );
       await this.SendMonitoringData(MonitoringStatusEnum.SUCCESS, undefined, runEndDate, durationSec, undefined);
     } catch (err) {
       // Step 7: Handle exceptions by logging and sending monitoring data for "ERROR" status
-      console.error(`${this.workerName}: An exception occurred: ${err}`);
+      console.error(`[${this.monitoringName}] | An exception occurred: ${err}`);
       console.error(err);
       await this.SendMonitoringData(
         MonitoringStatusEnum.ERROR,

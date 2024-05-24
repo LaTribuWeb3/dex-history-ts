@@ -42,7 +42,7 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
     const poolsData: PoolData[] = [];
 
     for (const balancerPoolConfig of this.getConfiguration().pools) {
-      console.log(`Start fetching pool data for ${balancerPoolConfig.name}`);
+      console.log(`[${this.monitoringName}] | Start fetching pool data for ${balancerPoolConfig.name}`);
       const promise = this.fetchBalancerPool(balancerPoolConfig, endBlock, minStartBlock);
       poolsData.push({
         address: balancerPoolConfig.address,
@@ -66,13 +66,13 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
     fs.writeFileSync(generateFetcherResultFilename(this.workerName), JSON.stringify(fetcherResult, null, 2));
 
     for (const balancerPoolConfig of this.getConfiguration().pools) {
-      console.log(`Start generating unified pool data for ${balancerPoolConfig.name}`);
+      console.log(`[${this.monitoringName}] | Start generating unified pool data for ${balancerPoolConfig.name}`);
       await this.generateUnifiedData(balancerPoolConfig);
     }
   }
 
   async fetchBalancerPool(balancerPoolConfig: BalancerPoolConfiguration, endBlock: number, minStartBlock: number) {
-    const logLabel = `fetchBalancerPool[${balancerPoolConfig.name}]`;
+    const logLabel = `[${this.monitoringName}] | [${balancerPoolConfig.name}] |`;
 
     const historyFileName = generateRawCSVFilePathForBalancerPool(this.workerName, balancerPoolConfig.name);
     let startBlock = Math.max(minStartBlock, balancerPoolConfig.deployBlock);
@@ -92,16 +92,16 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
     }
 
     if (startBlock > endBlock) {
-      console.log(`${logLabel}: No new data to fetch`);
+      console.log(`${logLabel} No new data to fetch`);
       return 0;
     }
 
-    console.log(`${logLabel}: starting since block ${startBlock} to block ${endBlock}`);
+    console.log(`${logLabel} Starting since block ${startBlock} to block ${endBlock}`);
 
     let lineCounter = 0;
     switch (balancerPoolConfig.type) {
       default:
-        throw new Error(`Unknown type: ${balancerPoolConfig.type}`);
+        throw new Error(`[${this.monitoringName}] | Unknown type: ${balancerPoolConfig.type}`);
       case BalancerPoolTypeEnum.META_STABLE_POOL:
       case BalancerPoolTypeEnum.COMPOSABLE_STABLE_POOL:
         lineCounter = await this.fetchMetaStablePool(balancerPoolConfig, historyFileName, startBlock, endBlock);
@@ -111,7 +111,7 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
         break;
     }
 
-    console.log(`${logLabel}: ending. Fetched ${lineCounter} data since block ${startBlock}`);
+    console.log(`${logLabel} Ending. Fetched ${lineCounter} data since block ${startBlock}`);
   }
 
   async fetchMetaStablePool(
@@ -213,7 +213,7 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
   async generateUnifiedData(balancerPoolConfig: BalancerPoolConfiguration) {
     const rawDataFilePath = generateRawCSVFilePathForBalancerPool(this.workerName, balancerPoolConfig.name);
     if (!fs.existsSync(rawDataFilePath)) {
-      console.warn(`Cannot find raw data history file: ${rawDataFilePath}`);
+      console.warn(`[${this.monitoringName}] | Cannot find raw data history file: ${rawDataFilePath}`);
     }
 
     for (const base of balancerPoolConfig.tokenSymbols) {

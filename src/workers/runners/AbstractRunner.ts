@@ -1,8 +1,8 @@
 import { SYNC_FILENAMES, UpdateSyncFile, WaitUntilDone } from '../../utils/Sync';
 import { sleep } from '../../utils/Utils';
-import { EmptyConfiguration } from '../configuration/WorkerConfiguration';
 import { RunWorkable } from './interfaces/RunWorkable';
 import { Runnable } from './interfaces/Runnable';
+import { duration } from 'duration-pretty';
 
 export abstract class AbstractRunner implements Runnable {
   static RUN_EVERY_MINUTES = 60;
@@ -26,20 +26,23 @@ export abstract class AbstractRunner implements Runnable {
   }
 
   async run() {
-    // eslint-disable-next-line no-constant-condition
     do {
       const start = Date.now();
       await this.init();
 
       await this.runSpecific();
 
-      if (this.shouldWait) {
-        const runEndDate = Math.round(Date.now() / 1000);
-        const durationSec = runEndDate - Math.round(start / 1000);
+      const runEndDate = Math.round(Date.now() / 1000);
+      const durationSec = runEndDate - Math.round(start / 1000);
 
+      console.log(`[${this.name}] | run duration: ${duration(durationSec, 'seconds').format('HH[h]mm[m]ss[s]')}`);
+
+      if (this.shouldWait) {
         const sleepTime = 1000 * 60 * AbstractRunner.RUN_EVERY_MINUTES - durationSec * 1000;
         if (sleepTime > 0) {
-          console.log(`sleeping ${Math.round(sleepTime / 1000)} seconds`);
+          console.log(
+            `[${this.name}] | sleeping ${duration(Math.round(sleepTime / 1000), 'seconds').format('HH[h]mm[m]ss[s]')}`
+          );
           await sleep(sleepTime);
         }
       }
@@ -50,11 +53,15 @@ export abstract class AbstractRunner implements Runnable {
     if (this.mutex) await WaitUntilDone(SYNC_FILENAMES.FETCHERS_LAUNCHER);
     if (this.mutex) UpdateSyncFile(SYNC_FILENAMES.FETCHERS_LAUNCHER, true);
 
-    for (const fetcherToLaunch of this.workersToLaunch) {
-      console.log(`Starting worker ${fetcherToLaunch.workerName} (${fetcherToLaunch.monitoringName})`);
-      await fetcherToLaunch.run();
+    try {
+      for (const fetcherToLaunch of this.workersToLaunch) {
+        console.log(
+          `[${this.name}] | Starting worker ${fetcherToLaunch.workerName} (${fetcherToLaunch.monitoringName})`
+        );
+        await fetcherToLaunch.run();
+      }
+    } finally {
+      if (this.mutex) UpdateSyncFile(SYNC_FILENAMES.FETCHERS_LAUNCHER, false);
     }
-
-    if (this.mutex) UpdateSyncFile(SYNC_FILENAMES.FETCHERS_LAUNCHER, false);
   }
 }

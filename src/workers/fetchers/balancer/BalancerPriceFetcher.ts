@@ -31,7 +31,7 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
       if (!balancerPoolConfig.computePrice) {
         continue;
       }
-      console.log(`Start fetching pool data for ${balancerPoolConfig.name}`);
+      console.log(`[${this.monitoringName}] | Start fetching pool data for ${balancerPoolConfig.name}`);
       const promise = this.fetchPriceBalancerPool(balancerPoolConfig, web3Provider, endBlock);
       // await promise;
       promises.push(promise);
@@ -45,7 +45,7 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
     web3Provider: ethers.ethers.JsonRpcProvider,
     endBlock: number
   ) {
-    const logLabel = `fetchPriceBalancerPool[${balancerPoolConfig.name}]`;
+    const logLabel = `[${this.monitoringName}] | [${balancerPoolConfig.name}] |`;
     const balancerVaultContract = BalancerVault__factory.connect(this.getConfiguration().vaultAddress, web3Provider);
 
     const lastFetchPoolFilename = generateLastFetchFileName(this.workerName, balancerPoolConfig.name);
@@ -72,11 +72,11 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
     }
 
     if (startBlock > endBlock) {
-      console.log(`${logLabel}: No new data to fetch`);
+      console.log(`${logLabel} No new data to fetch`);
       return 0;
     }
 
-    console.log(`${logLabel}: starting since block ${startBlock} to block ${endBlock}`);
+    console.log(`${logLabel} Starting since block ${startBlock} to block ${endBlock}`);
 
     const initBlockStep = 500000;
     let priceCounter = 0;
@@ -112,9 +112,9 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
       }
 
       console.log(
-        `${logLabel}: [${fromBlock} - ${toBlock}] found ${
-          events.length
-        } Swap events after ${cptError} errors (fetched ${toBlock - fromBlock + 1} blocks)`
+        `${logLabel} [${fromBlock} - ${toBlock}] found ${events.length} Swap events after ${cptError} errors (fetched ${
+          toBlock - fromBlock + 1
+        } blocks)`
       );
       cptError = 0;
 
@@ -156,7 +156,7 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
       fromBlock = toBlock + 1;
     }
 
-    console.log(`${logLabel}: ending. Fetched ${priceCounter} prices since block ${startBlock}`);
+    console.log(`${logLabel} Ending. Fetched ${priceCounter} prices since block ${startBlock}`);
     const lastFetchData = { lastBlockFetched: endBlock };
     fs.writeFileSync(lastFetchPoolFilename, JSON.stringify(lastFetchData, null, 2));
   }
