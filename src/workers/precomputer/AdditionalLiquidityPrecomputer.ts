@@ -5,7 +5,7 @@ import * as WorkerConfiguration from '../configuration/WorkerConfiguration';
 import * as fs from 'fs';
 import { generatePreComputedForWorker, getAllPreComputed } from '../configuration/WorkerConfiguration';
 import { Configuration } from '../../config/Configuration';
-
+import path from 'path';
 export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfiguration.AdditionalLiquidityPrecomputerConfiguration> {
   constructor(runEveryMinute: number, configVersion: string) {
     super('additionalLiquidityProvider', 'Additional Liquidity Provider', runEveryMinute, configVersion);
@@ -54,7 +54,8 @@ export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfigurati
   getFilesForPlatform(from: string, to: string, platform: string) {
     const filenamesToTransform = [];
     const allPreComputedFiles = getAllPreComputed(platform);
-    const filenames = allPreComputedFiles.map((compo) => compo.split('\\').pop());
+
+    const filenames = allPreComputedFiles.map((compo) => compo.split(path.sep).pop());
     for (const filename of filenames) {
       if (filename == undefined) continue;
       const base = filename.split('-')[0];
@@ -125,3 +126,11 @@ export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfigurati
     }
   }
 }
+
+// async function debug() {
+//   const runner = new AdditionalLiquidityPrecomputer(60, 'ethereum');
+//   await runner.init();
+//   await runner.runSpecific();
+// }
+
+// debug();
