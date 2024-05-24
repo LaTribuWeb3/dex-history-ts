@@ -1,537 +1,436 @@
 {
-	"precomputers": [
-		{
-			"name": "median",
-			"configuration": {
-				"platforms": [
-					"uniswapv2",
-					"curve",
-					"uniswapv3",
-					"sushiswapv2",
-					"balancer",
-					"all"
-				],
-				"watchedPairs": {
-					"WETH": [
-						{
-							"quote": "rETH",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "weETH",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "wstETH",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "stETH",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "USDC",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "PEPE",
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "BLUR",
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "SHIB",
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "HarryPotterObamaSonic10Inu",
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "cbETH",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "WBTC",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "DAI",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "MANA",
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "MKR",
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "SNX",
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "sUSD",
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "UNI",
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "USDT",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "sDAI",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "rsETH",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "ezETH",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "pufETH",
-							"exportToInternalDashboard": true
-						}
-					],
-					"USDC": [
-						{
-							"quote": "rETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "weETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "MKR",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "LINK",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "UNI",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "LDO",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "RPL",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "APE",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "CVX",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "FXS",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "COMP",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "WBTC",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "CRV",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "DAI",
-							"pivotsSpecific": {
-								"sushiswapv2": [
-									"WETH"
-								]
-							},
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "sDAI",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "MANA",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "SNX",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "sUSD",
-							"pivotsSpecific": {
-								"uniswapv2": [
-									"WETH"
-								]
-							},
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "USDT",
-							"pivotsSpecific": {
-								"sushiswapv2": [
-									"WETH"
-								]
-							},
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "wstETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "stETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "cbETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "rsETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "ezETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "pufETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						}
-					],
-					"WBTC": [
-						{
-							"quote": "DAI",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "MANA",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "MKR",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "SNX",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "sUSD",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "UNI",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": false
-						},
-						{
-							"quote": "USDT",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "wstETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "rETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "weETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						}
-					],
-					"USDT": [
-						{
-							"quote": "wstETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "DAI",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "sDAI",
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "rETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "weETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						}
-					],
-					"wstETH": [
-						{
-							"quote": "rsETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "ezETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "pufETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "DAI",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "rETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "weETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						}
-					],
-					"DAI": [
-						{
-							"quote": "rETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "weETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						}
-					],
-					"rETH": [
-						{
-							"quote": "weETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "rsETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						},
-						{
-							"quote": "pufETH",
-							"pivots": [
-								"WETH"
-							],
-							"exportToInternalDashboard": true
-						}
-					]
-				}
-			}
-		},
-		{
-			"name": "additionalLiquidityProvider",
-			"configuration": {
-				"platformedAdditionalLiquidities": [
-					{
-						"platform": "curve",
-						"additionalLiquidities": [
-							{
-								"from": "stETH",
-								"pivot": "WETH",
-								"to": "wstETH",
-								"priceSource": "uniswapv3",
-								"priceFrom": "wstETH",
-								"priceTo": "WETH"
-							}
-						]
-					},
-					{
-						"platform": "uniswapv3",
-						"additionalLiquidities": [
-							{
-								"from": "wstETH",
-								"pivot": "WETH",
-								"to": "stETH",
-								"priceSource": "uniswapv3",
-								"priceFrom": "WETH",
-								"priceTo": "wstETH"
-							},
-							{
-								"from": "wstETH",
-								"pivot": "USDC",
-								"to": "stETH",
-								"priceSource": "uniswapv3",
-								"priceFrom": "WETH",
-								"priceTo": "wstETH"
-							},
-							{
-								"from": "wstETH",
-								"pivot": "WBTC",
-								"to": "stETH",
-								"priceSource": "uniswapv3",
-								"priceFrom": "WETH",
-								"priceTo": "wstETH"
-							}
-						]
-					},
-					{
-						"platform": "balancer",
-						"additionalLiquidities": [
-							{
-								"from": "wstETH",
-								"pivot": "WETH",
-								"to": "stETH",
-								"priceSource": "uniswapv3",
-								"priceFrom": "WETH",
-								"priceTo": "wstETH"
-							}
-						]
-					}
-				]
-			}
-		}
-	]
+  "precomputers": [
+    {
+      "name": "median",
+      "configuration": {
+        "platforms": [
+          "uniswapv2",
+          "curve",
+          "uniswapv3",
+          "sushiswapv2",
+          "balancer",
+          "all"
+        ],
+        "watchedPairs": [
+          {
+            "base": "WETH",
+            "quotes": [
+              {
+                "quote": "rETH",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "wstETH",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "stETH",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "USDC",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "PEPE",
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "BLUR",
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "SHIB",
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "HarryPotterObamaSonic10Inu",
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "cbETH",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "WBTC",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "DAI",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "MANA",
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "MKR",
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "SNX",
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "sUSD",
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "UNI",
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "USDT",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "sDAI",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "rsETH",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "ezETH",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "pufETH",
+                "exportToInternalDashboard": true
+              }
+            ]
+          },
+          {
+            "base": "USDC",
+            "quotes": [
+              {
+                "quote": "rETH",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "MKR",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "LINK",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "UNI",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "LDO",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "RPL",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "APE",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "CVX",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "FXS",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "COMP",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "WBTC",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "CRV",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "DAI",
+                "pivotsSpecific": [
+                  {
+                    "platform": "sushiswapv2",
+                    "pivots": [
+                      "WETH"
+                    ]
+                  }
+                ],
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "sDAI",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "MANA",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "SNX",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "sUSD",
+                "pivotsSpecific": [
+                  {
+                    "platform": "uniswapv2",
+                    "pivots": [
+                      "WETH"
+                    ]
+                  }
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "USDT",
+                "pivotsSpecific": [
+                  {
+                    "platform": "sushiswapv2",
+                    "pivots": [
+                      "WETH"
+                    ]
+                  }
+                ],
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "wstETH",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "stETH",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "cbETH",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "rsETH",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "ezETH",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "pufETH",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              }
+            ]
+          },
+          {
+            "base": "WBTC",
+            "quotes": [
+              {
+                "quote": "DAI",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "MANA",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "MKR",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "SNX",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "sUSD",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "UNI",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": false
+              },
+              {
+                "quote": "USDT",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "wstETH",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": true
+              }
+            ]
+          },
+          {
+            "base": "USDT",
+            "quotes": [
+              {
+                "quote": "wstETH",
+                "pivots": [
+                  "WETH"
+                ],
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "DAI",
+                "exportToInternalDashboard": true
+              },
+              {
+                "quote": "sDAI",
+                "exportToInternalDashboard": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "additionalLiquidityProvider",
+      "configuration": {
+        "platformedAdditionalLiquidities": [
+          {
+            "platform": "curve",
+            "additionalLiquidities": [
+              {
+                "from": "stETH",
+                "pivot": "WETH",
+                "to": "wstETH",
+                "priceSource": "uniswapv3",
+                "priceFrom": "wstETH",
+                "priceTo": "WETH"
+              }
+            ]
+          },
+          {
+            "platform": "uniswapv3",
+            "additionalLiquidities": [
+              {
+                "from": "wstETH",
+                "pivot": "WETH",
+                "to": "stETH",
+                "priceSource": "uniswapv3",
+                "priceFrom": "WETH",
+                "priceTo": "wstETH"
+              },
+              {
+                "from": "wstETH",
+                "pivot": "USDC",
+                "to": "stETH",
+                "priceSource": "uniswapv3",
+                "priceFrom": "WETH",
+                "priceTo": "wstETH"
+              },
+              {
+                "from": "wstETH",
+                "pivot": "WBTC",
+                "to": "stETH",
+                "priceSource": "uniswapv3",
+                "priceFrom": "WETH",
+                "priceTo": "wstETH"
+              }
+            ]
+          },
+          {
+            "platform": "balancer",
+            "additionalLiquidities": [
+              {
+                "from": "wstETH",
+                "pivot": "WETH",
+                "to": "stETH",
+                "priceSource": "uniswapv3",
+                "priceFrom": "WETH",
+                "priceTo": "wstETH"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }
