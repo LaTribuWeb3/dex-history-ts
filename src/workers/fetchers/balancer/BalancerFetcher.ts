@@ -222,7 +222,7 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
           continue;
         }
 
-        await computeBalancerUnifiedDataForPair(base, quote, balancerPoolConfig, rawDataFilePath);
+        await computeBalancerUnifiedDataForPair(base, quote, balancerPoolConfig, rawDataFilePath, this.tokens);
       }
     }
   }

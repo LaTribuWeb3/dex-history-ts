@@ -56,16 +56,6 @@ export function writeContentToFile(syncFilename: string, content: string) {
   fs.writeFileSync(syncFilename, content);
 }
 
-export async function getConfTokenBySymbol(symbol: string): Promise<TokenData> {
-  const tokens = await Configuration.getTokensConfiguration();
-  const tokenConf = tokens[symbol] as TokenData;
-  if (!tokenConf) {
-    throw new Error(`Cannot find token with symbol ${symbol}`);
-  }
-
-  return tokenConf;
-}
-
 export async function getConfTokenByAddress(address: string): Promise<TokenData> {
   const tokens = await Configuration.getTokensConfiguration();
   for (const token of Object.values(tokens)) {

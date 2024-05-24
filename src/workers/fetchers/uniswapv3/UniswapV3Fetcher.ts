@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import { UniswapV3Pair, UniswapV3Pair__factory } from '../../../contracts/types';
 import { Uniswapv3Library } from '../../../library/Uniswapv3Library';
 import { BlockWithTick, SlippageMap } from '../../../models/datainterface/BlockData';
-import retry, { getConfTokenBySymbol } from '../../../utils/Utils';
+import retry from '../../../utils/Utils';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import { getBlocknumberForTimestamp } from '../../../utils/Web3Utils';
 import { BaseFetcher } from '../BaseFetcher';

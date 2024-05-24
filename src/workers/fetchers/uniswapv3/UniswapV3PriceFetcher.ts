@@ -1,7 +1,5 @@
 import { BaseFetcher } from '../BaseFetcher';
 import {
-  CurvePricePairConfiguration,
-  CurveWorkerConfiguration,
   UniSwapV3WorkerConfiguration,
   UniswapV3PairConfiguration,
   Univ3PairWithFeesAndPool,
@@ -11,7 +9,7 @@ import * as ethers from 'ethers';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import { UniswapV3Factory__factory } from '../../../contracts/types/factories/uniswapv3/UniswapV3Factory__factory';
 import { getAllPoolsToFetch, parseEvent, translateTopicFilters } from './UniswapV3Utils';
-import { getConfTokenBySymbol, normalize, sleep } from '../../../utils/Utils';
+import { normalize, sleep } from '../../../utils/Utils';
 import * as fs from 'fs';
 import { readLastLine } from '../../configuration/Helper';
 import { GetContractCreationBlockNumber } from '../../../utils/Web3Utils';

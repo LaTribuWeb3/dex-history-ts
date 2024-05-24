@@ -1,7 +1,7 @@
 import * as ethers from 'ethers';
 import * as fs from 'fs';
 import path from 'path';
-import { getConfTokenBySymbol, normalize, sleep } from '../../../utils/Utils';
+import { normalize, sleep } from '../../../utils/Utils';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import { BaseFetcher } from '../BaseFetcher';
 import { TokenData } from '../../configuration/TokenData';

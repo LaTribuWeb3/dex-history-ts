@@ -1,5 +1,5 @@
-import { getConfTokenBySymbol, normalize } from '../utils/Utils';
-import { TokenData } from '../workers/configuration/TokenData';
+import { normalize } from '../utils/Utils';
+import { TokenData, TokenList } from '../workers/configuration/TokenData';
 
 const baseAmountMap: { [token: string]: bigint } = {
   DAI: 1000n * 10n ** 18n, // 1000 DAI ~= 1000$
@@ -26,7 +26,8 @@ export async function computePriceAndSlippageMapForReserveValueCryptoV2(
   precisions: bigint[],
   gammaArg: bigint,
   Darg: bigint,
-  priceScaleArg: bigint[]
+  priceScaleArg: bigint[],
+  tokens: TokenList
 ) {
   if (poolTokens.length != reservesArgs.length) {
     throw new Error('Tokens array must be same length as reserves array');
@@ -40,8 +41,8 @@ export async function computePriceAndSlippageMapForReserveValueCryptoV2(
 
   const indexFrom = poolTokens.indexOf(fromSymbol);
   const indexTo = poolTokens.indexOf(toSymbol);
-  const fromConf = await getConfTokenBySymbol(fromSymbol);
-  const toConf = await getConfTokenBySymbol(toSymbol);
+  const fromConf = tokens[fromSymbol];
+  const toConf = tokens[toSymbol];
   let baseAmount = baseAmountMap[fromSymbol];
   if (!baseAmount) {
     console.warn(`No base amount for ${fromSymbol}`);
@@ -373,7 +374,8 @@ export async function computePriceAndSlippageMapForReserveValue(
   toSymbol: string,
   poolTokens: string[],
   ampFactor: bigint,
-  reserves: string[]
+  reserves: string[],
+  tokens: TokenList
 ) {
   if (poolTokens.length != reserves.length) {
     throw new Error('Tokens array must be same length as reserves array');
@@ -381,7 +383,7 @@ export async function computePriceAndSlippageMapForReserveValue(
 
   const tokenConfs = [];
   for (const poolToken of poolTokens) {
-    tokenConfs.push(await getConfTokenBySymbol(poolToken));
+    tokenConfs.push(tokens[poolToken]);
   }
 
   const reservesNorm18Dec = getReservesNormalizedTo18Decimals(tokenConfs, reserves);
