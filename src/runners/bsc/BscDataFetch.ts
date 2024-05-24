@@ -17,7 +17,7 @@ export class BscDataFetch extends AbstractRunner {
     const shouldLoop = true;
     const configVersion = 'bsc';
     super(
-      'EthereumDataFetch-Runner',
+      'BSCDataFetch-Runner',
       [
         new CurveFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
         new CurvePriceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion)

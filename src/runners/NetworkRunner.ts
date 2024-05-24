@@ -16,4 +16,5 @@ switch (currentNetwork) {
     throw new Error(`Unknown network: ${currentNetwork}`);
 }
 
+console.log(`NetworkRunner: starting ${currentNetwork}: ${runner.name}`);
 runner.run();
