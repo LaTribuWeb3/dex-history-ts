@@ -10,13 +10,18 @@ export class ComputersRunner extends AbstractRunner implements RunWorkable {
   workerName = 'computers-runner';
 
   constructor() {
+    const mutex = true;
+    const shouldWait = false;
+    const shouldLoop = false;
     super(
+      'Computers-Runner',
       [
-        new MedianPrecomputer(AbstractRunner.RUN_EVERY_MINUTES),
-        new AdditionalLiquidityPrecomputer(AbstractRunner.RUN_EVERY_MINUTES)
+        new MedianPrecomputer(AbstractRunner.RUN_EVERY_MINUTES)
+        // new AdditionalLiquidityPrecomputer(AbstractRunner.RUN_EVERY_MINUTES)
       ],
-      false,
-      true
+      mutex,
+      shouldWait,
+      shouldLoop
     );
   }
 }

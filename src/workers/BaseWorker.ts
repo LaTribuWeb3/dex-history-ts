@@ -31,7 +31,7 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
 
   getConfiguration(): T {
     if (this.configuration instanceof WorkerConfiguration.EmptyConfiguration)
-      throw 'Worker not initialized. Please call "init" before using';
+      throw new Error('Worker not initialized. Please call "init" before using');
     return this.configuration;
   }
 
@@ -60,6 +60,18 @@ export abstract class BaseWorker<T extends WorkerConfiguration.WorkerConfigurati
       // Step 2: Send monitoring data indicating "RUNNING" state
       const start = Date.now();
       await this.SendMonitoringData(MonitoringStatusEnum.RUNNING, Math.round(start / 1000));
+
+      console.log(`${this.workerName}: initializing`);
+
+      await this.init();
+
+      if (Object.keys(this.tokens).length == 0) {
+        throw new Error(`${this.workerName}: token list not initialized`);
+      }
+
+      if (this.configuration instanceof WorkerConfiguration.EmptyConfiguration) {
+        throw new Error(`${this.workerName}: configuration not initialized`);
+      }
 
       // Step 3: Log the start of the specific worker run
       console.log(`${this.workerName}: starting run specific`);

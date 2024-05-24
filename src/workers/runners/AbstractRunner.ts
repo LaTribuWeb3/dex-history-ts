@@ -7,34 +7,29 @@ import { Runnable } from './interfaces/Runnable';
 export abstract class AbstractRunner implements Runnable {
   static RUN_EVERY_MINUTES = 60;
 
+  name: string;
   workersToLaunch: RunWorkable[];
   mutex;
   shouldWait;
+  loop;
 
   async init(): Promise<void> {
-    for (const fetcherToLaunch of this.workersToLaunch) {
-      console.log(`INITIALIZATION FOR ${fetcherToLaunch.monitoringName}`);
-      try {
-        await fetcherToLaunch.init();
-      } catch (e) {
-        throw 'Could not load configuration for worker ' + fetcherToLaunch.monitoringName + ': ' + e;
-      }
-      if (fetcherToLaunch.configuration instanceof EmptyConfiguration) {
-        throw 'Configuration for worker ' + fetcherToLaunch.monitoringName + ' is empty.';
-      }
-    }
+    console.log(`No init needed for ${this.name}`);
   }
 
-  constructor(toLaunch: RunWorkable[], mutex = true, shouldWait = false) {
+  constructor(name: string, toLaunch: RunWorkable[], mutex = true, shouldWait = false, loop = false) {
+    this.name = name;
     this.workersToLaunch = toLaunch;
     this.mutex = mutex;
     this.shouldWait = shouldWait;
+    this.loop = loop;
   }
 
   async run() {
     // eslint-disable-next-line no-constant-condition
-    while (true) {
+    do {
       const start = Date.now();
+      await this.init();
 
       await this.runSpecific();
 
@@ -48,35 +43,18 @@ export abstract class AbstractRunner implements Runnable {
           await sleep(sleepTime);
         }
       }
-    }
+    } while (this.loop);
   }
 
   async runSpecific() {
     if (this.mutex) await WaitUntilDone(SYNC_FILENAMES.FETCHERS_LAUNCHER);
-
-    await this.init();
-
     if (this.mutex) UpdateSyncFile(SYNC_FILENAMES.FETCHERS_LAUNCHER, true);
 
     for (const fetcherToLaunch of this.workersToLaunch) {
       console.log(`Starting worker ${fetcherToLaunch.workerName} (${fetcherToLaunch.monitoringName})`);
-      await this.runOneWorker(fetcherToLaunch);
+      await fetcherToLaunch.run();
     }
 
     if (this.mutex) UpdateSyncFile(SYNC_FILENAMES.FETCHERS_LAUNCHER, false);
-  }
-
-  async runOneWorker(fetcherToLaunch: RunWorkable) {
-    for (let i = 0; i < 10; i++) {
-      try {
-        await fetcherToLaunch.runSpecific();
-        break;
-      } catch (error) {
-        const errorMsg = `An exception occurred: ${error}`;
-        await sleep(5000);
-        console.log(errorMsg);
-      }
-      console.log(`Ending fetcher ${fetcherToLaunch.workerName}`);
-    }
   }
 }

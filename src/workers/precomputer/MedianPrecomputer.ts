@@ -39,6 +39,8 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.MedianPrec
     this.setConfiguration(
       foundPrecomputer.configuration as unknown as WorkerConfiguration.MedianPrecomputerConfiguration
     );
+
+    this.tokens = await Configuration.getTokensConfiguration();
   }
 
   async runSpecific() {

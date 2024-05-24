@@ -4,7 +4,10 @@ import { FetchersRunner } from './FetchersRunner';
 
 export class MetaRunner extends AbstractRunner {
   constructor() {
-    super([new FetchersRunner(), new ComputersRunner()], false, true);
+    const mutex = false;
+    const shouldWait = true;
+    const shouldLoop = true;
+    super('Meta-Runner', [new FetchersRunner(), new ComputersRunner()], mutex, shouldWait, shouldLoop);
   }
 }
 

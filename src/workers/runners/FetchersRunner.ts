@@ -16,19 +16,24 @@ export class FetchersRunner extends AbstractRunner implements RunWorkable {
   workerName = 'fetchers-runner';
 
   constructor() {
+    const mutex = true;
+    const shouldWait = false;
+    const shouldLoop = false;
     super(
+      'Fetchers-Runner',
       [
-        new UniswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        new SushiswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        new CurveFetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        new CurvePriceFetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        new UniswapV3Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        new UniswapV3PriceFetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        new BalancerFetcher(AbstractRunner.RUN_EVERY_MINUTES),
-        new BalancerPriceFetcher(AbstractRunner.RUN_EVERY_MINUTES)
+        new UniswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES)
+        // new SushiswapV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        // new CurveFetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        // new CurvePriceFetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        // new UniswapV3Fetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        // new UniswapV3PriceFetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        // new BalancerFetcher(AbstractRunner.RUN_EVERY_MINUTES),
+        // new BalancerPriceFetcher(AbstractRunner.RUN_EVERY_MINUTES)
       ],
-      true,
-      false
+      mutex,
+      shouldWait,
+      shouldLoop
     );
   }
 }

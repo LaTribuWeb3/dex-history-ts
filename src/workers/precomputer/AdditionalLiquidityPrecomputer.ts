@@ -20,6 +20,8 @@ export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfigurati
     if (precomputerConfiguration == undefined)
       throw 'Could not find configuration for precomputer additionalLiquidityProvider';
     this.configuration = precomputerConfiguration.configuration;
+
+    this.tokens = await Configuration.getTokensConfiguration();
   }
 
   async runSpecific(): Promise<void> {

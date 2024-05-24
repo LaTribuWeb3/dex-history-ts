@@ -43,3 +43,5 @@ export const smartLTVSourceMap = {
 };
 
 export const DEFAULT_STEP_BLOCK = 100;
+
+export const CONFIG_CACHE_DURATION = 10 * 60 * 1000; // 10 min cache duration for config

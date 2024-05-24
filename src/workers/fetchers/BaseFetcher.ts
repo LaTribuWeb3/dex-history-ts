@@ -11,7 +11,6 @@ import { Configuration } from '../../config/Configuration';
  * It is used to log monitoring
  */
 export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfiguration> extends BaseWorker<T> {
-
   constructor(workerName: string, monitoringName: string, runEveryMinutes: number) {
     super(workerName, monitoringName, runEveryMinutes);
 
@@ -36,7 +35,9 @@ export abstract class BaseFetcher<T extends WorkerConfiguration.FetcherConfigura
     if (foundWorker === undefined) {
       return;
     }
+
     this.setConfiguration(foundWorker.configuration as unknown as T);
+    this.tokens = await Configuration.getTokensConfiguration();
   }
 
   async createPriceDataDirForWorker() {

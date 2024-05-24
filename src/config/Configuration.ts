@@ -3,8 +3,8 @@ import { HttpGet } from '../utils/Utils';
 import * as WorkerConfiguration from '../workers/configuration/WorkerConfiguration';
 import { WorkersConfiguration } from '../workers/configuration/WorkerConfiguration';
 import { TokenList } from '../workers/configuration/TokenData';
-
-const configCache: any = {};
+import SimpleCacheService from '../utils/SimpleCacheService';
+import { CONFIG_CACHE_DURATION } from '../utils/Constants';
 
 export class Configuration {
   static async loadConfig<T>(fileOrURL: string): Promise<T> {
@@ -22,32 +22,31 @@ export class Configuration {
     configVersion = 'ethereum'
   ): Promise<WorkersConfiguration<WorkerConfiguration.FetcherConfiguration>> {
     const configKey = `worker-${configVersion}`;
-    if (configCache[configKey]) {
-      return configCache[configKey];
-    }
-
     const workersConfigFile =
       process.env.WORKERS_CONFIG_FILE ||
       `https://raw.githubusercontent.com/LaTribuWeb3/dex-history-ts/main/params/workers.${configVersion}.json`;
-    const workers = await Configuration.loadConfig<WorkersConfiguration<WorkerConfiguration.FetcherConfiguration>>(
-      workersConfigFile
+
+    const workers = await SimpleCacheService.GetAndCache(
+      configKey,
+      () => Configuration.loadConfig<WorkersConfiguration<WorkerConfiguration.FetcherConfiguration>>(workersConfigFile),
+      CONFIG_CACHE_DURATION
     );
 
-    configCache[configKey] = workers;
     return workers;
   }
 
   static async getTokensConfiguration(configVersion = 'ethereum'): Promise<TokenList> {
     const configKey = `tokens-${configVersion}`;
-    if (configCache[configKey]) {
-      return configCache[configKey];
-    }
     const tokensConfigFile =
       process.env.TOKENS_CONFIG_FILE ||
       `https://raw.githubusercontent.com/LaTribuWeb3/dex-history-ts/main/params/tokens.${configVersion}.json`;
-    const tokens = await Configuration.loadConfig<TokenList>(tokensConfigFile);
 
-    configCache[configKey] = tokens;
+    const tokens = await SimpleCacheService.GetAndCache(
+      configKey,
+      () => Configuration.loadConfig<TokenList>(tokensConfigFile),
+      CONFIG_CACHE_DURATION
+    );
+
     return tokens;
   }
 
@@ -55,16 +54,16 @@ export class Configuration {
     configVersion = 'ethereum'
   ): Promise<WorkerConfiguration.PrecomputersConfiguration> {
     const configKey = `precomputers-${configVersion}`;
-    if (configCache[configKey]) {
-      return configCache[configKey];
-    }
     const precomputersConfigFile =
       process.env.PRECOMPUTERS_CONFIG_FILE ||
       `https://raw.githubusercontent.com/LaTribuWeb3/dex-history-ts/main/params/precomputers.${configVersion}.json`;
-    const precomputers: WorkerConfiguration.PrecomputersConfiguration =
-      await Configuration.loadConfig<WorkerConfiguration.PrecomputersConfiguration>(precomputersConfigFile);
 
-    configCache[configKey] = precomputers;
+    const precomputers = await SimpleCacheService.GetAndCache(
+      configKey,
+      () => Configuration.loadConfig<WorkerConfiguration.PrecomputersConfiguration>(precomputersConfigFile),
+      CONFIG_CACHE_DURATION
+    );
+
     return precomputers;
   }
 }
