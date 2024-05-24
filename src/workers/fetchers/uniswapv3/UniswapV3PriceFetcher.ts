@@ -1,7 +1,5 @@
 import { BaseFetcher } from '../BaseFetcher';
 import {
-  CurvePricePairConfiguration,
-  CurveWorkerConfiguration,
   UniSwapV3WorkerConfiguration,
   UniswapV3PairConfiguration,
   Univ3PairWithFeesAndPool,
@@ -11,7 +9,7 @@ import * as ethers from 'ethers';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import { UniswapV3Factory__factory } from '../../../contracts/types/factories/uniswapv3/UniswapV3Factory__factory';
 import { getAllPoolsToFetch, parseEvent, translateTopicFilters } from './UniswapV3Utils';
-import { getConfTokenBySymbol, normalize, sleep } from '../../../utils/Utils';
+import { normalize, sleep } from '../../../utils/Utils';
 import * as fs from 'fs';
 import { readLastLine } from '../../configuration/Helper';
 import { GetContractCreationBlockNumber } from '../../../utils/Web3Utils';
@@ -19,8 +17,8 @@ import { UniswapV3Pair, UniswapV3Pair__factory } from '../../../contracts/types'
 import { TokenData } from '../../configuration/TokenData';
 
 export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
-  constructor(runEveryMinutes: number) {
-    super('uniswapv3', 'UniswapV3 Price Fetcher', runEveryMinutes);
+  constructor(runEveryMinutes: number, configVersion: string) {
+    super('uniswapv3', 'UniswapV3 Price Fetcher', runEveryMinutes, configVersion);
   }
 
   async runSpecific(): Promise<void> {
@@ -28,7 +26,11 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
 
     console.log(`${this.workerName}: getting pools to fetch`);
 
-    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(this.workerName, this.getConfiguration());
+    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(
+      this.workerName,
+      this.getConfiguration(),
+      this.tokens
+    );
 
     const poolsToFetchGroupedByPair: { [pair: string]: { pairToFetch: UniswapV3PairConfiguration; pools: string[] } } =
       {};
@@ -68,7 +70,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
     }
 
     for (const stalePair of stalePairs) {
-      console.warn(stalePair);
+      console.warn(`[${this.monitoringName}] | stale pair: ${stalePair}`);
     }
   }
 
@@ -77,10 +79,10 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
     pools: string[],
     currentBlock: number
   ): Promise<{ lastBlockWithData: number; token0: string; token1: string }> {
-    const token0Conf = await getConfTokenBySymbol(pairToFetch.token0);
-    const token1Conf = await getConfTokenBySymbol(pairToFetch.token1);
+    const token0Conf = this.tokens[pairToFetch.token0];
+    const token1Conf = this.tokens[pairToFetch.token1];
 
-    const label = `[${token0Conf.symbol}-${token1Conf.symbol}]`;
+    const label = `[${this.monitoringName}] | [${token0Conf.symbol}-${token1Conf.symbol}] |`;
 
     // get the first block to fetch
     const priceHistoryFilename = generatePriceCSVFilePath(
@@ -143,7 +145,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
       }
 
       const tradesByPool: { [poolAddress: string]: { block: number; price: number }[] } = {};
-      console.log(`${label}: fetching events for blocks [${fromBlock}-${toBlock}]`);
+      console.log(`${label} Fetching events for blocks [${fromBlock}-${toBlock}]`);
 
       for (const poolAddress of pools) {
         const univ3PairContract: UniswapV3Pair = UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
@@ -160,13 +162,13 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
         }
       }
       if (mainPoolTradeCount == 0) {
-        console.log(`${label}: not a single swap, ignoring block interval`);
+        console.log(`${label} Not a single swap, ignoring block interval`);
         fromBlock = toBlock + 1;
         continue;
       }
 
       let allSwaps: { block: number; price: number }[] = tradesByPool[mainPool];
-      console.log(`${label}: [pool ${mainPool}]: ${mainPoolTradeCount} swaps`);
+      console.log(`${label} [pool ${mainPool}]: ${mainPoolTradeCount} swaps`);
 
       for (const poolAddress of pools) {
         if (poolAddress == mainPool) {
@@ -175,9 +177,9 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
 
         const poolSwaps = tradesByPool[poolAddress];
         if (poolSwaps.length < mainPoolTradeCount * 0.5) {
-          console.log(`${label}: [pool ${poolAddress}]: ${poolSwaps.length} swaps | too few, swaps discarded`);
+          console.log(`${label} [pool ${poolAddress}]: ${poolSwaps.length} swaps | too few, swaps discarded`);
         } else {
-          console.log(`${label}: [pool ${poolAddress}]: ${poolSwaps.length} swaps | enough, keeping swaps`);
+          console.log(`${label} [pool ${poolAddress}]: ${poolSwaps.length} swaps | enough, keeping swaps`);
           allSwaps = allSwaps.concat(poolSwaps);
         }
       }

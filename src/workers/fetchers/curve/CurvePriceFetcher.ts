@@ -1,7 +1,7 @@
 import * as ethers from 'ethers';
 import * as fs from 'fs';
 import path from 'path';
-import { getConfTokenBySymbol, normalize, sleep } from '../../../utils/Utils';
+import { normalize, sleep } from '../../../utils/Utils';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import { BaseFetcher } from '../BaseFetcher';
 import { TokenData } from '../../configuration/TokenData';
@@ -15,8 +15,8 @@ import {
 import { CurveContract, CurveUtils } from './CurveContract';
 
 export class CurvePriceFetcher extends BaseFetcher<CurveWorkerConfiguration> {
-  constructor(runEveryMinutes: number) {
-    super('curve', 'Curve Price Fetcher', runEveryMinutes);
+  constructor(runEveryMinutes: number, configVersion: string) {
+    super('curve', 'Curve Price Fetcher', runEveryMinutes, configVersion);
   }
 
   async runSpecific(): Promise<void> {
@@ -95,9 +95,9 @@ export class CurvePriceFetcher extends BaseFetcher<CurveWorkerConfiguration> {
         for (const e of events) {
           if (e instanceof ethers.ethers.EventLog) {
             const baseTokenSymbol = curvePricePairConfiguration.tokens[e.args.sold_id].symbol;
-            const baseToken: TokenData = await getConfTokenBySymbol(baseTokenSymbol);
+            const baseToken: TokenData = this.tokens[baseTokenSymbol];
             const quoteTokenSymbol = curvePricePairConfiguration.tokens[e.args.bought_id].symbol;
-            const quoteToken: TokenData = await getConfTokenBySymbol(quoteTokenSymbol);
+            const quoteToken: TokenData = this.tokens[quoteTokenSymbol];
 
             // check if in the list of pair to get
             // if baseToken = USDC and quoteToken = DAI

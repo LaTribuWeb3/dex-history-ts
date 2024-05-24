@@ -1,6 +1,7 @@
 import { computeSlippageMapForBalancerPool } from '../../../library/BalancerLibrary';
 import { BlockData } from '../../../models/datainterface/BlockData';
 import { readLastLine } from '../../configuration/Helper';
+import { TokenList } from '../../configuration/TokenData';
 import { BalancerPoolConfiguration, generateUnifiedCSVFilePath } from '../../configuration/WorkerConfiguration';
 import fs from 'fs';
 
@@ -8,7 +9,8 @@ export async function computeBalancerUnifiedDataForPair(
   base: string,
   quote: string,
   balancerPoolConfig: BalancerPoolConfiguration,
-  rawDataFilePath: string
+  rawDataFilePath: string,
+  tokens: TokenList
 ) {
   const unifiedFullFilename = generateUnifiedCSVFilePath(
     'balancer',
@@ -53,7 +55,8 @@ export async function computeBalancerUnifiedDataForPair(
       balancerPoolConfig,
       dataLine,
       balancerPoolConfig.tokenSymbols.indexOf(base),
-      balancerPoolConfig.tokenSymbols.indexOf(quote)
+      balancerPoolConfig.tokenSymbols.indexOf(quote),
+      tokens
     );
 
     const lineToWrite = `${blockNumber},${dataToWrite.price},${JSON.stringify(dataToWrite.slippageMap)}\n`;

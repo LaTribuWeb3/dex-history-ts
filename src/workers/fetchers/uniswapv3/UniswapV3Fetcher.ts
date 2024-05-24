@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import { UniswapV3Pair, UniswapV3Pair__factory } from '../../../contracts/types';
 import { Uniswapv3Library } from '../../../library/Uniswapv3Library';
 import { BlockWithTick, SlippageMap } from '../../../models/datainterface/BlockData';
-import retry, { getConfTokenBySymbol } from '../../../utils/Utils';
+import retry from '../../../utils/Utils';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import { getBlocknumberForTimestamp } from '../../../utils/Web3Utils';
 import { BaseFetcher } from '../BaseFetcher';
@@ -24,8 +24,8 @@ import { UniswapV3Constants } from './UniswapV3Constants';
 import { getAllPoolsToFetch, parseEvent, translateTopicFilters } from './UniswapV3Utils';
 
 export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
-  constructor(runEveryMinutes: number) {
-    super('uniswapv3', 'UniswapV3 Fetcher', runEveryMinutes);
+  constructor(runEveryMinutes: number, configVersion: string) {
+    super('uniswapv3', 'UniswapV3 Fetcher', runEveryMinutes, configVersion);
   }
   async runSpecific(): Promise<void> {
     this.createDataDirForWorker();
@@ -38,14 +38,20 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     // fetching events is not
     const minStartDate = Math.round(Date.now() / 1000) - 380 * 24 * 60 * 60; // min start block is 380 days ago
     const minStartBlock: number = await Web3Utils.getBlocknumberForTimestamp(minStartDate);
-    console.log(`minStartBlock is ${minStartBlock}`);
+    console.log(`[${this.monitoringName}] | minStartBlock is ${minStartBlock}`);
 
-    console.log(`${this.workerName}: getting pools to fetch`);
+    console.log(`[${this.monitoringName}] | Getting pools to fetch`);
 
-    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(this.workerName, this.getConfiguration());
+    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(
+      this.workerName,
+      this.getConfiguration(),
+      this.tokens
+    );
 
     console.log(
-      `${this.workerName}: found ${poolsToFetch.length} pools to fetch from ${this.getConfiguration().pairs.length} pairs in config`
+      `[${this.monitoringName}] | Found ${poolsToFetch.length} pools to fetch from ${
+        this.getConfiguration().pairs.length
+      } pairs in config`
     );
 
     for (const fetchConfig of poolsToFetch) {
@@ -97,7 +103,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       .map((file) => dirPath + '/' + file);
 
     for (const unifiedFileToProcess of allUnifiedFilesForDirectory) {
-      console.log(`truncateUnifiedFiles: working on ${unifiedFileToProcess}`);
+      console.log(`[${this.monitoringName}] | TruncateUnifiedFiles: working on ${unifiedFileToProcess}`);
       const linesToKeep = [];
       linesToKeep.push('blocknumber,price,slippagemap\n');
       const linesToProcess = fs.readFileSync(unifiedFileToProcess, 'utf-8').split('\n');
@@ -115,14 +121,16 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       }
 
       if (deletedLines == 0) {
-        console.log(`truncateUnifiedFiles: no data to be truncated from ${unifiedFileToProcess}`);
+        console.log(
+          `[${this.monitoringName}] | TruncateUnifiedFiles: no data to be truncated from ${unifiedFileToProcess}`
+        );
         continue;
       }
 
       const stagingFilepath = unifiedFileToProcess + '-staging';
       fs.writeFileSync(stagingFilepath, linesToKeep.join(''));
       console.log(
-        `truncateUnifiedFiles: ${unifiedFileToProcess} will be truncated from ${linesToProcess.length} to ${linesToKeep.length} lines`
+        `[${this.monitoringName}] | TruncateUnifiedFiles: ${unifiedFileToProcess} will be truncated from ${linesToProcess.length} to ${linesToKeep.length} lines`
       );
       fs.rmSync(unifiedFileToProcess);
       retry(() => fs.renameSync(stagingFilepath, unifiedFileToProcess), []);
@@ -130,7 +138,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
   }
 
   async createUnifiedFileForPair(endBlock: number, fromSymbol: string, toSymbol: string, blockLastYear: number) {
-    console.log(`${this.workerName}: create/append for ${fromSymbol} ${toSymbol}`);
+    console.log(`[${this.monitoringName}] | Create/append for ${fromSymbol} ${toSymbol}`);
     const unifiedFullFilename = generateUnifiedCSVFilePath(this.workerName, `${fromSymbol}-${toSymbol}`);
     let sinceBlock = 0;
     if (!fs.existsSync(unifiedFullFilename)) {
@@ -157,22 +165,14 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     }
 
     if (toWrite.length == 0) {
-      console.log(`${this.workerName}: nothing to add to file`);
+      console.log(`[${this.monitoringName}] | Nothing to add to file`);
     } else {
       fs.appendFileSync(unifiedFullFilename, toWrite.join(''));
     }
   }
 
-  /**
-   *
-   * @param {string} dataDir
-   * @param {string} fromSymbol
-   * @param {string} toSymbol
-   * @param {number[]} blockRange
-   * @returns {{[targetBlock: number]: {blockNumber: number, price: number, slippageMap: {[slippagePct: number]: number}}}}
-   */
   getUniV3DataforBlockInterval(fromSymbol: string, toSymbol: string, sinceBlock: number, toBlock: number) {
-    console.log(`${this.workerName}: Searching for ${fromSymbol}/${toSymbol} since ${sinceBlock} to ${toBlock}`);
+    console.log(`[${this.monitoringName}] | Searching for ${fromSymbol}/${toSymbol} since ${sinceBlock} to ${toBlock}`);
 
     const results: {
       [block: number]: {
@@ -185,7 +185,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     const { selectedFiles, reverse } = this.getUniV3DataFiles(fromSymbol, toSymbol);
 
     if (selectedFiles.length == 0) {
-      console.log(`Could not find univ3 files for ${fromSymbol}/${toSymbol}`);
+      console.log(`[${this.monitoringName}] | Could not find univ3 files for ${fromSymbol}/${toSymbol}`);
       return results;
     }
 
@@ -410,8 +410,9 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
   ) {
     const pairConfig = pairWithFeesAndPool.pairToFetch;
 
+    const logLabel = `[${this.monitoringName}] | [${pairConfig.token0}-${pairConfig.token1}-${pairWithFeesAndPool.fee}] |`;
     console.log(
-      `${this.workerName}[${pairConfig.token0}-${pairConfig.token1}]: start for pair ${pairConfig.token0}-${pairConfig.token1} and fees: ${pairWithFeesAndPool.fee}`
+      `${logLabel} Start for pair ${pairConfig.token0}-${pairConfig.token1} and fees: ${pairWithFeesAndPool.fee}`
     );
 
     // try to find the json file representation of the pool latest value already fetched
@@ -423,34 +424,34 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     );
 
     let latestData: BlockWithTick;
-    const token0 = await getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token0);
-    const token1 = await getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token1);
+    const token0 = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
+    const token1 = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
 
     if (fs.existsSync(latestDataFilePath)) {
       // if the file exists, set its value to latestData
       latestData = JSON.parse(fs.readFileSync(latestDataFilePath, { encoding: 'utf-8' }));
-      console.log(
-        `${this.workerName}[${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}]: data file found ${latestDataFilePath}, last block fetched: ${latestData.blockNumber}`
-      );
+      console.log(`${logLabel} Data file found ${latestDataFilePath}, last block fetched: ${latestData.blockNumber}`);
     } else {
-      console.log(
-        `${this.workerName}[${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}]: data file not found, starting from scratch`
-      );
+      console.log(`${logLabel} Data file not found, starting from scratch`);
 
       // verify that the token0 in config is the token0 of the pool
       const poolToken0 = await univ3PairContract.token0();
       if (poolToken0.toLowerCase() != token0.address.toLowerCase()) {
-        throw new Error(`pool token0 ${poolToken0} != config token0 ${token0.address}. config must match pool order`);
+        throw new Error(
+          `${logLabel} pool token0 ${poolToken0} != config token0 ${token0.address}. config must match pool order`
+        );
       }
 
       // same for token1
       const poolToken1 = await univ3PairContract.token1();
       if (poolToken1.toLowerCase() != token1.address.toLowerCase()) {
-        throw new Error(`pool token0 ${poolToken1} != config token0 ${token1.address}. config must match pool order`);
+        throw new Error(
+          `${logLabel} pool token0 ${poolToken1} != config token0 ${token1.address}. config must match pool order`
+        );
       }
 
       console.log(
-        `${this.workerName}[${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}]: pool address found: ${pairWithFeesAndPool.poolAddress} with pair ${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}`
+        `${logLabel} Pool address found: ${pairWithFeesAndPool.poolAddress} with pair ${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}`
       );
       latestData = await this.fetchInitializeData(pairWithFeesAndPool.poolAddress, univ3PairContract);
       latestData.poolAddress = pairWithFeesAndPool.poolAddress;
@@ -494,9 +495,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       }
 
       console.log(
-        `FetchUniswapV3HistoryForPair[${pairConfig.token0}-${pairConfig.token1}-${
-          pairWithFeesAndPool.fee
-        }]: [${fromBlock} - ${toBlock}] found ${
+        `${logLabel} [${fromBlock} - ${toBlock}] found ${
           events.length
         } Mint/Burn/Swap events after ${cptError} errors (fetched ${toBlock - fromBlock + 1} blocks)`
       );
@@ -527,8 +526,8 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     dataFileName: string,
     minStartBlock: number
   ) {
-    const token0 = await getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token0);
-    const token1 = await getConfTokenBySymbol(pairWithFeesAndPool.pairToFetch.token1);
+    const token0 = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
+    const token1 = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
 
     const dtStart = Date.now();
     const saveData = [];
@@ -627,7 +626,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     let fromBlock = deployedBlock;
     let toBlock = deployedBlock + 100000;
 
-    console.log(`${this.workerName}: searching Initialize event between blocks [${fromBlock} - ${toBlock}]`);
+    console.log(`[${this.monitoringName}] | Searching Initialize event between blocks [${fromBlock} - ${toBlock}]`);
 
     const initEvents = await retry(
       () => univ3PairContract.queryFilter(univ3PairContract.filters.Initialize, fromBlock, toBlock),
@@ -636,10 +635,10 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
 
     if (initEvents.length > 0) {
       if (initEvents.length > 1) {
-        throw new Error('More than 1 Initialize event found???');
+        throw new Error(`[${this.monitoringName}] | More than 1 Initialize event found???`);
       }
 
-      console.log(`${this.workerName}: found Initialize event at block ${initEvents[0].blockNumber}`);
+      console.log(`[${this.monitoringName}] | found Initialize event at block ${initEvents[0].blockNumber}`);
 
       const tickSpacing = await retry(() => univ3PairContract.tickSpacing(), []);
 
@@ -656,17 +655,18 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
 
       // fs.appendFileSync('logs.txt', `Initialized at ${initEvents[0].blockNumber}. base tick ${latestData.currentTick}. base price: ${latestData.currentSqrtPriceX96}\n`);
     } else {
-      console.log(`${this.workerName}: Initialize event not found between blocks [${fromBlock} - ${toBlock}]`);
+      console.log(`[${this.monitoringName}] | Initialize event not found between blocks [${fromBlock} - ${toBlock}]`);
       fromBlock = toBlock + 1;
       toBlock = fromBlock + 100000;
     }
 
-    throw new Error('No Initialize event found');
+    throw new Error(`[${this.monitoringName}] | No Initialize event found`);
   }
 }
 
 // async function debug() {
 //   const fetcher = new UniswapV3Fetcher(0);
+//   await fetcher.init();
 //   await fetcher.runSpecific();
 // }
 

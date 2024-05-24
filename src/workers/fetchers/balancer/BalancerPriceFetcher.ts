@@ -16,8 +16,13 @@ import { SwapEvent } from '../../../contracts/types/balancer/BalancerVault';
 BigNumber.config({ EXPONENTIAL_AT: 1e9 }); // this is needed to interract with the balancer sor package
 
 export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
-  constructor(runEveryMinutes: number, workerName = 'balancer', monitoringName = 'Balancer Price Fetcher') {
-    super(workerName, monitoringName, runEveryMinutes);
+  constructor(
+    runEveryMinutes: number,
+    configVersion: string,
+    workerName = 'balancer',
+    monitoringName = 'Balancer Price Fetcher'
+  ) {
+    super(workerName, monitoringName, runEveryMinutes, configVersion);
   }
 
   async runSpecific(): Promise<void> {
@@ -31,7 +36,7 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
       if (!balancerPoolConfig.computePrice) {
         continue;
       }
-      console.log(`Start fetching pool data for ${balancerPoolConfig.name}`);
+      console.log(`[${this.monitoringName}] | Start fetching pool data for ${balancerPoolConfig.name}`);
       const promise = this.fetchPriceBalancerPool(balancerPoolConfig, web3Provider, endBlock);
       // await promise;
       promises.push(promise);
@@ -45,7 +50,7 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
     web3Provider: ethers.ethers.JsonRpcProvider,
     endBlock: number
   ) {
-    const logLabel = `fetchPriceBalancerPool[${balancerPoolConfig.name}]`;
+    const logLabel = `[${this.monitoringName}] | [${balancerPoolConfig.name}] |`;
     const balancerVaultContract = BalancerVault__factory.connect(this.getConfiguration().vaultAddress, web3Provider);
 
     const lastFetchPoolFilename = generateLastFetchFileName(this.workerName, balancerPoolConfig.name);
@@ -72,11 +77,11 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
     }
 
     if (startBlock > endBlock) {
-      console.log(`${logLabel}: No new data to fetch`);
+      console.log(`${logLabel} No new data to fetch`);
       return 0;
     }
 
-    console.log(`${logLabel}: starting since block ${startBlock} to block ${endBlock}`);
+    console.log(`${logLabel} Starting since block ${startBlock} to block ${endBlock}`);
 
     const initBlockStep = 500000;
     let priceCounter = 0;
@@ -112,9 +117,9 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
       }
 
       console.log(
-        `${logLabel}: [${fromBlock} - ${toBlock}] found ${
-          events.length
-        } Swap events after ${cptError} errors (fetched ${toBlock - fromBlock + 1} blocks)`
+        `${logLabel} [${fromBlock} - ${toBlock}] found ${events.length} Swap events after ${cptError} errors (fetched ${
+          toBlock - fromBlock + 1
+        } blocks)`
       );
       cptError = 0;
 
@@ -126,8 +131,8 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
         ) {
           continue;
         }
-        const baseToken = await getConfTokenByAddress(swapEvent.args.tokenIn);
-        const quoteToken = await getConfTokenByAddress(swapEvent.args.tokenOut);
+        const baseToken = await getConfTokenByAddress(swapEvent.args.tokenIn, this.tokens);
+        const quoteToken = await getConfTokenByAddress(swapEvent.args.tokenOut, this.tokens);
 
         const amountSold = normalize(swapEvent.args.amountIn, baseToken.decimals);
         const amountBought = normalize(swapEvent.args.amountOut, quoteToken.decimals);
@@ -156,7 +161,7 @@ export class BalancerPriceFetcher extends BaseFetcher<BalancerWorkerConfiguratio
       fromBlock = toBlock + 1;
     }
 
-    console.log(`${logLabel}: ending. Fetched ${priceCounter} prices since block ${startBlock}`);
+    console.log(`${logLabel} Ending. Fetched ${priceCounter} prices since block ${startBlock}`);
     const lastFetchData = { lastBlockFetched: endBlock };
     fs.writeFileSync(lastFetchPoolFilename, JSON.stringify(lastFetchData, null, 2));
   }

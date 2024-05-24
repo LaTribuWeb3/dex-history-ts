@@ -7,19 +7,21 @@ import { generatePreComputedForWorker, getAllPreComputed } from '../configuratio
 import { Configuration } from '../../config/Configuration';
 
 export class AdditionalLiquidityPrecomputer extends BaseWorker<WorkerConfiguration.AdditionalLiquidityPrecomputerConfiguration> {
-  constructor(runEveryMinute: number) {
-    super('additionalLiquidityProvider', 'Additional Liquidity Provider', runEveryMinute);
+  constructor(runEveryMinute: number, configVersion: string) {
+    super('additionalLiquidityProvider', 'Additional Liquidity Provider', runEveryMinute, configVersion);
   }
 
   override async init() {
     const precomputers: WorkerConfiguration.PrecomputersConfiguration =
-      await Configuration.getPrecomputersConfiguration();
+      await Configuration.getPrecomputersConfiguration(this.configVersion);
     const precomputerConfiguration = precomputers.precomputers.find(
       (precomputer) => precomputer.name == this.workerName
     );
     if (precomputerConfiguration == undefined)
       throw 'Could not find configuration for precomputer additionalLiquidityProvider';
     this.configuration = precomputerConfiguration.configuration;
+
+    this.tokens = await Configuration.getTokensConfiguration(this.configVersion);
   }
 
   async runSpecific(): Promise<void> {

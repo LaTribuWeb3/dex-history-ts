@@ -1,9 +1,10 @@
 import { ComposableStablePool, MetaStablePool, SwapTypes, WeightedPool } from '@balancer-labs/sor';
-import { getConfTokenBySymbol, normalize } from '../utils/Utils';
+import { normalize } from '../utils/Utils';
 import { BalancerPoolConfiguration, BalancerPoolTypeEnum } from '../workers/configuration/WorkerConfiguration';
 import BigNumber from 'bignumber.js';
-import { TokenData } from '../workers/configuration/TokenData';
+import { TokenData, TokenList } from '../workers/configuration/TokenData';
 import { BlockData, SlippageMap } from '../models/datainterface/BlockData';
+import { Configuration } from '../config/Configuration';
 BigNumber.config({ EXPONENTIAL_AT: 1e9 }); // this is needed to interract with the balancer sor package
 
 const baseAmountMap: { [token: string]: BigNumber } = {
@@ -22,16 +23,17 @@ export async function computeSlippageMapForBalancerPool(
   balancerPoolConfig: BalancerPoolConfiguration,
   dataLine: string,
   indexFrom: number,
-  indexTo: number
+  indexTo: number,
+  tokens: TokenList
 ): Promise<BlockData> {
   switch (balancerPoolConfig.type) {
     default:
       throw new Error(`Unknown type: ${balancerPoolConfig.type}`);
     case BalancerPoolTypeEnum.META_STABLE_POOL:
     case BalancerPoolTypeEnum.COMPOSABLE_STABLE_POOL:
-      return await computeSlippageMapForComposableStablePool(balancerPoolConfig, dataLine, indexFrom, indexTo);
+      return await computeSlippageMapForComposableStablePool(balancerPoolConfig, dataLine, indexFrom, indexTo, tokens);
     case BalancerPoolTypeEnum.WEIGHTED_POOL_2_TOKENS:
-      return await computeSlippageMapForWeightedPool2Tokens(balancerPoolConfig, dataLine, indexFrom, indexTo);
+      return await computeSlippageMapForWeightedPool2Tokens(balancerPoolConfig, dataLine, indexFrom, indexTo, tokens);
   }
 }
 
@@ -39,15 +41,16 @@ async function computeSlippageMapForComposableStablePool(
   balancerPoolConfig: BalancerPoolConfiguration,
   dataLine: string,
   indexFrom: number,
-  indexTo: number
+  indexTo: number,
+  tokens: TokenList
 ): Promise<BlockData> {
   /* example line for a metastable pool:
     blocknumber,ampFactor,fee,rETH_balance,rETH_scale,WETH_balance,WETH_scale
     19382078,50000,400000000000000,12832601570293918646361,1100122216571627535,14876939679682766068291,1000000000000000000
   */
 
-  const confTokenFrom = await getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[indexFrom]);
-  const confTokenTo = await getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[indexTo]);
+  const confTokenFrom = tokens[balancerPoolConfig.tokenSymbols[indexFrom]];
+  const confTokenTo = tokens[balancerPoolConfig.tokenSymbols[indexTo]];
 
   const split = dataLine.split(',');
   // const blockNumber = Number(split[0]);
@@ -67,7 +70,8 @@ async function computeSlippageMapForComposableStablePool(
     ampFactor,
     fee,
     confTokenFrom,
-    confTokenTo
+    confTokenTo,
+    tokens
   );
 
   let baseAmountIn = baseAmountMap[confTokenFrom.symbol];
@@ -94,7 +98,8 @@ async function computeSlippageMapForComposableStablePool(
       indexFrom,
       confTokenFrom,
       indexTo,
-      confTokenTo
+      confTokenTo,
+      tokens
     );
 
     // const checkAmountOut = pool._exactTokenInForTokenOut(poolPairData, liquidityObj.base);
@@ -117,15 +122,16 @@ async function computeSlippageMapForWeightedPool2Tokens(
   balancerPoolConfig: BalancerPoolConfiguration,
   dataLine: string,
   indexFrom: number,
-  indexTo: number
+  indexTo: number,
+  tokens: TokenList
 ): Promise<BlockData> {
   /* example line for a weighted pool 2 tokens:
     blocknumber,fee,WBTC_balance,WBTC_weight,WETH_balance,WETH_weight
     16683142,2500000000000000,4943965229,500000000000000000,726967649838511257622,500000000000000000
   */
 
-  const confTokenFrom = await getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[indexFrom]);
-  const confTokenTo = await getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[indexTo]);
+  const confTokenFrom = tokens[balancerPoolConfig.tokenSymbols[indexFrom]];
+  const confTokenTo = tokens[balancerPoolConfig.tokenSymbols[indexTo]];
 
   const split = dataLine.split(',');
   // const blockNumber = Number(split[0]);
@@ -143,7 +149,8 @@ async function computeSlippageMapForWeightedPool2Tokens(
     weights,
     fee,
     confTokenFrom,
-    confTokenTo
+    confTokenTo,
+    tokens
   );
 
   let baseAmountIn = baseAmountMap[confTokenFrom.symbol];
@@ -169,7 +176,8 @@ async function computeSlippageMapForWeightedPool2Tokens(
       indexFrom,
       confTokenFrom,
       indexTo,
-      confTokenTo
+      confTokenTo,
+      tokens
     );
 
     // const checkAmountOut = pool._exactTokenInForTokenOut(poolPairData, liquidityObj.base);
@@ -195,12 +203,13 @@ async function getPoolAndPairDataComposableStable(
   ampFactor: string,
   fee: string,
   confTokenFrom: TokenData,
-  confTokenTo: TokenData
+  confTokenTo: TokenData,
+  tokensConf: TokenList
 ) {
   const tokens: { address: string; balance: string; decimals: number; priceRate: string }[] = [];
   const tokenList: string[] = [];
   for (let i = 0; i < balancerPoolConfig.tokenSymbols.length; i++) {
-    const confToken = await getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[i]);
+    const confToken = tokensConf[balancerPoolConfig.tokenSymbols[i]];
     tokens.push({
       address: confToken.address,
       balance: balances[i],
@@ -234,13 +243,14 @@ async function getPoolAndPairDataWeighted2Tokens(
   weights: string[],
   fee: string,
   confTokenFrom: TokenData,
-  confTokenTo: TokenData
+  confTokenTo: TokenData,
+  tokensConf: TokenList
 ) {
   const tokens: { address: string; balance: string; decimals: number; weight: string }[] = [];
   const tokenList: string[] = [];
   let totalWeight = new BigNumber(0);
   for (let i = 0; i < balancerPoolConfig.tokenSymbols.length; i++) {
-    const confToken = await getConfTokenBySymbol(balancerPoolConfig.tokenSymbols[i]);
+    const confToken = tokensConf[balancerPoolConfig.tokenSymbols[i]];
     tokens.push({
       address: confToken.address,
       balance: balances[i],
@@ -281,7 +291,8 @@ async function computeLiquidityForSlippageMetaStable(
   indexFrom: number,
   confTokenFrom: TokenData,
   indexTo: number,
-  confTokenTo: TokenData
+  confTokenTo: TokenData,
+  tokens: TokenList
 ): Promise<{ base: BigNumber; quote: BigNumber }> {
   let low = undefined;
   let high = undefined;
@@ -298,7 +309,8 @@ async function computeLiquidityForSlippageMetaStable(
       ampFactor,
       fee,
       confTokenFrom,
-      confTokenTo
+      confTokenTo,
+      tokens
     );
 
     const qtyTo = pool._exactTokenInForTokenOut(poolPairData, qtyFrom);
@@ -319,7 +331,8 @@ async function computeLiquidityForSlippageMetaStable(
       ampFactor,
       fee,
       confTokenFrom,
-      confTokenTo
+      confTokenTo,
+      tokens
     );
     // get the new price for one token
     const newQtyTo = newPoolData.pool._exactTokenInForTokenOut(newPoolData.poolPairData, baseAmountIn);
@@ -380,7 +393,8 @@ async function computeLiquidityForSlippageWeighted2Tokens(
   indexFrom: number,
   confTokenFrom: TokenData,
   indexTo: number,
-  confTokenTo: TokenData
+  confTokenTo: TokenData,
+  tokens: TokenList
 ): Promise<{ base: BigNumber; quote: BigNumber }> {
   let low = undefined;
   let high = undefined;
@@ -396,7 +410,8 @@ async function computeLiquidityForSlippageWeighted2Tokens(
       weights,
       fee,
       confTokenFrom,
-      confTokenTo
+      confTokenTo,
+      tokens
     );
 
     const qtyTo = pool._exactTokenInForTokenOut(poolPairData, qtyFrom);
@@ -416,7 +431,8 @@ async function computeLiquidityForSlippageWeighted2Tokens(
       weights,
       fee,
       confTokenFrom,
-      confTokenTo
+      confTokenTo,
+      tokens
     );
     // get the new price for one token
     const newQtyTo = newPoolData.pool._exactTokenInForTokenOut(newPoolData.poolPairData, baseAmountIn);
@@ -466,7 +482,7 @@ async function computeLiquidityForSlippageWeighted2Tokens(
   }
 }
 
-function debugMetaStable() {
+async function debugMetaStable() {
   const line =
     '19382278,50000,400000000000000,12832620643215285273092,1100122216571627535,14876918683946300279941,1000000000000000000';
   const cfg: BalancerPoolConfiguration = {
@@ -479,7 +495,13 @@ function debugMetaStable() {
     tokenIndexes: [0, 1],
     computePrice: false
   };
-  const result = computeSlippageMapForComposableStablePool(cfg, line, 1, 0);
+  const result = computeSlippageMapForComposableStablePool(
+    cfg,
+    line,
+    1,
+    0,
+    await Configuration.getTokensConfiguration('ethereum')
+  );
   console.log(result);
 }
 // debugMetaStable();
@@ -497,7 +519,13 @@ async function debugWeightedPoolTwoTokens() {
     computePrice: false
   };
 
-  const result = await computeSlippageMapForBalancerPool(cfg, line, 0, 1);
+  const result = await computeSlippageMapForBalancerPool(
+    cfg,
+    line,
+    0,
+    1,
+    await Configuration.getTokensConfiguration('ethereum')
+  );
   console.log(result);
 }
 
