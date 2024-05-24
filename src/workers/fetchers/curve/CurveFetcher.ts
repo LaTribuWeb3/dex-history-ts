@@ -118,7 +118,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
    * @param {number} currentBlock
    */
   async FetchHistory(fetchConfig: CurvePairConfiguration, currentBlock: number): Promise<TokenWithReserve> {
-    console.log(`[${fetchConfig.poolName}]: Start fetching history`);
+    console.log(`[${this.monitoringName}] | [${fetchConfig.poolName}] | Start fetching history`);
     const historyFileName = generateRawCSVFilePathForCurvePool(this.workerName, fetchConfig.poolName);
     let startBlock = 0;
 
@@ -163,7 +163,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
       topics
     );
     console.log(
-      `[${fetchConfig.poolName}]: found ${allBlocksWithEvents.length} blocks with events since ${startBlock}`
+      `[${this.monitoringName}] | [${fetchConfig.poolName}] | found ${allBlocksWithEvents.length} blocks with events since ${startBlock}`
     );
 
     if (fetchConfig.isCryptoV2) {
@@ -185,7 +185,9 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
       lastData[symbolAndReserve.tokenSymbol] = symbolAndReserve.tokenReserve;
     }
 
-    console.log(`[${fetchConfig.poolName}]: ending mode curve v${fetchConfig.isCryptoV2 ? '2' : '1'}`);
+    console.log(
+      `[${this.monitoringName}] | [${fetchConfig.poolName}] | ending mode curve v${fetchConfig.isCryptoV2 ? '2' : '1'}`
+    );
     return lastData;
   }
 
@@ -207,9 +209,9 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
         const events = await curveContract.queryFilter(topics, fromBlock, toBlock);
 
         console.log(
-          `${this.workerName}[${fetchConfig.poolName}-${fetchConfig.lpTokenName}]: [${fromBlock} - ${toBlock}] found ${
-            events.length
-          } events (fetched ${toBlock - fromBlock + 1} blocks)`
+          `[${this.monitoringName}] | [${fetchConfig.poolName}-${
+            fetchConfig.lpTokenName
+          }]: [${fromBlock} - ${toBlock}] found ${events.length} events (fetched ${toBlock - fromBlock + 1} blocks)`
         );
 
         if (events.length != 0) {
@@ -230,7 +232,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
 
         fromBlock = toBlock + 1;
       } catch (e) {
-        console.log('query filter error:', e);
+        console.log(`[${this.monitoringName}] | query filter error:`, e);
         blockStep = Math.round(blockStep / 2);
         if (blockStep < 1000) {
           blockStep = 1000;
@@ -269,7 +271,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
 
     for (const blockNum of allBlocksWithEvents) {
       if (blockNum - this.SAVE_BLOCK_STEP < lastBlockCurrent) {
-        console.log(`fetchReservesData[${fetchConfig.poolName}]: ignoring block ${blockNum}`);
+        console.log(`[${this.monitoringName}] | ${fetchConfig.poolName} | ignoring block ${blockNum}`);
         continue;
       }
 
@@ -344,7 +346,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
 
     for (const blockNum of allBlocksWithEvents) {
       if (blockNum - this.SAVE_BLOCK_STEP < lastBlockCurrent) {
-        console.log(`fetchReservesData[${fetchConfig.poolName}]: ignoring block ${blockNum}`);
+        console.log(`[${this.monitoringName}] | ${fetchConfig.poolName} | ignoring block ${blockNum}`);
         continue;
       }
 
@@ -360,7 +362,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
     poolContract: CurveContract,
     lpTokenContract: ERC20
   ) {
-    console.log(`fetchReservesData[${fetchConfig.poolName}]: Working on block ${blockNum}`);
+    console.log(`[${this.monitoringName}] | ${fetchConfig.poolName} | Working on block ${blockNum}`);
 
     const promises = [];
     promises.push(poolContract.A({ blockTag: blockNum }));
@@ -380,7 +382,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
     poolContract: TriCryptoV2 | TriCryptoFactory | CryptoV2,
     lpTokenContract: ERC20
   ) {
-    console.log(`fetchReservesData[${fetchConfig.poolName}]: Working on block ${blockNum}`);
+    console.log(`[${this.monitoringName}] | ${fetchConfig.poolName} | Working on block ${blockNum}`);
 
     const promises = [];
     promises.push(poolContract.A({ blockTag: blockNum }));
@@ -485,7 +487,7 @@ export class CurveFetcher extends BaseFetcher<CurveWorkerConfiguration> {
     let toWrite = [];
 
     console.log(
-      `Curve: (${currentPoolNumber}/${totalPoolCount}) [${poolName}][${base}-${quote}] getting data since ${sinceBlock} to ${endBlock}`
+      `[${this.monitoringName}] | (${currentPoolNumber}/${totalPoolCount}) [${poolName}][${base}-${quote}] getting data since ${sinceBlock} to ${endBlock}`
     );
     const poolData = this.getCurveDataforBlockIntervalAnyVersion(poolName, sinceBlock, endBlock);
 
