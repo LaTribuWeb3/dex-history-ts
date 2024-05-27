@@ -495,6 +495,13 @@
 									"WETH"
 								],
 								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "ezETH",
+								"pivots": [
+									"WETH"
+								],
+								"exportToInternalDashboard": true
 							}
 						]
 					}
