@@ -40,5 +40,11 @@
         "decimals": 18,
         "address": "0xb829b68f57CC546dA7E5806A929e53bE32a4625D",
         "dustAmount": 0.0001
+    },
+    "axlUSDC": {
+        "symbol": "axlUSDC",
+        "decimals": 6,
+        "address": "0xEB466342C4d449BC9f53A865D5Cb90586f405215",
+        "dustAmount": 0.01
     }
 }
