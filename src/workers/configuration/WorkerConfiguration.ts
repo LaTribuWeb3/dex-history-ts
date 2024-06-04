@@ -81,6 +81,7 @@ export interface UniSwapV3WorkerConfiguration extends FetcherConfiguration {
   factoryAddress: string;
   startBlockNumber?: number;
   pairs: UniswapV3PairConfiguration[];
+  fixedBlockStep?: number;
   fees: number[];
 }
 
@@ -104,12 +105,12 @@ export interface FetcherConfiguration extends WorkerConfiguration {
   configType: string;
 }
 
-export abstract class WorkerConfiguration { }
+export abstract class WorkerConfiguration {}
 
-export class EmptyConfiguration extends WorkerConfiguration { }
-export class FetchersRunnerConfiguration extends WorkerConfiguration { }
-export class PrecomputerConfiguration extends WorkerConfiguration { }
-export class ComputersRunnerConfiguration extends WorkerConfiguration { }
+export class EmptyConfiguration extends WorkerConfiguration {}
+export class FetchersRunnerConfiguration extends WorkerConfiguration {}
+export class PrecomputerConfiguration extends WorkerConfiguration {}
+export class ComputersRunnerConfiguration extends WorkerConfiguration {}
 
 export interface MedianPrecomputerConfiguration extends WorkerConfiguration {
   platforms: string[];
@@ -258,20 +259,23 @@ export function getCurvePoolSummaryFile() {
   return `${Constants.DATA_DIR}/curve/curve_pools_summary.json`;
 }
 
-export function getUniswapV3PairLatestDataPath(pairWithFeesAndPool: Univ3PairWithFeesAndPool) {
-  return `${Constants.DATA_DIR}/uniswapv3/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}-latestdata.json`;
+export function getUniswapV3PairLatestDataPath(
+  pairWithFeesAndPool: Univ3PairWithFeesAndPool,
+  workerName = 'uniswapv3'
+) {
+  return `${Constants.DATA_DIR}/${workerName}/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}-latestdata.json`;
 }
 
-export function getUniswapV3PairDataPath(pairWithFeesAndPool: Univ3PairWithFeesAndPool) {
-  return `${Constants.DATA_DIR}/uniswapv3/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}-data.csv`;
+export function getUniswapV3PairDataPath(pairWithFeesAndPool: Univ3PairWithFeesAndPool, workerName = 'uniswapv3') {
+  return `${Constants.DATA_DIR}/${workerName}/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}-data.csv`;
 }
 
-export function getUniswapV3FetcherResultPath() {
-  return `${Constants.DATA_DIR}/uniswapv3/uniswapv3-fetcher-result.json`;
+export function getUniswapV3FetcherResultPath(workerName = 'uniswapv3') {
+  return `${Constants.DATA_DIR}/${workerName}/uniswapv3-fetcher-result.json`;
 }
 
-export function getUniswapV3BaseFolder() {
-  return `${Constants.DATA_DIR}/uniswapv3`;
+export function getUniswapV3BaseFolder(workerName = 'uniswapv3') {
+  return `${Constants.DATA_DIR}/${workerName}`;
 }
 
 export function ensureCurvePrecomputedPresent() {

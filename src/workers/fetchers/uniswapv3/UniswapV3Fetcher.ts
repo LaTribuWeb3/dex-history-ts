@@ -24,12 +24,18 @@ import { UniswapV3Constants } from './UniswapV3Constants';
 import { getAllPoolsToFetch, parseEvent, translateTopicFilters } from './UniswapV3Utils';
 
 export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
-  constructor(runEveryMinutes: number, configVersion: string) {
-    super('uniswapv3', 'UniswapV3 Fetcher', runEveryMinutes, configVersion);
+  constructor(
+    runEveryMinutes: number,
+    configVersion: string,
+    workerName = 'uniswapv3',
+    monitoringName = 'UniswapV3 Fetcher'
+  ) {
+    super(workerName, monitoringName, runEveryMinutes, configVersion);
   }
   async runSpecific(): Promise<void> {
     this.createDataDirForWorker();
 
+    console.log(`[${this.monitoringName}] | config: ${JSON.stringify(this.getConfiguration(), null, 2)}`);
     const poolsData = [];
     const currentBlock = await Web3Utils.getCurrentBlock();
 
@@ -72,7 +78,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       poolsFetched: poolsData
     };
 
-    fs.writeFileSync(getUniswapV3FetcherResultPath(), JSON.stringify(fetcherResult, null, 2));
+    fs.writeFileSync(getUniswapV3FetcherResultPath(this.workerName), JSON.stringify(fetcherResult, null, 2));
 
     // at the end, call the concatener script
     await this.generateUnifiedFileUniv3(currentBlock);
@@ -81,8 +87,8 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
   async generateUnifiedFileUniv3(endBlock: number) {
     const available = this.getAvailableUniswapV3();
 
-    if (!fs.existsSync(generatePreComputedForWorker('uniswapv3'))) {
-      fs.mkdirSync(generatePreComputedForWorker('uniswapv3'), { recursive: true });
+    if (!fs.existsSync(generatePreComputedForWorker(this.workerName))) {
+      fs.mkdirSync(generatePreComputedForWorker(this.workerName), { recursive: true });
     }
 
     const blockLastYear: number = await getBlocknumberForTimestamp(Math.round(Date.now() / 1000) - 365 * 24 * 60 * 60);
@@ -92,7 +98,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       }
     }
 
-    this.truncateUnifiedFiles('uniswapv3', blockLastYear);
+    this.truncateUnifiedFiles(this.workerName, blockLastYear);
   }
 
   truncateUnifiedFiles(platform: string, oldestBlockToKeep: number) {
@@ -309,7 +315,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
   }
 
   getUniV3DataFiles(fromSymbol: string, toSymbol: string) {
-    const allUniv3Files = fs.readdirSync(getUniswapV3BaseFolder()).filter((_) => _.endsWith('.csv'));
+    const allUniv3Files = fs.readdirSync(getUniswapV3BaseFolder(this.workerName)).filter((_) => _.endsWith('.csv'));
 
     const searchKey = `${fromSymbol}-${toSymbol}`;
     let reverse = false;
@@ -320,7 +326,9 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       selectedFiles = allUniv3Files.filter((_) => _.startsWith(searchKey));
     }
 
-    selectedFiles = selectedFiles.map((relativePath: string) => getUniswapV3BaseFolder() + '/' + relativePath);
+    selectedFiles = selectedFiles.map(
+      (relativePath: string) => getUniswapV3BaseFolder(this.workerName) + '/' + relativePath
+    );
 
     return { selectedFiles, reverse };
   }
@@ -416,7 +424,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     );
 
     // try to find the json file representation of the pool latest value already fetched
-    const latestDataFilePath = getUniswapV3PairLatestDataPath(pairWithFeesAndPool);
+    const latestDataFilePath = getUniswapV3PairLatestDataPath(pairWithFeesAndPool, this.workerName);
 
     const univ3PairContract: UniswapV3Pair = UniswapV3Pair__factory.connect(
       pairWithFeesAndPool.poolAddress,
@@ -457,12 +465,12 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       latestData.poolAddress = pairWithFeesAndPool.poolAddress;
     }
 
-    const dataFileName = getUniswapV3PairDataPath(pairWithFeesAndPool);
+    const dataFileName = getUniswapV3PairDataPath(pairWithFeesAndPool, this.workerName);
     if (!fs.existsSync(dataFileName)) {
       fs.writeFileSync(dataFileName, 'blocknumber,data\n');
     }
 
-    const initBlockStep = 50000;
+    const initBlockStep = this.getConfiguration().fixedBlockStep || 50_000;
     let blockStep = initBlockStep;
     let fromBlock = latestData.blockNumber + 1;
     let toBlock = 0;
@@ -494,6 +502,8 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
         continue;
       }
 
+      cptError = 0;
+
       console.log(
         `${logLabel} [${fromBlock} - ${toBlock}] found ${
           events.length
@@ -513,6 +523,10 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
         blockStep = blockStep * 4;
       }
       fromBlock = toBlock + 1;
+      const fixedBlockStep = this.getConfiguration().fixedBlockStep;
+      if (fixedBlockStep) {
+        blockStep = fixedBlockStep;
+      }
     }
 
     return latestData.poolAddress;
@@ -624,7 +638,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     // fetch the deployed block number for the pool
     const deployedBlock = await Web3Utils.GetContractCreationBlockNumber(poolAddress, this.workerName);
     let fromBlock = deployedBlock;
-    let toBlock = deployedBlock + 100000;
+    let toBlock = deployedBlock + (this.getConfiguration().fixedBlockStep || 100_000);
 
     console.log(`[${this.monitoringName}] | Searching Initialize event between blocks [${fromBlock} - ${toBlock}]`);
 
@@ -657,7 +671,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     } else {
       console.log(`[${this.monitoringName}] | Initialize event not found between blocks [${fromBlock} - ${toBlock}]`);
       fromBlock = toBlock + 1;
-      toBlock = fromBlock + 100000;
+      toBlock = fromBlock + (this.getConfiguration().fixedBlockStep || 100_000);
     }
 
     throw new Error(`[${this.monitoringName}] | No Initialize event found`);

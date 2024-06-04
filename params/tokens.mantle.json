@@ -1,0 +1,14 @@
+{
+    "WETH": {
+        "symbol": "WETH",
+        "decimals": 18,
+        "address": "0xdEAddEaDdeadDEadDEADDEAddEADDEAddead1111",
+        "dustAmount": 0.0001
+    },
+    "mETH": {
+        "symbol": "mETH",
+        "decimals": 18,
+        "address": "0xcDA86A272531e8640cD7F1a92c01839911B90bb0",
+        "dustAmount": 0.0001
+    }
+}

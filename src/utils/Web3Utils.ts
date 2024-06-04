@@ -20,7 +20,7 @@ export async function GetContractCreationBlockNumber(contractAddress: string, wo
     await sleep(msToWait);
   }
   // call etherscan to get the tx receipt of contract creation
-  const txHash = await retry(getTxHashFromEtherscan, [contractAddress]);
+  const txHash = await retry(getTxHash, [contractAddress]);
   lastCallEtherscan = Date.now();
   const nullableTransactionReceipt = await web3Provider.getTransactionReceipt(txHash);
 
@@ -29,6 +29,14 @@ export async function GetContractCreationBlockNumber(contractAddress: string, wo
   }
   console.log(`${workerName}: returning blocknumber: ${nullableTransactionReceipt.blockNumber}`);
   return nullableTransactionReceipt.blockNumber;
+}
+
+async function getTxHash(contractAddress: string): Promise<string> {
+  if (process.env.NETWORK == 'MANTLE') {
+    return await getTxHashFromMantlescan(contractAddress);
+  } else {
+    return await getTxHashFromEtherscan(contractAddress);
+  }
 }
 
 async function getTxHashFromEtherscan(contractAddress: string): Promise<string> {
@@ -45,6 +53,16 @@ async function getTxHashFromEtherscan(contractAddress: string): Promise<string> 
   }
 }
 
+async function getTxHashFromMantlescan(contractAddress: string): Promise<string> {
+  const mantleScanUrl = `https://explorer.mantle.xyz/api/v2/addresses/${contractAddress}`;
+  const mantleScanResponse = await axios.get(mantleScanUrl);
+
+  if (!mantleScanResponse.data.creation_tx_hash) {
+    throw new Error(`getTxHashFromMantlescan: Error: ${mantleScanResponse.data}`);
+  }
+
+  return mantleScanResponse.data.creation_tx_hash;
+}
 export function getJsonRPCProvider(): ethers.JsonRpcProvider {
   if (!process.env.RPC_URL) {
     throw new Error('Cannot find RPC_URL in env');

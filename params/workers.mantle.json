@@ -1,0 +1,24 @@
+{
+    "workers": [
+        {
+            "name": "agnifinance",
+            "configuration": {
+                "configType": "uniswapv3",
+                "factoryAddress": "0x25780dc8Fc3cfBD75F33bFDAB65e969b603b2035",
+                "fixedBlockStep": 10000,
+                "fees": [
+                    100,
+                    500,
+                    2500,
+                    10000
+                ],
+                "pairs": [
+                    {
+                        "token0": "mETH",
+                        "token1": "WETH"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,6 +1,7 @@
 import { AbstractRunner } from './AbstractRunner';
 import { BscDataFetch } from './bsc/BscDataFetch';
 import { EthereumDataFetch } from './ethereum/EthereumDataFetch';
+import { MantleDataFetch } from './mantle/MantleDataFetch';
 
 const currentNetwork = process.env.NETWORK || 'ETH';
 
@@ -11,6 +12,9 @@ switch (currentNetwork) {
     break;
   case 'BSC':
     runner = new BscDataFetch();
+    break;
+  case 'MANTLE':
+    runner = new MantleDataFetch();
     break;
   default:
     throw new Error(`Unknown network: ${currentNetwork}`);
