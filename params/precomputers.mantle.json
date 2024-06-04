@@ -1,0 +1,164 @@
+{
+	"precomputers": [
+		{
+			"name": "median",
+			"configuration": {
+				"platforms": [
+					"agnifinance",
+					"butter",
+					"fusionx",
+					"all"
+				],
+				"watchedPairs": [
+					{
+						"base": "USDT",
+						"quotes": [
+							{
+								"quote": "USDC",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "MNT",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "mETH",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "WETH",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "WBTC",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "USDe",
+								"exportToInternalDashboard": false
+							},
+							{
+								"quote": "USDY",
+								"exportToInternalDashboard": false
+							}
+						]
+					},
+					{
+						"base": "USDC",
+						"quotes": [
+							{
+								"quote": "MNT",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "mETH",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "WETH",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "WBTC",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "USDe",
+								"exportToInternalDashboard": false
+							},
+							{
+								"quote": "USDY",
+								"exportToInternalDashboard": false
+							}
+						]
+					},
+					{
+						"base": "MNT",
+						"quotes": [
+							{
+								"quote": "mETH",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "WETH",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "WBTC",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "USDe",
+								"exportToInternalDashboard": false
+							},
+							{
+								"quote": "USDY",
+								"exportToInternalDashboard": false
+							}
+						]
+					},
+					{
+						"base": "mETH",
+						"quotes": [
+							{
+								"quote": "WETH",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "WBTC",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "USDe",
+								"exportToInternalDashboard": false
+							},
+							{
+								"quote": "USDY",
+								"exportToInternalDashboard": false
+							}
+						]
+					},
+					{
+						"base": "WETH",
+						"quotes": [
+							{
+								"quote": "WBTC",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "USDe",
+								"exportToInternalDashboard": false
+							},
+							{
+								"quote": "USDY",
+								"exportToInternalDashboard": false
+							}
+						]
+					},
+					{
+						"base": "WBTC",
+						"quotes": [
+							{
+								"quote": "USDe",
+								"exportToInternalDashboard": false
+							},
+							{
+								"quote": "USDY",
+								"exportToInternalDashboard": false
+							}
+						]
+					},
+					{
+						"base": "USDe",
+						"quotes": [
+							{
+								"quote": "USDY",
+								"exportToInternalDashboard": false
+							}
+						]
+					}
+				]
+			}
+		}
+	]
+}
