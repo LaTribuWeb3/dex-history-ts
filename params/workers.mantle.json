@@ -22,8 +22,24 @@
                         "token1": "WETH"
                     },
                     {
+                        "token0": "WMNT",
+                        "token1": "mETH"
+                    },
+                    {
                         "token0": "USDC",
                         "token1": "USDT"
+                    },
+                    {
+                        "token0": "USDT",
+                        "token1": "mETH"
+                    },
+                    {
+                        "token0": "axlETH",
+                        "token1": "WETH"
+                    },
+                    {
+                        "token0": "USDT",
+                        "token1": "USDY"
                     }
                 ]
             }
