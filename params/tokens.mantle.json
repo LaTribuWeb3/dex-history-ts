@@ -10,5 +10,35 @@
         "decimals": 18,
         "address": "0xcDA86A272531e8640cD7F1a92c01839911B90bb0",
         "dustAmount": 0.0001
+    },
+    "WMNT": {
+        "symbol": "WMNT",
+        "decimals": 18,
+        "address": "0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8",
+        "dustAmount": 0.01
+    },
+    "USDT": {
+        "symbol": "USDT",
+        "decimals": 6,
+        "address": "0x201EBa5CC46D216Ce6DC03F6a759e8E766e956aE",
+        "dustAmount": 0.01
+    },
+    "USDC": {
+        "symbol": "USDC",
+        "decimals": 6,
+        "address": "0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9",
+        "dustAmount": 0.01
+    },
+    "USDY": {
+        "symbol": "USDY",
+        "decimals": 18,
+        "address": "0x5bE26527e817998A7206475496fDE1E68957c5A6",
+        "dustAmount": 0.01
+    },
+    "axlETH": {
+        "symbol": "axlETH",
+        "decimals": 18,
+        "address": "0xb829b68f57CC546dA7E5806A929e53bE32a4625D",
+        "dustAmount": 0.0001
     }
 }
