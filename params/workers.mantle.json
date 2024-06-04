@@ -45,7 +45,7 @@
             }
         },
         {
-            "name": "fusionX",
+            "name": "fusionx",
             "configuration": {
                 "configType": "uniswapv3",
                 "factoryAddress": "0x530d2766D1988CC1c000C8b7d00334c14B69AD71",
