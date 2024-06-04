@@ -43,6 +43,50 @@
                     }
                 ]
             }
+        },
+        {
+            "name": "fusionX",
+            "configuration": {
+                "configType": "uniswapv3",
+                "factoryAddress": "0x530d2766D1988CC1c000C8b7d00334c14B69AD71",
+                "fixedBlockStep": 10000,
+                "fees": [
+                    100,
+                    500,
+                    2500,
+                    10000
+                ],
+                "pairs": [
+                    {
+                        "token0": "USDC",
+                        "token1": "USDT"
+                    },
+                    {
+                        "token0": "USDT",
+                        "token1": "WETH"
+                    },
+                    {
+                        "token0": "mETH",
+                        "token1": "WETH"
+                    },
+                    {
+                        "token0": "USDT",
+                        "token1": "WMNT"
+                    },
+                    {
+                        "token0": "WMNT",
+                        "token1": "mETH"
+                    },
+                    {
+                        "token0": "USDT",
+                        "token1": "mETH"
+                    },
+                    {
+                        "token0": "USDC",
+                        "token1": "axlUSDC"
+                    }
+                ]
+            }
         }
     ]
 }
