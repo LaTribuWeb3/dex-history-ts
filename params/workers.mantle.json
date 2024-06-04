@@ -16,6 +16,14 @@
                     {
                         "token0": "mETH",
                         "token1": "WETH"
+                    },
+                    {
+                        "token0": "WMNT",
+                        "token1": "WETH"
+                    },
+                    {
+                        "token0": "USDC",
+                        "token1": "USDT"
                     }
                 ]
             }
