@@ -12,7 +12,7 @@ import {
 import * as ethers from 'ethers';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import { UniswapV3Factory__factory } from '../../../contracts/types/factories/uniswapv3/UniswapV3Factory__factory';
-import { getAllPoolsToFetch, parseEvent, translateTopicFilters } from './UniswapV3Utils';
+import { getAllPoolsToFetch, translateTopicFilters } from './UniswapV3Utils';
 import { normalize, sleep } from '../../../utils/Utils';
 import * as fs from 'fs';
 import { readLastLine } from '../../configuration/Helper';
@@ -65,6 +65,8 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
       promises.push(
         this.FetchUniswapV3PriceHistoryForPair(groupedFetchConfig.pairToFetch, groupedFetchConfig.pools, currentBlock)
       );
+
+      // await Promise.all(promises);
 
       await sleep(1000);
     }
@@ -143,9 +145,9 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
     let lastBlockWithData = sinceBlock;
 
     // initializes the pools contracts
-    const contracts: { [address: string]: UniswapV3Pair } = {};
+    const contracts: { [address: string]: ethers.BaseContract } = {};
     for (const poolAddress of pools) {
-      contracts[poolAddress] = UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
+      contracts[poolAddress] = this.getPairContract(poolAddress);
     }
 
     const step = process.env.NETWORK == 'MANTLE' ? 600_000 : 100_000;
@@ -162,11 +164,10 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
       console.log(`${label} Fetching events for blocks [${fromBlock}-${toBlock}]`);
 
       for (const poolAddress of pools) {
-        const univ3PairContract: UniswapV3Pair = UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
         tradesByPool[poolAddress] = await fetchEvents(
           fromBlock,
           toBlock,
-          univ3PairContract,
+          contracts[poolAddress],
           token0Conf,
           token1Conf,
           this.getConfiguration().fixedBlockStep
@@ -224,6 +225,10 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
 
     return { lastBlockWithData, token0: token0Conf.symbol, token1: token1Conf.symbol };
   }
+
+  getPairContract(poolAddress: string): ethers.BaseContract {
+    return UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
+  }
 }
 
 async function fetchEvents(
@@ -262,7 +267,10 @@ async function fetchEvents(
 
     if (events.length != 0) {
       for (const e of events) {
-        const parsedEvent: ethers.ethers.LogDescription = parseEvent(e);
+        const parsedEvent: ethers.ethers.LogDescription | null = contract.interface.parseLog(e);
+        if (!parsedEvent) {
+          throw new Error(`Could not parse event ${JSON.stringify(e)}`);
+        }
 
         // for the wstETH/WETH pool, ignore block 15952167 because of 1.28 price that is an outlier
         if (e.blockNumber == 15952167 && token0Conf.symbol == 'wstETH' && token1Conf.symbol == 'WETH') {

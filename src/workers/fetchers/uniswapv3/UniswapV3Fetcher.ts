@@ -21,7 +21,7 @@ import {
   getUniswapV3PairLatestDataPath
 } from '../../configuration/WorkerConfiguration';
 import { UniswapV3Constants } from './UniswapV3Constants';
-import { getAllPoolsToFetch, parseEvent, translateTopicFilters } from './UniswapV3Utils';
+import { getAllPoolsToFetch, translateTopicFilters } from './UniswapV3Utils';
 
 export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
   constructor(
@@ -411,6 +411,11 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     return available;
   }
 
+  getPairContract(poolAddress: string): ethers.BaseContract {
+    console.log(`getPairContract: getting specific fusion contract for ${poolAddress}`);
+    return UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
+  }
+
   async FetchUniswapV3HistoryForPair(
     pairWithFeesAndPool: Univ3PairWithFeesAndPool,
     currentBlock: number,
@@ -426,10 +431,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     // try to find the json file representation of the pool latest value already fetched
     const latestDataFilePath = getUniswapV3PairLatestDataPath(pairWithFeesAndPool, this.workerName);
 
-    const univ3PairContract: UniswapV3Pair = UniswapV3Pair__factory.connect(
-      pairWithFeesAndPool.poolAddress,
-      this.web3Provider
-    );
+    const univ3PairContract: any = this.getPairContract(pairWithFeesAndPool.poolAddress);
 
     let latestData: BlockWithTick;
     const token0 = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
@@ -511,7 +513,15 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       );
 
       if (events.length != 0) {
-        this.processEvents(events, latestData, pairWithFeesAndPool, latestDataFilePath, dataFileName, minStartBlock);
+        this.processEvents(
+          univ3PairContract,
+          events,
+          latestData,
+          pairWithFeesAndPool,
+          latestDataFilePath,
+          dataFileName,
+          minStartBlock
+        );
 
         // try to find the blockstep to reach 9000 events per call as the RPC limit is 10 000,
         // this try to change the blockstep by increasing it when the pool is not very used
@@ -537,6 +547,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
   }
 
   async processEvents(
+    contract: ethers.BaseContract,
     events: (ethers.ethers.EventLog | ethers.ethers.Log)[],
     latestData: BlockWithTick,
     pairWithFeesAndPool: Univ3PairWithFeesAndPool,
@@ -553,7 +564,10 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     // const checkpointData = [];
     let lastBlock = events[0].blockNumber;
     for (const event of events) {
-      const parsedEvent: ethers.ethers.LogDescription = parseEvent(event);
+      const parsedEvent: ethers.ethers.LogDescription | null = contract.interface.parseLog(event);
+      if (!parsedEvent) {
+        throw new Error(`Could not parse event ${JSON.stringify(event)}`);
+      }
 
       // this checks that we are crossing a new block, so we will save the price and maybe checkpoint data
       if (

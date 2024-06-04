@@ -63,17 +63,3 @@ export async function translateTopicFilters(topicFilters: Promise<ethers.ethers.
   ];
   return topics;
 }
-
-export function parseEvent(event: ethers.ethers.EventLog | ethers.ethers.Log): ethers.ethers.LogDescription {
-  const correctlyTypedEvent: { topics: Array<string>; data: string } = {
-    topics: [...event.topics],
-    data: event.data
-  };
-
-  const logParsed = new ethers.Interface(UniswapV3Pair__factory.abi).parseLog(correctlyTypedEvent);
-  if (logParsed == null) {
-    throw new Error('Could not parse logs');
-  }
-
-  return logParsed;
-}

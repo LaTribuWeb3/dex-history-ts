@@ -1,10 +1,10 @@
 import { FusionXPoolV3__factory } from '../../../contracts/types';
-import { UniswapV3Fetcher } from '../uniswapv3/UniswapV3Fetcher';
+import { UniswapV3PriceFetcher } from '../uniswapv3/UniswapV3PriceFetcher';
 import ethers from 'ethers';
 
-export class FusionXFinanceFetcher extends UniswapV3Fetcher {
+export class FusionXFinancePriceFetcher extends UniswapV3PriceFetcher {
   constructor(runEveryMinutes: number, configVersion: string) {
-    super(runEveryMinutes, configVersion, 'fusionx', 'FusionX Finance Fetcher');
+    super(runEveryMinutes, configVersion, 'fusionx', 'FusionX Finance Price Fetcher');
   }
 
   override getPairContract(poolAddress: string): ethers.BaseContract {
