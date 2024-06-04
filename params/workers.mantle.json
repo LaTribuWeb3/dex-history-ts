@@ -34,10 +34,6 @@
                         "token1": "mETH"
                     },
                     {
-                        "token0": "axlETH",
-                        "token1": "WETH"
-                    },
-                    {
                         "token0": "USDT",
                         "token1": "USDY"
                     }
@@ -80,10 +76,6 @@
                     {
                         "token0": "USDT",
                         "token1": "mETH"
-                    },
-                    {
-                        "token0": "USDC",
-                        "token1": "axlUSDC"
                     }
                 ]
             }

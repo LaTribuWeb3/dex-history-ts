@@ -46,5 +46,17 @@
         "decimals": 6,
         "address": "0xEB466342C4d449BC9f53A865D5Cb90586f405215",
         "dustAmount": 0.01
+    },
+    "USDe": {
+        "symbol": "USDe",
+        "decimals": 6,
+        "address": "0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34",
+        "dustAmount": 0.01
+    },
+    "WBTC": {
+        "symbol": "WBTC",
+        "decimals": 8,
+        "address": "0xCAbAE6f6Ea1ecaB08Ad02fE02ce9A44F09aebfA2",
+        "dustAmount": 0.01
     }
 }
