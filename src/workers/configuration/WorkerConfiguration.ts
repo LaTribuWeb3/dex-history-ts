@@ -124,7 +124,6 @@ export interface WatchedPair {
 
 export interface PairQuote {
   quote: string;
-  exportToInternalDashboard: boolean;
   pivots?: string[];
   pivotsSpecific?: SpecificPivot[];
 }
@@ -215,6 +214,10 @@ export function readdirSyncWithFullPath(dir: string): string[] {
 export function generateUnifiedCSVFilePath(worker: string, pair: string) {
   if (directoryStructureVersion == 0) return generatePreComputedForWorker(worker) + `/${pair}-unified-data.csv`;
   else return generateUnifedCSVBasePathForPair('computed', worker, pair) + `/${worker}.${pair}.computed.csv`;
+}
+
+export function generatePreComputedPriceForWorker(worker: string) {
+  return `${Constants.DATA_DIR}/precomputed/price/${worker}`;
 }
 
 export function generatePreComputedForWorker(worker: string) {

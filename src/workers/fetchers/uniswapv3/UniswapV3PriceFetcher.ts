@@ -1,8 +1,12 @@
 import { BaseFetcher } from '../BaseFetcher';
+import * as Constants from '../../../utils/Constants';
+
 import {
   UniSwapV3WorkerConfiguration,
   UniswapV3PairConfiguration,
   Univ3PairWithFeesAndPool,
+  generatePreComputedForWorker,
+  generatePreComputedPriceForWorker,
   generatePriceCSVFilePath
 } from '../../configuration/WorkerConfiguration';
 import * as ethers from 'ethers';
@@ -15,14 +19,24 @@ import { readLastLine } from '../../configuration/Helper';
 import { GetContractCreationBlockNumber } from '../../../utils/Web3Utils';
 import { UniswapV3Pair, UniswapV3Pair__factory } from '../../../contracts/types';
 import { TokenData } from '../../configuration/TokenData';
+import path from 'path';
 
 export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
-  constructor(runEveryMinutes: number, configVersion: string) {
-    super('uniswapv3', 'UniswapV3 Price Fetcher', runEveryMinutes, configVersion);
+  constructor(
+    runEveryMinutes: number,
+    configVersion: string,
+    workerName = 'uniswapv3',
+    monitoringName = 'UniswapV3 Price Fetcher'
+  ) {
+    super(workerName, monitoringName, runEveryMinutes, configVersion);
   }
 
   async runSpecific(): Promise<void> {
     const currentBlock = await Web3Utils.getCurrentBlock();
+
+    if (!fs.existsSync(generatePreComputedPriceForWorker(this.workerName))) {
+      fs.mkdirSync(generatePreComputedPriceForWorker(this.workerName), { recursive: true });
+    }
 
     console.log(`${this.workerName}: getting pools to fetch`);
 
@@ -134,7 +148,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
       contracts[poolAddress] = UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
     }
 
-    const step = 100_000;
+    const step = process.env.NETWORK == 'MANTLE' ? 600_000 : 100_000;
     let fromBlock = sinceBlock;
     let toBlock = 0;
 
@@ -149,7 +163,14 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
 
       for (const poolAddress of pools) {
         const univ3PairContract: UniswapV3Pair = UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
-        tradesByPool[poolAddress] = await fetchEvents(fromBlock, toBlock, univ3PairContract, token0Conf, token1Conf);
+        tradesByPool[poolAddress] = await fetchEvents(
+          fromBlock,
+          toBlock,
+          univ3PairContract,
+          token0Conf,
+          token1Conf,
+          this.getConfiguration().fixedBlockStep
+        );
       }
 
       let mainPool = pools[0];
@@ -210,9 +231,10 @@ async function fetchEvents(
   endBlock: number,
   contract: ethers.ethers.BaseContract,
   token0Conf: TokenData,
-  token1Conf: TokenData
+  token1Conf: TokenData,
+  fixedBlockStep: number | undefined
 ): Promise<{ block: number; price: number }[]> {
-  const initBlockStep = 100000;
+  const initBlockStep = fixedBlockStep || 100_000;
   let blockStep = initBlockStep;
   let fromBlock = startBlock;
   let toBlock = 0;
@@ -271,6 +293,10 @@ async function fetchEvents(
       blockStep = blockStep * 4;
     }
     fromBlock = toBlock + 1;
+
+    if (fixedBlockStep) {
+      blockStep = fixedBlockStep;
+    }
   }
 
   return swapResults;

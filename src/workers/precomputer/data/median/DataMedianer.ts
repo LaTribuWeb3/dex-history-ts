@@ -1,6 +1,6 @@
 import { median } from 'simple-statistics';
-import { MEDIAN_OVER_BLOCK } from '../DataInterfaceConstants';
 import { BlockUtils } from '../../../../utils/BlockUtils';
+import { MEDIAN_OVER_BLOCK } from '../../../../utils/Constants';
 
 export class DataMedianer {
   static medianPricesOverBlocks(pricesAtBlock: { block: number; price: number }[], baseBlock: number | undefined) {

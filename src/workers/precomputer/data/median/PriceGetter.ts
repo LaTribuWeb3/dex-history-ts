@@ -1,9 +1,8 @@
-import { PLATFORMS } from '../../../../utils/Constants';
+import { MEDIAN_OVER_BLOCK, PLATFORMS } from '../../../../utils/Constants';
 import { DataPairUtils } from '../../../../utils/DataPairUtils';
 import { FileReaderUtils } from '../../../../utils/FileReaderUtils';
 import { logFnDuration, logFnDurationWithLabel } from '../../../../utils/MonitoringHelper';
 import { generatePriceCSVFilePath } from '../../../configuration/WorkerConfiguration';
-import { MEDIAN_OVER_BLOCK } from '../DataInterfaceConstants';
 import { DataMedianer } from './DataMedianer';
 
 export class PriceGetter {

@@ -529,6 +529,10 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       }
     }
 
+    // in the end, always save latest data
+    latestData.blockNumber = currentBlock;
+    fs.writeFileSync(latestDataFilePath, JSON.stringify(latestData));
+
     return latestData.poolAddress;
   }
 

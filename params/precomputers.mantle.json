@@ -14,32 +14,34 @@
 						"base": "USDT",
 						"quotes": [
 							{
-								"quote": "USDC",
-								"exportToInternalDashboard": true
+								"quote": "USDC"
 							},
 							{
-								"quote": "MNT",
-								"exportToInternalDashboard": true
+								"quote": "WMNT",
+								"pivots": [
+									"WETH"
+								]
 							},
 							{
 								"quote": "mETH",
-								"exportToInternalDashboard": true
+								"pivots": [
+									"WETH"
+								]
 							},
 							{
-								"quote": "WETH",
-								"exportToInternalDashboard": true
+								"quote": "WETH"
 							},
 							{
 								"quote": "WBTC",
-								"exportToInternalDashboard": true
+								"pivots": [
+									"WETH"
+								]
 							},
 							{
-								"quote": "USDe",
-								"exportToInternalDashboard": false
+								"quote": "USDe"
 							},
 							{
-								"quote": "USDY",
-								"exportToInternalDashboard": false
+								"quote": "USDY"
 							}
 						]
 					},
@@ -47,53 +49,54 @@
 						"base": "USDC",
 						"quotes": [
 							{
-								"quote": "MNT",
-								"exportToInternalDashboard": true
+								"quote": "WMNT",
+								"pivots": [
+									"WETH"
+								]
 							},
 							{
 								"quote": "mETH",
-								"exportToInternalDashboard": true
+								"pivots": [
+									"WETH"
+								]
 							},
 							{
-								"quote": "WETH",
-								"exportToInternalDashboard": true
+								"quote": "WETH"
 							},
 							{
 								"quote": "WBTC",
-								"exportToInternalDashboard": true
+								"pivots": [
+									"WETH"
+								]
 							},
 							{
-								"quote": "USDe",
-								"exportToInternalDashboard": false
+								"quote": "USDe"
 							},
 							{
 								"quote": "USDY",
-								"exportToInternalDashboard": false
+								"pivots": [
+									"USDT"
+								]
 							}
 						]
 					},
 					{
-						"base": "MNT",
+						"base": "WMNT",
 						"quotes": [
 							{
-								"quote": "mETH",
-								"exportToInternalDashboard": true
+								"quote": "mETH"
 							},
 							{
-								"quote": "WETH",
-								"exportToInternalDashboard": true
+								"quote": "WETH"
 							},
 							{
-								"quote": "WBTC",
-								"exportToInternalDashboard": true
+								"quote": "WBTC"
 							},
 							{
-								"quote": "USDe",
-								"exportToInternalDashboard": false
+								"quote": "USDe"
 							},
 							{
-								"quote": "USDY",
-								"exportToInternalDashboard": false
+								"quote": "USDY"
 							}
 						]
 					},
@@ -101,20 +104,16 @@
 						"base": "mETH",
 						"quotes": [
 							{
-								"quote": "WETH",
-								"exportToInternalDashboard": true
+								"quote": "WETH"
 							},
 							{
-								"quote": "WBTC",
-								"exportToInternalDashboard": true
+								"quote": "WBTC"
 							},
 							{
-								"quote": "USDe",
-								"exportToInternalDashboard": false
+								"quote": "USDe"
 							},
 							{
-								"quote": "USDY",
-								"exportToInternalDashboard": false
+								"quote": "USDY"
 							}
 						]
 					},
@@ -122,16 +121,13 @@
 						"base": "WETH",
 						"quotes": [
 							{
-								"quote": "WBTC",
-								"exportToInternalDashboard": true
+								"quote": "WBTC"
 							},
 							{
-								"quote": "USDe",
-								"exportToInternalDashboard": false
+								"quote": "USDe"
 							},
 							{
-								"quote": "USDY",
-								"exportToInternalDashboard": false
+								"quote": "USDY"
 							}
 						]
 					},
@@ -139,12 +135,10 @@
 						"base": "WBTC",
 						"quotes": [
 							{
-								"quote": "USDe",
-								"exportToInternalDashboard": false
+								"quote": "USDe"
 							},
 							{
-								"quote": "USDY",
-								"exportToInternalDashboard": false
+								"quote": "USDY"
 							}
 						]
 					},
@@ -152,8 +146,7 @@
 						"base": "USDe",
 						"quotes": [
 							{
-								"quote": "USDY",
-								"exportToInternalDashboard": false
+								"quote": "USDY"
 							}
 						]
 					}

@@ -25,23 +25,8 @@ export const SPANS = [1, 7, 30, 180, 365];
 
 export const BN_1e18 = new BigNumber(10).pow(18);
 
-/**
- * data source -> uint map
- * from contract:
- * enum LiquiditySource {
-        All,
-        UniV2,
-        UniV3,
-        Curve
-    }
- */
-export const smartLTVSourceMap = {
-  all: 0,
-  uniswapv2: 1,
-  uniswapv3: 2,
-  curve: 3
-};
-
-export const DEFAULT_STEP_BLOCK = 100;
+export const DEFAULT_STEP_BLOCK = 100 * 6;
 
 export const CONFIG_CACHE_DURATION = 10 * 60 * 1000; // 10 min cache duration for config
+
+export const MEDIAN_OVER_BLOCK = 300 * 6;
