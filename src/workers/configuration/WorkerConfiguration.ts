@@ -271,7 +271,7 @@ export function getUniswapV3PairDataPath(pairWithFeesAndPool: Univ3PairWithFeesA
 }
 
 export function getUniswapV3FetcherResultPath(workerName = 'uniswapv3') {
-  return `${Constants.DATA_DIR}/${workerName}/uniswapv3-fetcher-result.json`;
+  return `${Constants.DATA_DIR}/${workerName}/${workerName}-fetcher-result.json`;
 }
 
 export function getUniswapV3BaseFolder(workerName = 'uniswapv3') {
