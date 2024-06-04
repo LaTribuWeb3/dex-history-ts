@@ -1,6 +1,7 @@
 import { AgniFinanceFetcher } from '../../workers/fetchers/agni/AgniFinanceFetcher';
 import { BalancerFetcher } from '../../workers/fetchers/balancer/BalancerFetcher';
 import { BalancerPriceFetcher } from '../../workers/fetchers/balancer/BalancerPriceFetcher';
+import { ButterFetcher } from '../../workers/fetchers/butter/butterFetcher';
 import { FusionXFinanceFetcher } from '../../workers/fetchers/fusionx/FusionXFinanceFetcher';
 import { UniswapV3Fetcher } from '../../workers/fetchers/uniswapv3/UniswapV3Fetcher';
 import { UniswapV3PriceFetcher } from '../../workers/fetchers/uniswapv3/UniswapV3PriceFetcher';
@@ -18,7 +19,8 @@ export class MantleDataFetch extends AbstractRunner {
       'MantleDataFetch-Runner',
       [
         new AgniFinanceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
-        new FusionXFinanceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion)
+        new FusionXFinanceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
+        new ButterFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion)
       ],
       mutex,
       shouldWait,
