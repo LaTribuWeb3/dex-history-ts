@@ -144,7 +144,11 @@
 					{
 						"name": "USDC-mETH",
 						"startBlock": 57828705
-					}					
+					},
+					{
+						"name": "USDC-USDY",
+						"startBlock": 40560511
+					}
 				]
 			}
 		}
