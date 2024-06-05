@@ -76,6 +76,10 @@
                     {
                         "token0": "USDT",
                         "token1": "mETH"
+                    },
+                    {
+                        "token0": "USDT",
+                        "token1": "WBTC"
                     }
                 ]
             }
