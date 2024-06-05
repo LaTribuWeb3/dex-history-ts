@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import { UniswapV3Pair, UniswapV3Pair__factory } from '../../../contracts/types';
 import { Uniswapv3Library } from '../../../library/Uniswapv3Library';
 import { BlockWithTick, SlippageMap } from '../../../models/datainterface/BlockData';
-import retry from '../../../utils/Utils';
+import retry, { sleep } from '../../../utils/Utils';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import { getBlocknumberForTimestamp } from '../../../utils/Web3Utils';
 import { BaseFetcher } from '../BaseFetcher';
@@ -60,13 +60,35 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       } pairs in config`
     );
 
+    const promises: { tokens: string[]; addressPromise: Promise<string>; label: string }[] = [];
     for (const fetchConfig of poolsToFetch) {
-      const pairAddress = await this.FetchUniswapV3HistoryForPair(fetchConfig, currentBlock, minStartBlock);
+      // const pairAddress = await this.FetchUniswapV3HistoryForPair(fetchConfig, currentBlock, minStartBlock);
+      // if (pairAddress) {
+      //   poolsData.push({
+      //     tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
+      //     address: pairAddress,
+      //     label: `${fetchConfig.pairToFetch.token0}-${fetchConfig.pairToFetch.token1}-${fetchConfig.fee}`
+      //   });
+      // }
+      const promise = this.FetchUniswapV3HistoryForPair(fetchConfig, currentBlock, minStartBlock);
+      promises.push({
+        tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
+        addressPromise: promise,
+        label: `${fetchConfig.pairToFetch.token0}-${fetchConfig.pairToFetch.token1}-${fetchConfig.fee}`
+      });
+
+      await sleep(1000);
+    }
+
+    await Promise.all(promises.map((_) => _.addressPromise));
+
+    for (const p of promises) {
+      const pairAddress = await p.addressPromise;
       if (pairAddress) {
         poolsData.push({
-          tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
+          tokens: p.tokens,
           address: pairAddress,
-          label: `${fetchConfig.pairToFetch.token0}-${fetchConfig.pairToFetch.token1}-${fetchConfig.fee}`
+          label: p.label
         });
       }
     }
