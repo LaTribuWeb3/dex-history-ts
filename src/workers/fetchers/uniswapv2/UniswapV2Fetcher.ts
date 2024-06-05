@@ -123,8 +123,6 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
       throw new Error(`[${this.monitoringName}] | Order mismatch between configuration and uniswapv2 pair`);
     }
 
-    const initBlockStep = 500000;
-
     let startBlock = 0;
     if (!fs.existsSync(historyFileName)) {
       // TODO Move to Utils / Writer (un autre paquet)
@@ -158,6 +156,7 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
 
     let liquidityValues = [];
 
+    const initBlockStep = this.getConfiguration().fixedBlockStep || 500000;
     let blockStep = initBlockStep;
     let fromBlock = startBlock;
     let toBlock = 0;
@@ -240,6 +239,11 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
       }
 
       fromBlock = toBlock + 1;
+      cptError = 0;
+      const fixedBlockStep = this.getConfiguration().fixedBlockStep;
+      if (fixedBlockStep) {
+        blockStep = fixedBlockStep;
+      }
     }
 
     if (liquidityValues.length > 0) {

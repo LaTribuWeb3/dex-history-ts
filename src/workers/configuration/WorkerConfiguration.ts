@@ -32,6 +32,7 @@ export interface CurveFetcherWorkerConfiguration extends FetcherConfiguration {
 }
 
 export interface UniSwapV2WorkerConfiguration extends FetcherConfiguration {
+  fixedBlockStep?: number;
   factoryAddress: string;
   pairs: UniSwapV2PairConfiguration[];
 }

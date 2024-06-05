@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "main": "index.ts",
     "scripts": {
-        "start:fetcher-data-fetch": "node -r ts-node/register ./src/runners/NetworkRunner.ts",
+        "start:fetcher-data-fetch": "node --max-old-space-size=16000 -r ts-node/register ./src/runners/NetworkRunner.ts",
         "debug:fetcher-data-fetch": "node --inspect -r ts-node/register ./src/runners/NetworkRunner.ts",
         "start": "ts-node ./src/index.ts",
         "start:fetchers": "ts-node ./src/runners/FetchersRunner.ts",

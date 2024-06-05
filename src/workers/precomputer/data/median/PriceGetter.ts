@@ -1,4 +1,4 @@
-import { MEDIAN_OVER_BLOCK, PLATFORMS } from '../../../../utils/Constants';
+import { MEDIAN_OVER_BLOCK } from '../../../../utils/Constants';
 import { DataPairUtils } from '../../../../utils/DataPairUtils';
 import { FileReaderUtils } from '../../../../utils/FileReaderUtils';
 import { logFnDuration, logFnDurationWithLabel } from '../../../../utils/MonitoringHelper';

@@ -35,14 +35,15 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
   async runSpecific(): Promise<void> {
     this.createDataDirForWorker();
 
-    console.log(`[${this.monitoringName}] | config: ${JSON.stringify(this.getConfiguration(), null, 2)}`);
+    // console.log(`[${this.monitoringName}] | config: ${JSON.stringify(this.getConfiguration(), null, 2)}`);
+    console.log(`[${this.monitoringName}] | block interval constants: ${UniswapV3Constants.CONSTANT_BLOCK_INTERVAL}`);
     const poolsData = [];
     const currentBlock = await Web3Utils.getCurrentBlock();
 
     // this is used to only keep 380 days of data, but still need to fetch trade data since the pool initialize block
     // computing the data is CPU heavy so this avoid computing too old data that we don't use
     // fetching events is not
-    const minStartDate = Math.round(Date.now() / 1000) - 380 * 24 * 60 * 60; // min start block is 380 days ago
+    const minStartDate = Math.round(Date.now() / 1000) - 200 * 24 * 60 * 60; // min start block is 200 days ago
     const minStartBlock: number = await Web3Utils.getBlocknumberForTimestamp(minStartDate);
     console.log(`[${this.monitoringName}] | minStartBlock is ${minStartBlock}`);
 
