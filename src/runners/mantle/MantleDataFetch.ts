@@ -17,12 +17,12 @@ export class MantleDataFetch extends AbstractRunner {
       'MantleDataFetch-Runner',
       [
         // new AgniFinanceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
-        // new AgniFinancePriceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
         // new ButterFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
+        // new FusionXFinanceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion)
+        // new AgniFinancePriceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
         // new ButterPriceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
-        // new FusionXFinanceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
-        // new FusionXFinancePriceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion)
-        new MedianPrecomputer(AbstractRunner.RUN_EVERY_MINUTES, configVersion)
+        // new FusionXFinancePriceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
+        // new MedianPrecomputer(AbstractRunner.RUN_EVERY_MINUTES, configVersion)
       ],
       mutex,
       shouldWait,

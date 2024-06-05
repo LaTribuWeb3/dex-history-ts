@@ -80,7 +80,14 @@ export function getMulticallProvider(): MulticallProvider {
 }
 
 export async function getBlocknumberForTimestamp(timestamp: number): Promise<number> {
-  const resp = await axios.get(`https://coins.llama.fi/block/ethereum/${timestamp}`);
+  let networkKey = 'ethereum';
+  if (process.env.NETWORK == 'MANTLE') {
+    if (timestamp < 1688644299) {
+      return 1;
+    }
+    networkKey = 'mantle';
+  }
+  const resp = await axios.get(`https://coins.llama.fi/block/${networkKey}/${timestamp}`);
 
   if (!resp.data.height) {
     throw Error('No data height in defi lama response');
