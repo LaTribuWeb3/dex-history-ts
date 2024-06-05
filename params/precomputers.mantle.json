@@ -32,10 +32,7 @@
 								"quote": "WETH"
 							},
 							{
-								"quote": "WBTC",
-								"pivots": [
-									"USDT"
-								]
+								"quote": "WBTC"
 							},
 							{
 								"quote": "USDe"
@@ -51,13 +48,13 @@
 							{
 								"quote": "WMNT",
 								"pivots": [
-									"WETH", "USDT"
+									"USDT"
 								]
 							},
 							{
 								"quote": "mETH",
 								"pivots": [
-									"WETH", "USDT"
+									"USDT"
 								]
 							},
 							{
