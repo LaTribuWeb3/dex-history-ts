@@ -34,7 +34,7 @@
 							{
 								"quote": "WBTC",
 								"pivots": [
-									"WETH"
+									"USDT"
 								]
 							},
 							{
@@ -51,26 +51,32 @@
 							{
 								"quote": "WMNT",
 								"pivots": [
-									"WETH"
+									"WETH", "USDT"
 								]
 							},
 							{
 								"quote": "mETH",
 								"pivots": [
-									"WETH"
+									"WETH", "USDT"
 								]
 							},
 							{
-								"quote": "WETH"
+								"quote": "WETH",
+								"pivots": [
+									"USDT"
+								]
 							},
 							{
 								"quote": "WBTC",
 								"pivots": [
-									"WETH"
+									"USDT"
 								]
 							},
 							{
-								"quote": "USDe"
+								"quote": "USDe",
+								"pivots": [
+									"USDT"
+								]
 							},
 							{
 								"quote": "USDY",
@@ -90,13 +96,16 @@
 								"quote": "WETH"
 							},
 							{
-								"quote": "WBTC"
+								"quote": "WBTC",
+								"pivots": ["USDT"]
 							},
 							{
-								"quote": "USDe"
+								"quote": "USDe",
+								"pivots": ["WETH", "USDT"]
 							},
 							{
-								"quote": "USDY"
+								"quote": "USDY",
+								"pivots": ["WETH", "USDT"]
 							}
 						]
 					},
@@ -107,13 +116,16 @@
 								"quote": "WETH"
 							},
 							{
-								"quote": "WBTC"
+								"quote": "WBTC",
+								"pivots": ["USDT"]
 							},
 							{
-								"quote": "USDe"
+								"quote": "USDe",
+								"pivots": ["WETH", "USDT"]
 							},
 							{
-								"quote": "USDY"
+								"quote": "USDY",
+								"pivots": ["WETH", "USDT"]
 							}
 						]
 					},
@@ -121,13 +133,16 @@
 						"base": "WETH",
 						"quotes": [
 							{
-								"quote": "WBTC"
+								"quote": "WBTC",
+								"pivots": ["USDT"]
 							},
 							{
-								"quote": "USDe"
+								"quote": "USDe",
+								"pivots": ["USDT"]
 							},
 							{
-								"quote": "USDY"
+								"quote": "USDY",
+								"pivots": ["USDT"]
 							}
 						]
 					},
@@ -135,10 +150,12 @@
 						"base": "WBTC",
 						"quotes": [
 							{
-								"quote": "USDe"
+								"quote": "USDe",
+								"pivots": ["USDT"]
 							},
 							{
-								"quote": "USDY"
+								"quote": "USDY",
+								"pivots": ["USDT"]
 							}
 						]
 					},
@@ -146,7 +163,8 @@
 						"base": "USDe",
 						"quotes": [
 							{
-								"quote": "USDY"
+								"quote": "USDY",
+								"pivots": ["USDT"]
 							}
 						]
 					}

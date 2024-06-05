@@ -13,13 +13,14 @@ export class PriceGetter {
     lastBlock: number,
     currentBlock: number,
     pivots: string[],
-    fileAlreadyExists: boolean
+    fileAlreadyExists: boolean,
+    platforms: string[]
   ) {
     let allPrices: {
       block: number;
       price: number;
     }[] = [];
-    for (const subPlatform of PLATFORMS) {
+    for (const subPlatform of platforms) {
       if (
         subPlatform == 'uniswapv3' &&
         ((base == 'stETH' && quote == 'WETH') || (base == 'WETH' && quote == 'stETH'))
