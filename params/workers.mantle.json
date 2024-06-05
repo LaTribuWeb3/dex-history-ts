@@ -14,6 +14,10 @@
 				],
 				"pairs": [
 					{
+						"token0": "USDT",
+						"token1": "WETH"
+					},
+					{
 						"token0": "mETH",
 						"token1": "WETH"
 					},
