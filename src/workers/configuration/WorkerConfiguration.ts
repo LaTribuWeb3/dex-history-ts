@@ -37,6 +37,39 @@ export interface UniSwapV2WorkerConfiguration extends FetcherConfiguration {
   pairs: UniSwapV2PairConfiguration[];
 }
 
+export interface MerchantMoeV2WorkerConfiguration extends FetcherConfiguration {
+  fixedBlockStep?: number;
+  factoryAddress: string;
+  pairs: MerchantMoeV2PairConfiguration[];
+  fees: number[];
+}
+
+export interface MerchantMoeV2PairConfiguration {
+  token0: any;
+  token1: any;
+  placeholder: string;
+}
+
+export type MerchantMoeV2PairWithFeesAndPool = {
+  pairToFetch: MerchantMoeV2PairConfiguration;
+  fee: number;
+  poolAddress: string;
+};
+
+export function getMerchantMoeV2PairLatestDataPath(
+  pairWithFeesAndPool: MerchantMoeV2PairWithFeesAndPool,
+  workerName = 'merchantmoev2'
+) {
+  return `${Constants.DATA_DIR}/${workerName}/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}-latestdata.json`;
+}
+
+export function getMerchantMoeV2PairDataPath(
+  pairWithFeesAndPool: MerchantMoeV2PairWithFeesAndPool,
+  workerName = 'merchantmoev2'
+) {
+  return `${Constants.DATA_DIR}/${workerName}/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}-data.csv`;
+}
+
 export interface BalancerWorkerConfiguration extends FetcherConfiguration {
   vaultAddress: string;
   pools: BalancerPoolConfiguration[];
