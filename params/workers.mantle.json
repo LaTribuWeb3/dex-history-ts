@@ -148,6 +148,10 @@
 					{
 						"name": "USDC-USDY",
 						"startBlock": 40560511
+					},
+					{
+						"name": "USDe-WMNT",
+						"startBlock": 61791722
 					}
 				]
 			}
