@@ -216,22 +216,26 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
         throw new Error(`[${this.monitoringName}] | More than 1 Initialize event found???`);
       }
 
+      ///// CHECK TO SEE IF IT IS THE RIGHT EVENT FOR THE POOL VIA THE TOKENS
+      /////////// TO DO
+      ///////////// TO DOOOOOOOOOOOOOOOO
+      ///////////
+
       console.log(`[${this.monitoringName}] | found Initialize event at block ${initEvents[0].blockNumber}`);
 
       const binStep = await retry(() => merchantMoeV2PairContract.getBinStep(), []);
 
       console.log(Number(binStep));
 
-      //   return {
-      //     currentBin: Number(initEvents[0].args.activeId),
-      //     currentSqrtPriceX96: initEvents[0].args.sqrtPriceX96.toString(10),
-      //     blockNumber: initEvents[0].blockNumber - 1, // set to blocknumber -1 to be sure to fetch mint/burn events on same block as initialize,
-      //     tickSpacing: Number(tickSpacing),
-      //     lastCheckpoint: 0, // set to 0 to save liquidity check point at the begining
-      //     lastDataSave: 0, // set to 0 to save data at the beginning
-      //     ticks: {},
-      //     poolAddress: poolAddress
-      //   };
+      return {
+        currentBin: 0,
+        blockNumber: initEvents[0].blockNumber - 1, // set to blocknumber -1 to be sure to fetch mint/burn events on same block as initialize,
+        binSteps: Number(binStep),
+        lastCheckpoint: 0, // set to 0 to save liquidity check point at the begining
+        lastDataSave: 0, // set to 0 to save data at the beginning
+        bins: {},
+        poolAddress: poolAddress
+      };
     } else {
       console.log(`[${this.monitoringName}] | Initialize event not found between blocks [${fromBlock} - ${toBlock}]`);
       fromBlock = toBlock + 1;
