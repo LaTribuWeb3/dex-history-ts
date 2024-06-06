@@ -9,8 +9,10 @@ import * as Web3Utils from '../../../utils/Web3Utils';
 import { MerchantMoeV2Constants } from './MerchantMoeV2Constants';
 import * as ethers from 'ethers';
 import * as fs from 'fs';
-import { MerchantMoeLBPair__factory } from '../../../contracts/types';
+import { MerchantMoeFactory__factory, MerchantMoeLBPair, MerchantMoeLBPair__factory } from '../../../contracts/types';
 import { translateTopicFilters } from '../uniswapv3/UniswapV3Utils';
+import { MerchantMoeV2PoolData } from '../../../models/datainterface/BlockData';
+import retry from '../../../utils/Utils';
 
 export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfiguration> {
   constructor(runEveryMinutes: number, configVersion: string) {
@@ -67,14 +69,14 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
       this.web3Provider
     );
 
-    // let latestData: BlockWithTick;
+    let latestData: MerchantMoeV2PoolData;
     const token0 = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
     const token1 = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
 
     if (fs.existsSync(latestDataFilePath)) {
       // if the file exists, set its value to latestData
-      //   latestData = JSON.parse(fs.readFileSync(latestDataFilePath, { encoding: 'utf-8' }));
-      //   console.log(`${logLabel} Data file found ${latestDataFilePath}, last block fetched: ${latestData.blockNumber}`);
+      latestData = JSON.parse(fs.readFileSync(latestDataFilePath, { encoding: 'utf-8' }));
+      console.log(`${logLabel} Data file found ${latestDataFilePath}, last block fetched: ${latestData.blockNumber}`);
     } else {
       console.log(`${logLabel} Data file not found, starting from scratch`);
 
@@ -97,8 +99,8 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
       console.log(
         `${logLabel} Pool address found: ${pairWithFeesAndPool.poolAddress} with pair ${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}`
       );
-      //   latestData = await this.fetchInitializeData(pairWithFeesAndPool.poolAddress, univ3PairContract);
-      //   latestData.poolAddress = pairWithFeesAndPool.poolAddress;
+      latestData = await this.fetchInitializeData(pairWithFeesAndPool.poolAddress, merchantMoeV2PairContract);
+      latestData.poolAddress = pairWithFeesAndPool.poolAddress;
     }
 
     const dataFileName = getMerchantMoeV2PairDataPath(pairWithFeesAndPool, this.workerName);
@@ -181,6 +183,62 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
     // fs.writeFileSync(latestDataFilePath, JSON.stringify(latestData));
 
     // return latestData.poolAddress;
+  }
+  async fetchInitializeData(
+    poolAddress: string,
+    merchantMoeV2PairContract: MerchantMoeLBPair
+  ): Promise<MerchantMoeV2PoolData> {
+    // if the file does not exists, it means we start from the beginning
+    // fetch the deployed block number for the pool
+    const deployedBlock = await Web3Utils.GetContractCreationBlockNumber(poolAddress, this.workerName);
+    let fromBlock = deployedBlock;
+    let toBlock = deployedBlock + (this.getConfiguration().fixedBlockStep || 100_000);
+
+    console.log(`[${this.monitoringName}] | Searching Initialize event between blocks [${fromBlock} - ${toBlock}]`);
+
+    const merchantMoeV2FactoryContract = MerchantMoeFactory__factory.connect(
+      MerchantMoeV2Constants.CONSTANT_FACTORY_ADDRESS,
+      this.web3Provider
+    );
+
+    const initEvents = await retry(
+      () =>
+        merchantMoeV2FactoryContract.queryFilter(
+          merchantMoeV2FactoryContract.filters['LBPairCreated(address,address,uint256,address,uint256)'],
+          fromBlock,
+          toBlock
+        ),
+      []
+    );
+
+    if (initEvents.length > 0) {
+      if (initEvents.length > 1) {
+        throw new Error(`[${this.monitoringName}] | More than 1 Initialize event found???`);
+      }
+
+      console.log(`[${this.monitoringName}] | found Initialize event at block ${initEvents[0].blockNumber}`);
+
+      const binStep = await retry(() => merchantMoeV2PairContract.getBinStep(), []);
+
+      console.log(Number(binStep));
+
+      //   return {
+      //     currentBin: Number(initEvents[0].args.activeId),
+      //     currentSqrtPriceX96: initEvents[0].args.sqrtPriceX96.toString(10),
+      //     blockNumber: initEvents[0].blockNumber - 1, // set to blocknumber -1 to be sure to fetch mint/burn events on same block as initialize,
+      //     tickSpacing: Number(tickSpacing),
+      //     lastCheckpoint: 0, // set to 0 to save liquidity check point at the begining
+      //     lastDataSave: 0, // set to 0 to save data at the beginning
+      //     ticks: {},
+      //     poolAddress: poolAddress
+      //   };
+    } else {
+      console.log(`[${this.monitoringName}] | Initialize event not found between blocks [${fromBlock} - ${toBlock}]`);
+      fromBlock = toBlock + 1;
+      toBlock = fromBlock + (this.getConfiguration().fixedBlockStep || 100_000);
+    }
+
+    throw new Error(`[${this.monitoringName}] | No Initialize event found`);
   }
 }
 
