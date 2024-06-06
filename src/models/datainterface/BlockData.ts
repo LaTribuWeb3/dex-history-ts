@@ -27,3 +27,18 @@ export type BlockWithTick = {
   ticks: { [tick: number]: number };
   poolAddress: string;
 };
+
+export interface MerchantMoeV2PoolData {
+  currentBin: number;
+  blockNumber: number;
+  binSteps: number;
+  lastCheckpoint: number;
+  lastDataSave: number;
+  bins: { [binId: number]: MerchantMoeBin };
+  poolAddress: string;
+}
+
+export interface MerchantMoeBin {
+  tokenX: number;
+  tokenY: number;
+}
