@@ -151,16 +151,16 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
       );
 
       if (events.length != 0) {
-        console.log(events[0]);
-        // this.processEvents(
-        //   univ3PairContract,
-        //   events,
-        //   latestData,
-        //   pairWithFeesAndPool,
-        //   latestDataFilePath,
-        //   dataFileName,
-        //   minStartBlock
-        // );
+        console.log(events);
+        this.processEvents(
+          merchantMoeV2PairContract,
+          events,
+          latestData,
+          pairWithFeesAndPool,
+          latestDataFilePath,
+          dataFileName,
+          minStartBlock
+        );
 
         // try to find the blockstep to reach 9000 events per call as the RPC limit is 10 000,
         // this try to change the blockstep by increasing it when the pool is not very used
@@ -230,7 +230,7 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
       return {
         currentBin: 0,
         blockNumber: initEvents[0].blockNumber - 1, // set to blocknumber -1 to be sure to fetch mint/burn events on same block as initialize,
-        binSteps: Number(binStep),
+        binStep: Number(binStep),
         lastCheckpoint: 0, // set to 0 to save liquidity check point at the begining
         lastDataSave: 0, // set to 0 to save data at the beginning
         bins: {},
@@ -243,6 +243,102 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
     }
 
     throw new Error(`[${this.monitoringName}] | No Initialize event found`);
+  }
+  async processEvents(
+    contract: ethers.BaseContract,
+    events: (ethers.ethers.EventLog | ethers.ethers.Log)[],
+    latestData: MerchantMoeV2PoolData,
+    pairWithFeesAndPool: MerchantMoeV2PairWithFeesAndPool,
+    latestDataFilePath: string,
+    dataFileName: string,
+    minStartBlock: number
+  ) {
+    const token0 = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
+    const token1 = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
+
+    const dtStart = Date.now();
+    const saveData = [];
+    // const priceData = [];
+    // const checkpointData = [];
+    let lastBlock = events[0].blockNumber;
+    for (const event of events) {
+      const parsedEvent: ethers.ethers.LogDescription | null = contract.interface.parseLog(event);
+      if (!parsedEvent) {
+        throw new Error(`Could not parse event ${JSON.stringify(event)}`);
+      }
+
+      // this checks that we are crossing a new block, so we will save the price and maybe checkpoint data
+      if (
+        lastBlock != event.blockNumber &&
+        lastBlock >= latestData.lastDataSave + MerchantMoeV2Constants.CONSTANT_BLOCK_INTERVAL &&
+        event.blockNumber >= minStartBlock
+      ) {
+        const newSaveData = Uniswapv3Library.getSaveDataFromLatestData(
+          token0,
+          token1,
+          latestData,
+          pairWithFeesAndPool.pairToFetch.token0,
+          pairWithFeesAndPool.pairToFetch.token1
+        );
+        saveData.push(newSaveData);
+      }
+
+      switch (parsedEvent.name.toLowerCase()) {
+        case 'mint':
+          if (parsedEvent.args.amount > 0) {
+            const lqtyToAdd = new BigNumber(parsedEvent.args.amount.toString());
+            Uniswapv3Library.updateLatestDataLiquidity(
+              latestData,
+              event.blockNumber,
+              Number(parsedEvent.args.tickLower),
+              Number(parsedEvent.args.tickUpper),
+              lqtyToAdd
+            );
+          }
+          break;
+        case 'burn':
+          if (parsedEvent.args.amount > 0) {
+            const lqtyToSub = new BigNumber(-1).times(new BigNumber(parsedEvent.args.amount.toString()));
+            Uniswapv3Library.updateLatestDataLiquidity(
+              latestData,
+              event.blockNumber,
+              parsedEvent.args.tickLower,
+              parsedEvent.args.tickUpper,
+              lqtyToSub
+            );
+          }
+          break;
+        case 'swap':
+          latestData.currentSqrtPriceX96 = parsedEvent.args.sqrtPriceX96.toString();
+          latestData.currentTick = Number(parsedEvent.args.tick);
+          latestData.blockNumber = event.blockNumber;
+          break;
+      }
+
+      lastBlock = event.blockNumber;
+    }
+
+    if (
+      latestData.blockNumber != latestData.lastDataSave &&
+      latestData.blockNumber >= latestData.lastDataSave + UniswapV3Constants.CONSTANT_BLOCK_INTERVAL &&
+      latestData.blockNumber >= minStartBlock
+    ) {
+      const newSaveData = Uniswapv3Library.getSaveDataFromLatestData(
+        token0,
+        token1,
+        latestData,
+        pairWithFeesAndPool.pairToFetch.token0,
+        pairWithFeesAndPool.pairToFetch.token1
+      );
+      saveData.push(newSaveData);
+    }
+
+    if (saveData.length > 0) {
+      fs.appendFileSync(dataFileName, saveData.join(''));
+    }
+
+    fs.writeFileSync(latestDataFilePath, JSON.stringify(latestData));
+    this.logFnDuration('processEvents', dtStart, events.length, 'event');
   }
 }
 
