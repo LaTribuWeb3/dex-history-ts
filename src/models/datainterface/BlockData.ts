@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js';
+
 /**
  * Represents a data for a given block
  * Should always be linked to a block number somehow
@@ -39,6 +41,6 @@ export interface MerchantMoeV2PoolData {
 }
 
 export interface MerchantMoeBin {
-  tokenX: number;
-  tokenY: number;
+  tokenX: BigNumber;
+  tokenY: BigNumber;
 }
