@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js';
 import { MerchantMoeBin, MerchantMoeV2PoolData, SlippageMap } from '../models/datainterface/BlockData';
 import { TokenData } from '../workers/configuration/TokenData';
 import { MerchantMoeV2Constants } from '../workers/fetchers/merchantmoe/MerchantMoeV2Constants';
+import { normalize } from '../utils/Utils';
 
 export class MerchantMoeV2Library {
   static findLiquidityDepth(
@@ -51,20 +52,31 @@ export class MerchantMoeV2Library {
     return ids;
   }
 
+  static decodeAmounts(amounts: string, token0: TokenData, token1: TokenData) {
+    const amountsBigInt = BigInt(amounts);
+    // Read the right 128 bits of the 256 bits
+    const amountsX = amountsBigInt & (BigInt(2) ** BigInt(128) - BigInt(1));
+    // Read the left 128 bits of the 256 bits
+    const amountsY = amountsBigInt >> BigInt(128);
+    const tokenXNormalized = normalize(amountsX.toString(10), token0.decimals);
+    const tokenYNormalized = normalize(amountsY.toString(10), token1.decimals);
+    return { tokenXNormalized, tokenYNormalized };
+  }
+
   static getAllReserves(ids: number[], bins: { [binId: number]: MerchantMoeBin }): [number[], number[]] {
     const binReservesX: number[] = [];
     const binReservesY: number[] = [];
 
     for (const id of ids) {
-      const [reserveX, reserveY]: [BigNumber, BigNumber] = MerchantMoeV2Library.getBinValues(id, bins);
-      binReservesX.push(reserveX.toNumber());
-      binReservesY.push(reserveY.toNumber());
+      const [reserveX, reserveY]: [number, number] = MerchantMoeV2Library.getBinValues(id, bins);
+      binReservesX.push(reserveX);
+      binReservesY.push(reserveY);
     }
 
     return [binReservesX, binReservesY];
   }
 
-  static getBinValues(id: number, bins: { [binId: number]: MerchantMoeBin }): [BigNumber, BigNumber] {
+  static getBinValues(id: number, bins: { [binId: number]: MerchantMoeBin }): [number, number] {
     const tokenXLiquidity = bins[id].tokenX;
     const tokenYLiquidity = bins[id].tokenY;
     return [tokenXLiquidity, tokenYLiquidity];
@@ -95,15 +107,16 @@ export class MerchantMoeV2Library {
     token0Decimals: number,
     token1Decimals: number
   ) {
-    const [token0Slippage, token1Slippage] = MerchantMoeV2Library.findLiquidityDepth(
-      currentBin,
-      BinStep,
-      bins,
-      token0Decimals,
-      token1Decimals
-    );
+    return {};
+    // const [token0Slippage, token1Slippage] = MerchantMoeV2Library.findLiquidityDepth(
+    //   currentBin,
+    //   BinStep,
+    //   bins,
+    //   token0Decimals,
+    //   token1Decimals
+    // );
 
-    return { token0Slippage, token1Slippage };
+    // return { token0Slippage, token1Slippage };
   }
 
   //   static updateLatestDataLiquidity(
@@ -137,14 +150,14 @@ export class MerchantMoeV2Library {
   ): string {
     // Compute token0->token1 price
     const p0 = MerchantMoeV2Library.getPriceNormalized(
-      latestData.currentBin,
+      latestData.currentBin!,
       latestData.binStep,
       token0.decimals,
       token1.decimals
     );
 
     const slippages = MerchantMoeV2Library.getSlippages(
-      latestData.currentBin,
+      latestData.currentBin!,
       latestData.binStep,
       latestData.bins,
       token0.decimals,
@@ -154,8 +167,8 @@ export class MerchantMoeV2Library {
     const saveValue = {
       p0vs1: p0,
       p1vs0: 1 / p0,
-      [token0Symbol + '-slippagemap']: slippages.token0Slippage,
-      [token1Symbol + '-slippagemap']: slippages.token1Slippage
+      [token0Symbol + '-slippagemap']: {}, // slippages.token0Slippage,
+      [token1Symbol + '-slippagemap']: {} //slippages.token1Slippage
     };
 
     latestData.lastDataSave = latestData.blockNumber;

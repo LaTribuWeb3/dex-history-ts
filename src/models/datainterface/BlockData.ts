@@ -31,7 +31,7 @@ export type BlockWithTick = {
 };
 
 export interface MerchantMoeV2PoolData {
-  currentBin: number;
+  currentBin?: number;
   blockNumber: number;
   binStep: number;
   lastCheckpoint: number;
@@ -41,6 +41,6 @@ export interface MerchantMoeV2PoolData {
 }
 
 export interface MerchantMoeBin {
-  tokenX: BigNumber;
-  tokenY: BigNumber;
+  tokenX: number;
+  tokenY: number;
 }
