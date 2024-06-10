@@ -381,25 +381,25 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
       lastBlock = event.blockNumber;
     }
 
-    // if (
-    //   latestData.blockNumber != latestData.lastDataSave &&
-    //   latestData.blockNumber >= latestData.lastDataSave + UniswapV3Constants.CONSTANT_BLOCK_INTERVAL &&
-    //   latestData.blockNumber >= minStartBlock &&
-    //   latestData.currentBin != undefined
-    // ) {
-    //   const newSaveData = Uniswapv3Library.getSaveDataFromLatestData(
-    //     token0,
-    //     token1,
-    //     latestData,
-    //     pairWithFeesAndPool.pairToFetch.token0,
-    //     pairWithFeesAndPool.pairToFetch.token1
-    //   );
-    //   saveData.push(newSaveData);
-    // }
+    if (
+      latestData.blockNumber != latestData.lastDataSave &&
+      latestData.blockNumber >= latestData.lastDataSave + MerchantMoeV2Constants.CONSTANT_BLOCK_INTERVAL &&
+      latestData.blockNumber >= minStartBlock &&
+      latestData.currentBin != undefined
+    ) {
+      const newSaveData = MerchantMoeV2Library.getSaveDataFromLatestData(
+        tokenX,
+        tokenY,
+        latestData,
+        pairWithFeesAndPool.pairToFetch.token0,
+        pairWithFeesAndPool.pairToFetch.token1
+      );
+      saveData.push(newSaveData);
+    }
 
-    // if (saveData.length > 0) {
-    //   fs.appendFileSync(dataFileName, saveData.join(''));
-    // }
+    if (saveData.length > 0) {
+      fs.appendFileSync(dataFileName, saveData.join(''));
+    }
 
     fs.writeFileSync(latestDataFilePath, JSON.stringify(latestData));
     this.logFnDuration('processEvents', dtStart, events.length, 'event');
