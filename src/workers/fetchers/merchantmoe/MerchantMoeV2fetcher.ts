@@ -13,6 +13,7 @@ import { MerchantMoeFactory__factory, MerchantMoeLBPair, MerchantMoeLBPair__fact
 import { translateTopicFilters } from '../uniswapv3/UniswapV3Utils';
 import { MerchantMoeV2PoolData } from '../../../models/datainterface/BlockData';
 import retry from '../../../utils/Utils';
+import { MerchantMoeV2Library } from '../../../library/MerchantMoeV2Library';
 
 export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfiguration> {
   constructor(runEveryMinutes: number, configVersion: string) {
@@ -273,7 +274,7 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
         lastBlock >= latestData.lastDataSave + MerchantMoeV2Constants.CONSTANT_BLOCK_INTERVAL &&
         event.blockNumber >= minStartBlock
       ) {
-        const newSaveData = Uniswapv3Library.getSaveDataFromLatestData(
+        const newSaveData = MerchantMoeV2Library.getSaveDataFromLatestData(
           token0,
           token1,
           latestData,
