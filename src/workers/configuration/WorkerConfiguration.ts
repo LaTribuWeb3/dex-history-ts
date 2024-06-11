@@ -61,7 +61,7 @@ export function getMerchantMoeV2PairLatestDataPath(
   pairWithFeesAndPool: MerchantMoeV2PairWithFeesAndPool,
   workerName = 'merchantmoev2'
 ) {
-  return `${Constants.DATA_DIR}/${workerName}/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}-latestdata.json`;
+  return `${Constants.DATA_DIR}/${workerName}/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.binStep}-latestdata.json`;
 }
 
 export function getMerchantMoeV2BaseFolder(workerName = 'merchantmoev2') {
@@ -72,7 +72,7 @@ export function getMerchantMoeV2PairDataPath(
   pairWithFeesAndPool: MerchantMoeV2PairWithFeesAndPool,
   workerName = 'merchantmoev2'
 ) {
-  return `${Constants.DATA_DIR}/${workerName}/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}-data.csv`;
+  return `${Constants.DATA_DIR}/${workerName}/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.binStep}-data.csv`;
 }
 export function getMerchantMoeV2ResultPath(workerName = 'merchantmoev2') {
   return `${Constants.DATA_DIR}/${workerName}/${workerName}-fetcher-result.json`;
