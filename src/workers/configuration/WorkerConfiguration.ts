@@ -47,12 +47,13 @@ export interface MerchantMoeV2WorkerConfiguration extends FetcherConfiguration {
 export interface MerchantMoeV2PairConfiguration {
   token0: any;
   token1: any;
-  placeholder: string;
+  placeholder?: string;
 }
 
 export type MerchantMoeV2PairWithFeesAndPool = {
   pairToFetch: MerchantMoeV2PairConfiguration;
-  fee: number;
+  fee?: number;
+  binStep: number;
   poolAddress: string;
 };
 
@@ -68,6 +69,9 @@ export function getMerchantMoeV2PairDataPath(
   workerName = 'merchantmoev2'
 ) {
   return `${Constants.DATA_DIR}/${workerName}/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}-data.csv`;
+}
+export function getMerchantMoeV2ResultPath(workerName = 'merchantmoev2') {
+  return `${Constants.DATA_DIR}/${workerName}/${workerName}-fetcher-result.json`;
 }
 
 export interface BalancerWorkerConfiguration extends FetcherConfiguration {

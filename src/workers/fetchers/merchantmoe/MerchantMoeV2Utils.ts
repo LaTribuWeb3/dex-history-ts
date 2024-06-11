@@ -41,7 +41,8 @@ export async function getAllPoolsToFetch(
         } else {
           poolsToFetch.push({
             pairToFetch,
-            pool
+            poolAddress: pool.LBPair,
+            binStep: Number(pool.binStep)
           });
         }
       }
@@ -49,8 +50,6 @@ export async function getAllPoolsToFetch(
 
     promiseIndex++;
   }
-
-  console.log({ poolsToFetch });
 
   return poolsToFetch;
 }

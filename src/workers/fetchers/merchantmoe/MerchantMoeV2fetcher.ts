@@ -1,8 +1,11 @@
 import {
   MerchantMoeV2PairWithFeesAndPool,
   MerchantMoeV2WorkerConfiguration,
+  generateCSVFolderPath,
+  generatePreComputedForWorker,
   getMerchantMoeV2PairDataPath,
-  getMerchantMoeV2PairLatestDataPath
+  getMerchantMoeV2PairLatestDataPath,
+  getMerchantMoeV2ResultPath
 } from '../../configuration/WorkerConfiguration';
 import { BaseFetcher } from '../BaseFetcher';
 import * as Web3Utils from '../../../utils/Web3Utils';
@@ -12,7 +15,7 @@ import * as fs from 'fs';
 import { MerchantMoeFactory__factory, MerchantMoeLBPair__factory } from '../../../contracts/types';
 import { translateTopicFilters } from '../uniswapv3/UniswapV3Utils';
 import { MerchantMoeV2PoolData } from '../../../models/datainterface/BlockData';
-import retry from '../../../utils/Utils';
+import retry, { sleep } from '../../../utils/Utils';
 import { MerchantMoeV2Library } from '../../../library/MerchantMoeV2Library';
 import { getAllPoolsToFetch } from './MerchantMoeV2Utils';
 
@@ -42,374 +45,456 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
 
     getAllPoolsToFetch(this.workerName, this.getConfiguration(), this.tokens);
 
-    //   const poolsToFetch: MerchantMoeV2PairWithFeesAndPool[] = [
-    //     {
-    //       pairToFetch: { token0: 'USDe', token1: 'USDT', placeholder: 'USDe-USDT' },
-    //       fee: 2,
-    //       poolAddress: '0x7ccD8a769d466340Fff36c6e10fFA8cf9077D988'
-    //     },
-    //     {
-    //       pairToFetch: { token0: 'WETH', token1: 'USDT', placeholder: 'WETH-USDT' },
-    //       fee: 15,
-    //       poolAddress: '0xa15C851Afc33aaB6E478d538a4A8C66cacC19686'
-    //     },
-    //     {
-    //       pairToFetch: { token0: 'mETH', token1: 'USDT', placeholder: 'mETH-USDT' },
-    //       fee: 15,
-    //       poolAddress: '0x3f0047606dCad6177C13742F1854Fc8c999CD2b6'
-    //     }
-    //   ];
+    const poolsToFetch: MerchantMoeV2PairWithFeesAndPool[] = await getAllPoolsToFetch(
+      this.workerName,
+      this.getConfiguration(),
+      this.tokens
+    );
 
-    //   const promise = await this.FetchMerchantMoeV2HistoryForPair(poolsToFetch[0], currentBlock, minStartBlock);
-    // }
+    console.log(
+      `[${this.monitoringName}] | Found ${poolsToFetch.length} pools to fetch from ${
+        this.getConfiguration().pairs.length
+      } pairs in config`
+    );
 
-    // async FetchMerchantMoeV2HistoryForPair(
-    //   pairWithFeesAndPool: MerchantMoeV2PairWithFeesAndPool,
-    //   currentBlock: number,
-    //   minStartBlock: number
-    // ) {
-    //   const pairConfig = pairWithFeesAndPool.pairToFetch;
+    const promises: { tokens: string[]; addressPromise: Promise<string>; label: string }[] = [];
+    for (const fetchConfig of poolsToFetch) {
+      // const pairAddress = await this.FetchUniswapV3HistoryForPair(fetchConfig, currentBlock, minStartBlock);
+      // if (pairAddress) {
+      //   poolsData.push({
+      //     tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
+      //     address: pairAddress,
+      //     label: `${fetchConfig.pairToFetch.token0}-${fetchConfig.pairToFetch.token1}-${fetchConfig.fee}`
+      //   });
+      // }
+      const promise = this.FetchMerchantMoeV2HistoryForPair(fetchConfig, currentBlock, minStartBlock);
+      promises.push({
+        tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
+        addressPromise: promise,
+        label: `${fetchConfig.pairToFetch.token0}-${fetchConfig.pairToFetch.token1}-${fetchConfig.binStep}`
+      });
 
-    //   const logLabel = `[${this.monitoringName}] | [${pairConfig.token0}-${pairConfig.token1}-${pairWithFeesAndPool.fee}] |`;
-    //   console.log(
-    //     `${logLabel} Start for pair ${pairConfig.token0}-${pairConfig.token1} and fees: ${pairWithFeesAndPool.fee}`
-    //   );
+      await sleep(1000);
+    }
 
-    //   // try to find the json file representation of the pool latest value already fetched
-    //   const latestDataFilePath = getMerchantMoeV2PairLatestDataPath(pairWithFeesAndPool, this.workerName);
+    await Promise.all(promises.map((_) => _.addressPromise));
 
-    //   const merchantMoeV2PairContract = MerchantMoeLBPair__factory.connect(
-    //     pairWithFeesAndPool.poolAddress,
-    //     this.web3Provider
-    //   );
+    for (const p of promises) {
+      const pairAddress = await p.addressPromise;
+      if (pairAddress) {
+        poolsData.push({
+          tokens: p.tokens,
+          address: pairAddress,
+          label: p.label
+        });
+      }
+    }
 
-    //   let latestData: MerchantMoeV2PoolData;
-    //   const token0 = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
-    //   const token1 = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
+    const fetcherResult = {
+      dataSourceName: 'merchantmoev2',
+      lastBlockFetched: currentBlock,
+      lastRunTimestampMs: Date.now(),
+      poolsFetched: poolsData
+    };
 
-    //   if (fs.existsSync(latestDataFilePath)) {
-    //     // if the file exists, set its value to latestData
-    //     latestData = JSON.parse(fs.readFileSync(latestDataFilePath, { encoding: 'utf-8' }));
-    //     console.log(`${logLabel} Data file found ${latestDataFilePath}, last block fetched: ${latestData.blockNumber}`);
-    //   } else {
-    //     console.log(`${logLabel} Data file not found, starting from scratch`);
+    fs.writeFileSync(getMerchantMoeV2ResultPath(this.workerName), JSON.stringify(fetcherResult, null, 2));
 
-    //     // verify that the token0 in config is the token0 of the pool
-    //     const poolToken0 = await merchantMoeV2PairContract.getTokenX();
-    //     if (poolToken0.toLowerCase() != token0.address.toLowerCase()) {
-    //       throw new Error(
-    //         `${logLabel} pool token0 ${poolToken0} != config token0 ${token0.address}. config must match pool order`
-    //       );
-    //     }
+    // at the end, call the concatener script
+    await this.generateUnifiedFileMerchantMoeV2(currentBlock);
+  }
 
-    //     // same for token1
-    //     const poolToken1 = await merchantMoeV2PairContract.getTokenY();
-    //     if (poolToken1.toLowerCase() != token1.address.toLowerCase()) {
-    //       throw new Error(
-    //         `${logLabel} pool token0 ${poolToken1} != config token0 ${token1.address}. config must match pool order`
-    //       );
-    //     }
+  async generateUnifiedFileMerchantMoeV2(endBlock: number) {
+    const available = this.getAvailableMerchantMoeV2();
 
-    //     console.log(
-    //       `${logLabel} Pool address found: ${pairWithFeesAndPool.poolAddress} with pair ${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}`
-    //     );
-    //     latestData = await this.fetchInitializeData(pairWithFeesAndPool.poolAddress, poolToken0, poolToken1);
-    //     latestData.poolAddress = pairWithFeesAndPool.poolAddress;
-    //   }
+    if (!fs.existsSync(generatePreComputedForWorker(this.workerName))) {
+      fs.mkdirSync(generatePreComputedForWorker(this.workerName), { recursive: true });
+    }
 
-    //   const dataFileName = getMerchantMoeV2PairDataPath(pairWithFeesAndPool, this.workerName);
-    //   if (!fs.existsSync(dataFileName)) {
-    //     fs.writeFileSync(dataFileName, 'blocknumber,data\n');
-    //   }
+    const blockLastYear: number = await Web3Utils.getBlocknumberForTimestamp(
+      Math.round(Date.now() / 1000) - 365 * 24 * 60 * 60
+    );
+    for (const base of Object.keys(available)) {
+      for (const quote of available[base]) {
+        await this.createUnifiedFileForPair(endBlock, base, quote, blockLastYear);
+      }
+    }
 
-    //   const initBlockStep = this.getConfiguration().fixedBlockStep || 50_000;
-    //   let blockStep = initBlockStep;
-    //   let fromBlock = 61786274;
-    //   let toBlock = 0;
-    //   let cptError = 0;
-    //   while (toBlock < currentBlock) {
-    //     toBlock = fromBlock + blockStep - 1;
-    //     if (toBlock > currentBlock) {
-    //       toBlock = currentBlock;
-    //     }
+    this.truncateUnifiedFiles(this.workerName, blockLastYear);
+  }
 
-    //     let events = undefined;
+  getAvailableMerchantMoeV2(): { [tokenA: string]: string[] } {
+    const available: { [tokenA: string]: string[] } = {};
+    const files = fs.readdirSync(generateCSVFolderPath(undefined, this.workerName)).filter((_) => _.endsWith('.csv'));
+    for (const file of files) {
+      const splitted = file.split('-');
 
-    //     const topics: ethers.TopicFilter = await translateTopicFilters([
-    //       merchantMoeV2PairContract.filters.DepositedToBins().getTopicFilter(),
-    //       merchantMoeV2PairContract.filters.WithdrawnFromBins().getTopicFilter(),
-    //       merchantMoeV2PairContract.filters.Swap().getTopicFilter()
-    //     ]);
+      const tokenA = splitted[0];
+      const tokenB = splitted[1];
+      if (!available[tokenA]) {
+        available[tokenA] = [];
+      }
+      if (!available[tokenB]) {
+        available[tokenB] = [];
+      }
 
-    //     try {
-    //       events = await (merchantMoeV2PairContract as ethers.BaseContract).queryFilter(topics, fromBlock, toBlock);
-    //     } catch (e) {
-    //       // console.log(`query filter error: ${e.toString()}`);
-    //       blockStep = Math.round(blockStep / 2);
-    //       if (blockStep < 1000) {
-    //         blockStep = 1000;
-    //       }
-    //       toBlock = 0;
-    //       cptError++;
-    //       continue;
-    //     }
+      if (!available[tokenA].includes(tokenB)) {
+        available[tokenA].push(tokenB);
+      }
 
-    //     cptError = 0;
+      if (!available[tokenB].includes(tokenA)) {
+        available[tokenB].push(tokenA);
+      }
+    }
 
-    //     console.log(
-    //       `${logLabel} [${fromBlock} - ${toBlock}] found ${
-    //         events.length
-    //       } DepositedToBins/WithdrawnFromBins/Swap events after ${cptError} errors (fetched ${
-    //         toBlock - fromBlock + 1
-    //       } blocks)`
-    //     );
+    return available;
+  }
 
-    //     if (events.length != 0) {
-    //       this.processEvents(
-    //         merchantMoeV2PairContract,
-    //         events,
-    //         latestData,
-    //         pairWithFeesAndPool,
-    //         latestDataFilePath,
-    //         dataFileName,
-    //         minStartBlock
-    //       );
+  async FetchMerchantMoeV2HistoryForPair(
+    pairWithFeesAndPool: MerchantMoeV2PairWithFeesAndPool,
+    currentBlock: number,
+    minStartBlock: number
+  ) {
+    const pairConfig = pairWithFeesAndPool.pairToFetch;
 
-    //       // try to find the blockstep to reach 9000 events per call as the RPC limit is 10 000,
-    //       // this try to change the blockstep by increasing it when the pool is not very used
-    //       // or decreasing it when the pool is very used
-    //       blockStep = Math.min(1_000_000, Math.round((blockStep * 8000) / events.length));
-    //       cptError = 0;
-    //     } else {
-    //       // if 0 events, multiply blockstep by 4
-    //       blockStep = blockStep * 4;
-    //     }
-    //     fromBlock = toBlock + 1;
-    //     const fixedBlockStep = this.getConfiguration().fixedBlockStep;
-    //     if (fixedBlockStep) {
-    //       blockStep = fixedBlockStep;
-    //     }
-    //   }
+    const logLabel = `[${this.monitoringName}] | [${pairConfig.token0}-${pairConfig.token1}-${pairWithFeesAndPool.fee}] |`;
+    console.log(
+      `${logLabel} Start for pair ${pairConfig.token0}-${pairConfig.token1} and fees: ${pairWithFeesAndPool.fee}`
+    );
 
-    //   // // in the end, always save latest data
-    //   // latestData.blockNumber = currentBlock;
-    //   // fs.writeFileSync(latestDataFilePath, JSON.stringify(latestData));
+    // try to find the json file representation of the pool latest value already fetched
+    const latestDataFilePath = getMerchantMoeV2PairLatestDataPath(pairWithFeesAndPool, this.workerName);
 
-    //   // return latestData.poolAddress;
-    // }
-    // async fetchInitializeData(poolAddress: string, tokenX: string, tokenY: string): Promise<MerchantMoeV2PoolData> {
-    //   // if the file does not exists, it means we start from the beginning
-    //   // fetch the deployed block number for the pool
-    //   const deployedBlock = await Web3Utils.GetContractCreationBlockNumber(poolAddress, this.workerName);
-    //   let fromBlock = deployedBlock;
-    //   let toBlock = deployedBlock + (this.getConfiguration().fixedBlockStep || 100_000);
+    const merchantMoeV2PairContract = MerchantMoeLBPair__factory.connect(
+      pairWithFeesAndPool.poolAddress,
+      this.web3Provider
+    );
 
-    //   console.log(`[${this.monitoringName}] | Searching Initialize event between blocks [${fromBlock} - ${toBlock}]`);
+    let latestData: MerchantMoeV2PoolData;
+    const token0 = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
+    const token1 = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
 
-    //   const merchantMoeV2FactoryContract = MerchantMoeFactory__factory.connect(
-    //     MerchantMoeV2Constants.CONSTANT_FACTORY_ADDRESS,
-    //     this.web3Provider
-    //   );
+    if (fs.existsSync(latestDataFilePath)) {
+      // if the file exists, set its value to latestData
+      latestData = JSON.parse(fs.readFileSync(latestDataFilePath, { encoding: 'utf-8' }));
+      console.log(`${logLabel} Data file found ${latestDataFilePath}, last block fetched: ${latestData.blockNumber}`);
+    } else {
+      console.log(`${logLabel} Data file not found, starting from scratch`);
 
-    //   const initEvents = await retry(
-    //     () =>
-    //       merchantMoeV2FactoryContract.queryFilter(
-    //         merchantMoeV2FactoryContract.filters.LBPairCreated(tokenX, tokenY),
-    //         fromBlock,
-    //         toBlock
-    //       ),
-    //     []
-    //   );
+      // verify that the token0 in config is the token0 of the pool
+      const poolToken0 = await merchantMoeV2PairContract.getTokenX();
+      if (poolToken0.toLowerCase() != token0.address.toLowerCase()) {
+        throw new Error(
+          `${logLabel} pool token0 ${poolToken0} != config token0 ${token0.address}. config must match pool order`
+        );
+      }
 
-    //   let foundEvent;
-    //   if (initEvents.length > 0) {
-    //     for (const e of initEvents) {
-    //       if (e.args.LBPair.toLowerCase() == poolAddress.toLowerCase()) {
-    //         foundEvent = e;
-    //       }
-    //     }
-    //   }
+      // same for token1
+      const poolToken1 = await merchantMoeV2PairContract.getTokenY();
+      if (poolToken1.toLowerCase() != token1.address.toLowerCase()) {
+        throw new Error(
+          `${logLabel} pool token0 ${poolToken1} != config token0 ${token1.address}. config must match pool order`
+        );
+      }
 
-    //   if (foundEvent) {
-    //     console.log(`[${this.monitoringName}] | found Initialize event at block ${foundEvent.blockNumber}`);
+      console.log(
+        `${logLabel} Pool address found: ${pairWithFeesAndPool.poolAddress} with pair ${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}`
+      );
+      latestData = await this.fetchInitializeData(pairWithFeesAndPool.poolAddress, poolToken0, poolToken1);
+      latestData.poolAddress = pairWithFeesAndPool.poolAddress;
+    }
 
-    //     const binStep = foundEvent.args.binStep;
-    //     return {
-    //       currentBin: undefined,
-    //       blockNumber: foundEvent.blockNumber - 1, // set to blocknumber -1 to be sure to fetch mint/burn events on same block as initialize,
-    //       binStep: Number(binStep),
-    //       lastCheckpoint: 0, // set to 0 to save liquidity check point at the begining
-    //       lastDataSave: 0, // set to 0 to save data at the beginning
-    //       bins: {},
-    //       poolAddress: poolAddress
-    //     };
-    //   } else {
-    //     console.log(`[${this.monitoringName}] | Initialize event not found between blocks [${fromBlock} - ${toBlock}]`);
-    //     fromBlock = toBlock + 1;
-    //     toBlock = fromBlock + (this.getConfiguration().fixedBlockStep || 100_000);
-    //   }
+    const dataFileName = getMerchantMoeV2PairDataPath(pairWithFeesAndPool, this.workerName);
+    if (!fs.existsSync(dataFileName)) {
+      fs.writeFileSync(dataFileName, 'blocknumber,data\n');
+    }
 
-    //   throw new Error(`[${this.monitoringName}] | No Initialize event found`);
-    // }
+    const initBlockStep = this.getConfiguration().fixedBlockStep || 50_000;
+    let blockStep = initBlockStep;
+    let fromBlock = 61786274;
+    let toBlock = 0;
+    let cptError = 0;
+    while (toBlock < currentBlock) {
+      toBlock = fromBlock + blockStep - 1;
+      if (toBlock > currentBlock) {
+        toBlock = currentBlock;
+      }
 
-    // async processEvents(
-    //   contract: ethers.BaseContract,
-    //   events: (ethers.ethers.EventLog | ethers.ethers.Log)[],
-    //   latestData: MerchantMoeV2PoolData,
-    //   pairWithFeesAndPool: MerchantMoeV2PairWithFeesAndPool,
-    //   latestDataFilePath: string,
-    //   dataFileName: string,
-    //   minStartBlock: number
-    // ) {
-    //   const tokenX = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
-    //   const tokenY = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
+      let events = undefined;
 
-    //   const dtStart = Date.now();
-    //   const saveData = [];
-    //   // const priceData = [];
-    //   // const checkpointData = [];
-    //   let lastBlock = events[0].blockNumber;
-    //   for (const event of events) {
-    //     const parsedEvent: ethers.ethers.LogDescription | null = contract.interface.parseLog(event);
-    //     if (!parsedEvent) {
-    //       throw new Error(`Could not parse event ${JSON.stringify(event)}`);
-    //     }
+      const topics: ethers.TopicFilter = await translateTopicFilters([
+        merchantMoeV2PairContract.filters.DepositedToBins().getTopicFilter(),
+        merchantMoeV2PairContract.filters.WithdrawnFromBins().getTopicFilter(),
+        merchantMoeV2PairContract.filters.Swap().getTopicFilter()
+      ]);
 
-    //     // this checks that we are crossing a new block, so we will save the price and maybe checkpoint data
-    //     if (
-    //       lastBlock != event.blockNumber &&
-    //       lastBlock >= latestData.lastDataSave + MerchantMoeV2Constants.CONSTANT_BLOCK_INTERVAL &&
-    //       event.blockNumber >= minStartBlock &&
-    //       latestData.currentBin != undefined
-    //     ) {
-    //       const newSaveData = MerchantMoeV2Library.getSaveDataFromLatestData(
-    //         tokenX,
-    //         tokenY,
-    //         latestData,
-    //         pairWithFeesAndPool.pairToFetch.token0,
-    //         pairWithFeesAndPool.pairToFetch.token1
-    //       );
-    //       saveData.push(newSaveData);
-    //     }
+      try {
+        events = await (merchantMoeV2PairContract as ethers.BaseContract).queryFilter(topics, fromBlock, toBlock);
+      } catch (e) {
+        // console.log(`query filter error: ${e.toString()}`);
+        blockStep = Math.round(blockStep / 2);
+        if (blockStep < 1000) {
+          blockStep = 1000;
+        }
+        toBlock = 0;
+        cptError++;
+        continue;
+      }
 
-    //     switch (parsedEvent.name.toLowerCase()) {
-    //       case 'depositedtobins':
-    //         // event DepositedToBins(address indexed sender,
-    //         // address indexed to,
-    //         //  uint256[] ids,
-    //         //   bytes32[] amounts);
+      cptError = 0;
 
-    //         for (let i = 0; i < parsedEvent.args.ids.length; i++) {
-    //           const binId = Number(parsedEvent.args.ids[i]);
-    //           const amounts = parsedEvent.args.amounts[i] as string;
-    //           const { tokenXNormalized, tokenYNormalized } = MerchantMoeV2Library.decodeAmounts(amounts, tokenX, tokenY);
-    //           if (!latestData.bins[binId]) {
-    //             latestData.bins[binId] = {
-    //               tokenX: 0,
-    //               tokenY: 0
-    //             };
-    //           }
+      console.log(
+        `${logLabel} [${fromBlock} - ${toBlock}] found ${
+          events.length
+        } DepositedToBins/WithdrawnFromBins/Swap events after ${cptError} errors (fetched ${
+          toBlock - fromBlock + 1
+        } blocks)`
+      );
 
-    //           latestData.bins[binId].tokenX += tokenXNormalized;
-    //           latestData.bins[binId].tokenY += tokenYNormalized;
+      if (events.length != 0) {
+        this.processEvents(
+          merchantMoeV2PairContract,
+          events,
+          latestData,
+          pairWithFeesAndPool,
+          latestDataFilePath,
+          dataFileName,
+          minStartBlock
+        );
 
-    //           // console.log(
-    //           //   `On bin ${binId}, deposited ${tokenXNormalized} ${tokenX.symbol} and ${tokenYNormalized} ${tokenY.symbol}`
-    //           // );
-    //         }
-    //         latestData.blockNumber = event.blockNumber;
+        // try to find the blockstep to reach 9000 events per call as the RPC limit is 10 000,
+        // this try to change the blockstep by increasing it when the pool is not very used
+        // or decreasing it when the pool is very used
+        blockStep = Math.min(1_000_000, Math.round((blockStep * 8000) / events.length));
+        cptError = 0;
+      } else {
+        // if 0 events, multiply blockstep by 4
+        blockStep = blockStep * 4;
+      }
+      fromBlock = toBlock + 1;
+      const fixedBlockStep = this.getConfiguration().fixedBlockStep;
+      if (fixedBlockStep) {
+        blockStep = fixedBlockStep;
+      }
+    }
 
-    //         break;
-    //       case 'withdrawnfrombins':
-    //         // event WithdrawnFromBins(address indexed sender, address indexed to, uint256[] ids, bytes32[] amounts);
-    //         for (let i = 0; i < parsedEvent.args.ids.length; i++) {
-    //           const binId = Number(parsedEvent.args.ids[i]);
-    //           const amounts = parsedEvent.args.amounts[i] as string;
-    //           const { tokenXNormalized, tokenYNormalized } = MerchantMoeV2Library.decodeAmounts(amounts, tokenX, tokenY);
-    //           if (!latestData.bins[binId]) {
-    //             latestData.bins[binId] = {
-    //               tokenX: 0,
-    //               tokenY: 0
-    //             };
-    //           }
+    // in the end, always save latest data
+    latestData.blockNumber = currentBlock;
+    fs.writeFileSync(latestDataFilePath, JSON.stringify(latestData));
 
-    //           latestData.bins[binId].tokenX -= tokenXNormalized;
-    //           latestData.bins[binId].tokenY -= tokenYNormalized;
+    return latestData.poolAddress;
+  }
+  async fetchInitializeData(poolAddress: string, tokenX: string, tokenY: string): Promise<MerchantMoeV2PoolData> {
+    // if the file does not exists, it means we start from the beginning
+    // fetch the deployed block number for the pool
+    const deployedBlock = await Web3Utils.GetContractCreationBlockNumber(poolAddress, this.workerName);
+    let fromBlock = deployedBlock;
+    let toBlock = deployedBlock + (this.getConfiguration().fixedBlockStep || 100_000);
 
-    //           // console.log(
-    //           //   `On bin ${binId}, withdrawn ${tokenXNormalized} ${tokenX.symbol} and ${tokenYNormalized} ${tokenY.symbol}`
-    //           // );
-    //         }
+    console.log(`[${this.monitoringName}] | Searching Initialize event between blocks [${fromBlock} - ${toBlock}]`);
 
-    //         latestData.blockNumber = event.blockNumber;
-    //         break;
-    //       case 'swap':
-    //         //   event Swap(
-    //         //     address indexed sender,
-    //         //     address indexed to,
-    //         //     uint24 id,
-    //         //     bytes32 amountsIn,
-    //         //     bytes32 amountsOut,
-    //         //     uint24 volatilityAccumulator,
-    //         //     bytes32 totalFees,
-    //         //     bytes32 protocolFees
-    //         // );
-    //         {
-    //           const tokensIn = MerchantMoeV2Library.decodeAmounts(parsedEvent.args.amountsIn, tokenX, tokenY);
-    //           const tokensOut = MerchantMoeV2Library.decodeAmounts(parsedEvent.args.amountsOut, tokenX, tokenY);
-    //           latestData.currentBin = Number(parsedEvent.args.id);
-    //           if (!latestData.bins[latestData.currentBin]) {
-    //             latestData.bins[latestData.currentBin] = {
-    //               tokenX: 0,
-    //               tokenY: 0
-    //             };
-    //           }
+    const merchantMoeV2FactoryContract = MerchantMoeFactory__factory.connect(
+      MerchantMoeV2Constants.CONSTANT_FACTORY_ADDRESS,
+      this.web3Provider
+    );
 
-    //           // if (tokensIn.tokenXNormalized > 0) {
-    //           //   console.log(
-    //           //     `On bin ${latestData.currentBin}, swapped ${tokensIn.tokenXNormalized} ${tokenX.symbol} for ${tokensOut.tokenYNormalized} ${tokenY.symbol}`
-    //           //   );
-    //           // } else {
-    //           //   console.log(
-    //           //     `On bin ${latestData.currentBin}, swapped ${tokensIn.tokenYNormalized} ${tokenY.symbol} for ${tokensOut.tokenXNormalized} ${tokenX.symbol}`
-    //           //   );
-    //           // }
+    const initEvents = await retry(
+      () =>
+        merchantMoeV2FactoryContract.queryFilter(
+          merchantMoeV2FactoryContract.filters.LBPairCreated(tokenX, tokenY),
+          fromBlock,
+          toBlock
+        ),
+      []
+    );
 
-    //           latestData.bins[latestData.currentBin].tokenX += tokensIn.tokenXNormalized;
-    //           latestData.bins[latestData.currentBin].tokenY += tokensIn.tokenYNormalized;
-    //           latestData.bins[latestData.currentBin].tokenX -= tokensOut.tokenXNormalized;
-    //           latestData.bins[latestData.currentBin].tokenY -= tokensOut.tokenYNormalized;
-    //           latestData.blockNumber = event.blockNumber;
-    //         }
-    //         break;
-    //     }
+    let foundEvent;
+    if (initEvents.length > 0) {
+      for (const e of initEvents) {
+        if (e.args.LBPair.toLowerCase() == poolAddress.toLowerCase()) {
+          foundEvent = e;
+        }
+      }
+    }
 
-    //     lastBlock = event.blockNumber;
-    //   }
+    if (foundEvent) {
+      console.log(`[${this.monitoringName}] | found Initialize event at block ${foundEvent.blockNumber}`);
 
-    //   if (
-    //     latestData.blockNumber != latestData.lastDataSave &&
-    //     latestData.blockNumber >= latestData.lastDataSave + MerchantMoeV2Constants.CONSTANT_BLOCK_INTERVAL &&
-    //     latestData.blockNumber >= minStartBlock &&
-    //     latestData.currentBin != undefined
-    //   ) {
-    //     const newSaveData = MerchantMoeV2Library.getSaveDataFromLatestData(
-    //       tokenX,
-    //       tokenY,
-    //       latestData,
-    //       pairWithFeesAndPool.pairToFetch.token0,
-    //       pairWithFeesAndPool.pairToFetch.token1
-    //     );
-    //     saveData.push(newSaveData);
-    //   }
+      const binStep = foundEvent.args.binStep;
+      return {
+        currentBin: undefined,
+        blockNumber: foundEvent.blockNumber - 1, // set to blocknumber -1 to be sure to fetch mint/burn events on same block as initialize,
+        binStep: Number(binStep),
+        lastCheckpoint: 0, // set to 0 to save liquidity check point at the begining
+        lastDataSave: 0, // set to 0 to save data at the beginning
+        bins: {},
+        poolAddress: poolAddress
+      };
+    } else {
+      console.log(`[${this.monitoringName}] | Initialize event not found between blocks [${fromBlock} - ${toBlock}]`);
+      fromBlock = toBlock + 1;
+      toBlock = fromBlock + (this.getConfiguration().fixedBlockStep || 100_000);
+    }
 
-    //   if (saveData.length > 0) {
-    //     fs.appendFileSync(dataFileName, saveData.join(''));
-    //   }
+    throw new Error(`[${this.monitoringName}] | No Initialize event found`);
+  }
 
-    //   fs.writeFileSync(latestDataFilePath, JSON.stringify(latestData));
-    //   this.logFnDuration('processEvents', dtStart, events.length, 'event');
-    // }
+  async processEvents(
+    contract: ethers.BaseContract,
+    events: (ethers.ethers.EventLog | ethers.ethers.Log)[],
+    latestData: MerchantMoeV2PoolData,
+    pairWithFeesAndPool: MerchantMoeV2PairWithFeesAndPool,
+    latestDataFilePath: string,
+    dataFileName: string,
+    minStartBlock: number
+  ) {
+    const tokenX = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
+    const tokenY = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
+
+    const dtStart = Date.now();
+    const saveData = [];
+    // const priceData = [];
+    // const checkpointData = [];
+    let lastBlock = events[0].blockNumber;
+    for (const event of events) {
+      const parsedEvent: ethers.ethers.LogDescription | null = contract.interface.parseLog(event);
+      if (!parsedEvent) {
+        throw new Error(`Could not parse event ${JSON.stringify(event)}`);
+      }
+
+      // this checks that we are crossing a new block, so we will save the price and maybe checkpoint data
+      if (
+        lastBlock != event.blockNumber &&
+        lastBlock >= latestData.lastDataSave + MerchantMoeV2Constants.CONSTANT_BLOCK_INTERVAL &&
+        event.blockNumber >= minStartBlock &&
+        latestData.currentBin != undefined
+      ) {
+        const newSaveData = MerchantMoeV2Library.getSaveDataFromLatestData(
+          tokenX,
+          tokenY,
+          latestData,
+          pairWithFeesAndPool.pairToFetch.token0,
+          pairWithFeesAndPool.pairToFetch.token1
+        );
+        saveData.push(newSaveData);
+      }
+
+      switch (parsedEvent.name.toLowerCase()) {
+        case 'depositedtobins':
+          // event DepositedToBins(address indexed sender,
+          // address indexed to,
+          //  uint256[] ids,
+          //   bytes32[] amounts);
+
+          for (let i = 0; i < parsedEvent.args.ids.length; i++) {
+            const binId = Number(parsedEvent.args.ids[i]);
+            const amounts = parsedEvent.args.amounts[i] as string;
+            const { tokenXNormalized, tokenYNormalized } = MerchantMoeV2Library.decodeAmounts(amounts, tokenX, tokenY);
+            if (!latestData.bins[binId]) {
+              latestData.bins[binId] = {
+                tokenX: 0,
+                tokenY: 0
+              };
+            }
+
+            latestData.bins[binId].tokenX += tokenXNormalized;
+            latestData.bins[binId].tokenY += tokenYNormalized;
+
+            // console.log(
+            //   `On bin ${binId}, deposited ${tokenXNormalized} ${tokenX.symbol} and ${tokenYNormalized} ${tokenY.symbol}`
+            // );
+          }
+          latestData.blockNumber = event.blockNumber;
+
+          break;
+        case 'withdrawnfrombins':
+          // event WithdrawnFromBins(address indexed sender, address indexed to, uint256[] ids, bytes32[] amounts);
+          for (let i = 0; i < parsedEvent.args.ids.length; i++) {
+            const binId = Number(parsedEvent.args.ids[i]);
+            const amounts = parsedEvent.args.amounts[i] as string;
+            const { tokenXNormalized, tokenYNormalized } = MerchantMoeV2Library.decodeAmounts(amounts, tokenX, tokenY);
+            if (!latestData.bins[binId]) {
+              latestData.bins[binId] = {
+                tokenX: 0,
+                tokenY: 0
+              };
+            }
+
+            latestData.bins[binId].tokenX -= tokenXNormalized;
+            latestData.bins[binId].tokenY -= tokenYNormalized;
+
+            // console.log(
+            //   `On bin ${binId}, withdrawn ${tokenXNormalized} ${tokenX.symbol} and ${tokenYNormalized} ${tokenY.symbol}`
+            // );
+          }
+
+          latestData.blockNumber = event.blockNumber;
+          break;
+        case 'swap':
+          //   event Swap(
+          //     address indexed sender,
+          //     address indexed to,
+          //     uint24 id,
+          //     bytes32 amountsIn,
+          //     bytes32 amountsOut,
+          //     uint24 volatilityAccumulator,
+          //     bytes32 totalFees,
+          //     bytes32 protocolFees
+          // );
+          {
+            const tokensIn = MerchantMoeV2Library.decodeAmounts(parsedEvent.args.amountsIn, tokenX, tokenY);
+            const tokensOut = MerchantMoeV2Library.decodeAmounts(parsedEvent.args.amountsOut, tokenX, tokenY);
+            latestData.currentBin = Number(parsedEvent.args.id);
+            if (!latestData.bins[latestData.currentBin]) {
+              latestData.bins[latestData.currentBin] = {
+                tokenX: 0,
+                tokenY: 0
+              };
+            }
+
+            // if (tokensIn.tokenXNormalized > 0) {
+            //   console.log(
+            //     `On bin ${latestData.currentBin}, swapped ${tokensIn.tokenXNormalized} ${tokenX.symbol} for ${tokensOut.tokenYNormalized} ${tokenY.symbol}`
+            //   );
+            // } else {
+            //   console.log(
+            //     `On bin ${latestData.currentBin}, swapped ${tokensIn.tokenYNormalized} ${tokenY.symbol} for ${tokensOut.tokenXNormalized} ${tokenX.symbol}`
+            //   );
+            // }
+
+            latestData.bins[latestData.currentBin].tokenX += tokensIn.tokenXNormalized;
+            latestData.bins[latestData.currentBin].tokenY += tokensIn.tokenYNormalized;
+            latestData.bins[latestData.currentBin].tokenX -= tokensOut.tokenXNormalized;
+            latestData.bins[latestData.currentBin].tokenY -= tokensOut.tokenYNormalized;
+            latestData.blockNumber = event.blockNumber;
+          }
+          break;
+      }
+
+      lastBlock = event.blockNumber;
+    }
+
+    if (
+      latestData.blockNumber != latestData.lastDataSave &&
+      latestData.blockNumber >= latestData.lastDataSave + MerchantMoeV2Constants.CONSTANT_BLOCK_INTERVAL &&
+      latestData.blockNumber >= minStartBlock &&
+      latestData.currentBin != undefined
+    ) {
+      const newSaveData = MerchantMoeV2Library.getSaveDataFromLatestData(
+        tokenX,
+        tokenY,
+        latestData,
+        pairWithFeesAndPool.pairToFetch.token0,
+        pairWithFeesAndPool.pairToFetch.token1
+      );
+      saveData.push(newSaveData);
+    }
+
+    if (saveData.length > 0) {
+      fs.appendFileSync(dataFileName, saveData.join(''));
+    }
+
+    fs.writeFileSync(latestDataFilePath, JSON.stringify(latestData));
+    this.logFnDuration('processEvents', dtStart, events.length, 'event');
   }
 }
 
