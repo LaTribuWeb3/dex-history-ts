@@ -42,10 +42,15 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
     console.log(`[${this.monitoringName}] | Getting pools to fetch`);
 
     const poolsToFetch: MerchantMoeV2PairWithFeesAndPool[] = [
+      // {
+      //   pairToFetch: { token0: 'USDe', token1: 'USDT', placeholder: 'USDe-USDT' },
+      //   fee: 2,
+      //   poolAddress: '0x7ccD8a769d466340Fff36c6e10fFA8cf9077D988'
+      // },
       {
-        pairToFetch: { token0: 'USDe', token1: 'USDT', placeholder: 'USDe-USDT' },
-        fee: 2,
-        poolAddress: '0x7ccD8a769d466340Fff36c6e10fFA8cf9077D988'
+        pairToFetch: { token0: 'WETH', token1: 'USDT', placeholder: 'WETH-USDT' },
+        fee: 15,
+        poolAddress: '0xa15C851Afc33aaB6E478d538a4A8C66cacC19686'
       }
     ];
 

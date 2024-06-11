@@ -4,7 +4,13 @@ import { MerchantMoeV2Constants } from '../workers/fetchers/merchantmoe/Merchant
 import { normalize } from '../utils/Utils';
 
 export class MerchantMoeV2Library {
-  static getLiquidityDepth(currentBin: number, binStep: number, bins: { [binId: number]: MerchantMoeBin }) {
+  static getLiquidityDepth(
+    currentBin: number,
+    binStep: number,
+    bins: { [binId: number]: MerchantMoeBin },
+    tokenX: TokenData,
+    tokenY: TokenData
+  ) {
     const tokenXSlippageMap: SlippageMap = {};
     const tokenYSlippageMap: SlippageMap = {};
 
@@ -23,8 +29,8 @@ export class MerchantMoeV2Library {
       }, 0);
       let tokenYacc = 0;
       for (let i = 0; i < tokenXIds.length; i++) {
-        const tokenYPrice = this.getBinPrice(tokenXIds[i], binStep);
-        tokenYacc += binReservesYForX[i] * tokenYPrice;
+        const tokenYPrice = this.getPriceNormalized(tokenXIds[i], binStep, tokenX.decimals, tokenY.decimals);
+        tokenYacc += binReservesYForX[i] / tokenYPrice;
       }
       tokenXSlippageMap[slippageBps] = {
         base: tokenXacc,
@@ -37,8 +43,8 @@ export class MerchantMoeV2Library {
       }, 0);
       let tokenXAccumulator = 0;
       for (let i = 0; i < tokenXIds.length; i++) {
-        const tokenYPrice = this.getBinPrice(tokenYIds[i], binStep);
-        tokenXAccumulator += binReservesXForY[i] / tokenYPrice;
+        const tokenXPrice = this.getPriceNormalized(tokenYIds[i], binStep, tokenX.decimals, tokenY.decimals);
+        tokenXAccumulator += binReservesXForY[i] * tokenXPrice;
       }
       tokenYSlippageMap[slippageBps] = {
         base: tokenYAccumulator,
@@ -129,8 +135,20 @@ export class MerchantMoeV2Library {
   //     return Math.log(price) / Math.log(1.0001);
   //   }
 
-  static getSlippages(currentBin: number, BinStep: number, bins: { [binId: number]: MerchantMoeBin }) {
-    const [tokenXSlippageMap, tokenYSlippageMap] = MerchantMoeV2Library.getLiquidityDepth(currentBin, BinStep, bins);
+  static getSlippages(
+    currentBin: number,
+    BinStep: number,
+    bins: { [binId: number]: MerchantMoeBin },
+    tokenX: TokenData,
+    tokenY: TokenData
+  ) {
+    const [tokenXSlippageMap, tokenYSlippageMap] = MerchantMoeV2Library.getLiquidityDepth(
+      currentBin,
+      BinStep,
+      bins,
+      tokenX,
+      tokenY
+    );
 
     return { tokenXSlippageMap, tokenYSlippageMap };
   }
@@ -174,7 +192,13 @@ export class MerchantMoeV2Library {
         tokenY.decimals
       );
 
-      slippages = MerchantMoeV2Library.getSlippages(latestData.currentBin, latestData.binStep, latestData.bins);
+      slippages = MerchantMoeV2Library.getSlippages(
+        latestData.currentBin,
+        latestData.binStep,
+        latestData.bins,
+        tokenX,
+        tokenY
+      );
 
       const saveValue = {
         p0vs1: p0,
