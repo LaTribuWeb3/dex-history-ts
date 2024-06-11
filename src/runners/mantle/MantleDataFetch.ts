@@ -5,6 +5,7 @@ import { ButterFetcher } from '../../workers/fetchers/butter/butterFetcher';
 import { FusionXFinanceFetcher } from '../../workers/fetchers/fusionx/FusionXFinanceFetcher';
 import { FusionXFinancePriceFetcher } from '../../workers/fetchers/fusionx/FusionXFinancePriceFetcher';
 import { MerchantMoeClassicFetcher } from '../../workers/fetchers/merchantmoe/MerchantMoeClassicFetcher';
+import { MerchantMoeV2Fetcher } from '../../workers/fetchers/merchantmoe/MerchantMoeV2fetcher';
 import { MedianPrecomputer } from '../../workers/precomputer/MedianPrecomputer';
 import { AbstractRunner } from '../AbstractRunner';
 
@@ -22,6 +23,7 @@ export class MantleDataFetch extends AbstractRunner {
         new ButterFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
         new FusionXFinanceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
         new MerchantMoeClassicFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
+        new MerchantMoeV2Fetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
         // PRICE FETCHERS
         new AgniFinancePriceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),
         new ButterPriceFetcher(AbstractRunner.RUN_EVERY_MINUTES, configVersion),

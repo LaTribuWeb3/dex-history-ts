@@ -782,21 +782,9 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
   }
 }
 
-async function debug() {
-  const fetcher = new MerchantMoeV2Fetcher(60, 'mantle');
-  await fetcher.run();
+// async function debug() {
+//   const fetcher = new MerchantMoeV2Fetcher(60, 'mantle');
+//   await fetcher.run();
+// }
 
-  // const filename = './data/merchantmoev2/USDe-USDT-2-latestdata.json';
-  // const latestData: MerchantMoeV2PoolData = JSON.parse(fs.readFileSync(filename, 'utf-8'));
-  // let totalX = 0;
-  // let totalY = 0;
-  // for (const bin of Object.keys(latestData.bins)) {
-  //   const binData = latestData.bins[Number(bin)];
-  //   totalX += binData.tokenX;
-  //   totalY += binData.tokenY;
-  // }
-
-  // console.log(`pool contains ${totalX} USDe and ${totalY} USDT`);
-}
-
-debug();
+// debug();
