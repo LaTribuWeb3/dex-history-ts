@@ -64,6 +64,10 @@ export function getMerchantMoeV2PairLatestDataPath(
   return `${Constants.DATA_DIR}/${workerName}/${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}-${pairWithFeesAndPool.fee}-latestdata.json`;
 }
 
+export function getMerchantMoeV2BaseFolder(workerName = 'merchantmoev2') {
+  return `${Constants.DATA_DIR}/${workerName}`;
+}
+
 export function getMerchantMoeV2PairDataPath(
   pairWithFeesAndPool: MerchantMoeV2PairWithFeesAndPool,
   workerName = 'merchantmoev2'

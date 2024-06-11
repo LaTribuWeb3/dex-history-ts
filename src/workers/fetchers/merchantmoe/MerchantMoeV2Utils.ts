@@ -1,8 +1,9 @@
 import { TokenList } from '../../configuration/TokenData';
 import * as Web3Utils from '../../../utils/Web3Utils';
-import { MerchantMoeFactory__factory } from '../../../contracts/types';
+import { MerchantMoeFactory__factory, MerchantMoeLBPair__factory } from '../../../contracts/types';
 import * as ethers from 'ethers';
 import { MerchantMoeV2WorkerConfiguration } from '../../configuration/WorkerConfiguration';
+import { getConfTokenByAddress } from '../../../utils/Utils';
 
 export async function getAllPoolsToFetch(
   workerName: string,
@@ -13,6 +14,7 @@ export async function getAllPoolsToFetch(
     workerConfiguration.factoryAddress,
     Web3Utils.getMulticallProvider()
   );
+  const web3Provider = Web3Utils.getJsonRPCProvider();
 
   const poolsToFetch = [];
   // find existing pools via multicall
@@ -39,8 +41,13 @@ export async function getAllPoolsToFetch(
         if (pool.LBPair == ethers.ZeroAddress) {
           console.log(`${workerName}[${pairToFetch.token0}-${pairToFetch.token1}: pool does not exist`);
         } else {
+          const merchantMoeV2PairContract = MerchantMoeLBPair__factory.connect(pool.LBPair, web3Provider);
+          const tokenXAddress = await merchantMoeV2PairContract.getTokenX();
+          const tokenYAddress = await merchantMoeV2PairContract.getTokenY();
+          const tokenXSymbol = (await getConfTokenByAddress(tokenXAddress, tokens)).symbol;
+          const tokenYSymbol = (await getConfTokenByAddress(tokenYAddress, tokens)).symbol;
           poolsToFetch.push({
-            pairToFetch,
+            pairToFetch: { token0: tokenXSymbol, token1: tokenYSymbol },
             poolAddress: pool.LBPair,
             binStep: Number(pool.binStep)
           });
