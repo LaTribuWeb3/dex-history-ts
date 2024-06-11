@@ -2,7 +2,6 @@ import { UniswapV3Factory__factory } from '../../../contracts/types/factories/un
 import { UniSwapV3WorkerConfiguration } from '../../configuration/WorkerConfiguration';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import * as ethers from 'ethers';
-import { UniswapV3Pair__factory } from '../../../contracts/types/factories/uniswapv3/UniswapV3Pair__factory';
 import { TokenList } from '../../configuration/TokenData';
 
 export async function getAllPoolsToFetch(

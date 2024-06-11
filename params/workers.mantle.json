@@ -160,7 +160,7 @@
 			"name": "merchantmoev2",
 			"configuration": {
 				"configType": "merchantmoev2",
-				"factoryAddress": "0xEECa0a86431A7B42ca2Ee5F479832c3D4a4c2644",
+				"factoryAddress": "0xa6630671775c4EA2743840F9A5016dCf2A104054",
 				"fixedBlockStep": 50000,
 				"fees": [
 					100,
