@@ -19,66 +19,51 @@ export class MerchantMoeV2Library {
       slippageBps <= MerchantMoeV2Constants.CONSTANT_TARGET_SLIPPAGE * 100;
       slippageBps += 50
     ) {
-      const tokenXIds = this.getTokenXIds(slippageBps, currentBin, binStep);
-      const tokenYIds = this.getTokenYIds(slippageBps, currentBin, binStep);
-
       /// computing for token X
-      const [binReservesXForX, binReservesYForX] = this.getAllReserves(tokenXIds, bins);
-      const tokenXacc = binReservesXForX.reduce((acc, value) => {
-        return acc + value;
-      }, 0);
-      let tokenYacc = 0;
-      for (let i = 0; i < tokenXIds.length; i++) {
-        const tokenYPrice = this.getPriceNormalized(tokenXIds[i], binStep, tokenX.decimals, tokenY.decimals);
-        tokenYacc += binReservesYForX[i] / tokenYPrice;
+      //// I'm selling X for Y, I need to get the Y bins to see how much Y I can buy
+      let totalXDumpable = 0;
+      let totalYObtained = 0;
+      for (let binId = currentBin; binId >= currentBin - slippageBps / binStep; binId--) {
+        if (bins[binId]) {
+          const binReserve = bins[binId];
+          const amountYAvailable = binReserve.tokenY;
+          const binPrice = this.getPriceNormalized(binId, binStep, tokenX.decimals, tokenY.decimals);
+          const dumpableAmountOfX = amountYAvailable / binPrice;
+          totalXDumpable += dumpableAmountOfX;
+          totalYObtained += amountYAvailable;
+        }
       }
       tokenXSlippageMap[slippageBps] = {
-        base: tokenXacc,
-        quote: tokenYacc
+        base: totalXDumpable,
+        quote: totalYObtained
       };
+    }
+    for (
+      let slippageBps = 50;
+      slippageBps <= MerchantMoeV2Constants.CONSTANT_TARGET_SLIPPAGE * 100;
+      slippageBps += 50
+    ) {
       /// computing for token Y
-      const [binReservesXForY, binReservesYForY] = this.getAllReserves(tokenXIds, bins);
-      const tokenYAccumulator = binReservesYForY.reduce((acc, value) => {
-        return acc + value;
-      }, 0);
-      let tokenXAccumulator = 0;
-      for (let i = 0; i < tokenXIds.length; i++) {
-        const tokenXPrice = this.getPriceNormalized(tokenYIds[i], binStep, tokenX.decimals, tokenY.decimals);
-        tokenXAccumulator += binReservesXForY[i] * tokenXPrice;
+      //// I'm selling Y for X, I need to get the X bins to see how much Y I can buy
+      let totalYDumpable = 0;
+      let totalXObtained = 0;
+      for (let binId = currentBin; binId <= currentBin + slippageBps / binStep; binId++) {
+        if (bins[binId]) {
+          const binReserve = bins[binId];
+          const amountXAvailable = binReserve.tokenX;
+          const binPrice = this.getPriceNormalized(binId, binStep, tokenX.decimals, tokenY.decimals);
+          const dumpableAmountOfY = amountXAvailable * binPrice;
+          totalYDumpable += dumpableAmountOfY;
+          totalXObtained += amountXAvailable;
+        }
       }
       tokenYSlippageMap[slippageBps] = {
-        base: tokenYAccumulator,
-        quote: tokenXAccumulator
+        base: totalYDumpable,
+        quote: totalXObtained
       };
     }
 
     return [tokenXSlippageMap, tokenYSlippageMap];
-  }
-
-  static getTokenXIds(percentDepth: number, currentBin: number, BinStep: number): number[] {
-    const binsToMovePrice: number = Math.ceil(percentDepth / BinStep);
-
-    const startBin: number = currentBin;
-    const endBin: number = currentBin + binsToMovePrice;
-
-    const ids: number[] = [];
-    for (let binId = startBin; binId < endBin; binId++) {
-      ids.push(binId);
-    }
-    return ids;
-  }
-
-  static getTokenYIds(percentDepth: number, currentBin: number, BinStep: number): number[] {
-    const binsToMovePrice: number = Math.ceil(percentDepth / BinStep);
-
-    const startBin: number = currentBin;
-    const endBin: number = currentBin - binsToMovePrice;
-
-    const ids: number[] = [];
-    for (let binId = startBin; binId < endBin; binId++) {
-      ids.push(binId);
-    }
-    return ids;
   }
 
   static decodeAmounts(amounts: string, tokenX: TokenData, tokenY: TokenData) {

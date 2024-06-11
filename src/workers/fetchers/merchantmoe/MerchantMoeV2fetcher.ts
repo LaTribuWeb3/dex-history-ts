@@ -42,15 +42,20 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
     console.log(`[${this.monitoringName}] | Getting pools to fetch`);
 
     const poolsToFetch: MerchantMoeV2PairWithFeesAndPool[] = [
-      // {
-      //   pairToFetch: { token0: 'USDe', token1: 'USDT', placeholder: 'USDe-USDT' },
-      //   fee: 2,
-      //   poolAddress: '0x7ccD8a769d466340Fff36c6e10fFA8cf9077D988'
-      // },
+      {
+        pairToFetch: { token0: 'USDe', token1: 'USDT', placeholder: 'USDe-USDT' },
+        fee: 2,
+        poolAddress: '0x7ccD8a769d466340Fff36c6e10fFA8cf9077D988'
+      },
       {
         pairToFetch: { token0: 'WETH', token1: 'USDT', placeholder: 'WETH-USDT' },
         fee: 15,
         poolAddress: '0xa15C851Afc33aaB6E478d538a4A8C66cacC19686'
+      },
+      {
+        pairToFetch: { token0: 'mETH', token1: 'USDT', placeholder: 'mETH-USDT' },
+        fee: 15,
+        poolAddress: '0x3f0047606dCad6177C13742F1854Fc8c999CD2b6'
       }
     ];
 
@@ -111,8 +116,6 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
       latestData.poolAddress = pairWithFeesAndPool.poolAddress;
     }
 
-    const binStepFromContract = await merchantMoeV2PairContract.getBinStep();
-    console.log({ binStepFromContract });
     const dataFileName = getMerchantMoeV2PairDataPath(pairWithFeesAndPool, this.workerName);
     if (!fs.existsSync(dataFileName)) {
       fs.writeFileSync(dataFileName, 'blocknumber,data\n');
@@ -230,9 +233,6 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
       console.log(`[${this.monitoringName}] | found Initialize event at block ${foundEvent.blockNumber}`);
 
       const binStep = foundEvent.args.binStep;
-
-      console.log(Number(binStep));
-
       return {
         currentBin: undefined,
         blockNumber: foundEvent.blockNumber - 1, // set to blocknumber -1 to be sure to fetch mint/burn events on same block as initialize,
