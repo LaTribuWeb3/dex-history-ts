@@ -155,6 +155,60 @@
 					}
 				]
 			}
+		},
+		{
+			"name": "merchantmoev2",
+			"configuration": {
+				"configType": "merchantmoev2",
+				"factoryAddress": "0xa6630671775c4EA2743840F9A5016dCf2A104054",
+				"fixedBlockStep": 50000,
+				"fees": [
+					100,
+					500
+				],
+				"pairs": [
+					{
+						"token0": "WMNT",
+						"token1": "WETH"
+					},
+					{
+						"token0": "USDT",
+						"token1": "WETH"
+					},
+					{
+						"token0": "USDC",
+						"token1": "USDT"
+					},
+					{
+						"token0": "WMNT",
+						"token1": "USDT"
+					},
+					{
+						"token0": "USDe",
+						"token1": "USDT"
+					},
+					{
+						"token0": "mETH",
+						"token1": "WETH"
+					},
+					{
+						"token0": "WETH",
+						"token1": "USDT"
+					},
+					{
+						"token0": "mETH",
+						"token1": "USDT"
+					},
+					{
+						"token0": "WMNT",
+						"token1": "mETH"
+					},
+					{
+						"token0": "USDC",
+						"token1": "USDT"
+					}
+				]
+			}
 		}
 	]
 }

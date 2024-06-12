@@ -49,7 +49,7 @@
     },
     "USDe": {
         "symbol": "USDe",
-        "decimals": 6,
+        "decimals": 18,
         "address": "0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34",
         "dustAmount": 0.01
     },

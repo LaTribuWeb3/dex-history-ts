@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as Constants from '../../utils/Constants';
 import { BaseWorker } from '../BaseWorker';
-import { TokenList } from '../configuration/TokenData';
 import * as WorkerConfiguration from '../configuration/WorkerConfiguration';
 import { Configuration } from '../../config/Configuration';
 

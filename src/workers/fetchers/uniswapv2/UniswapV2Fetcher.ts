@@ -1,14 +1,13 @@
 import { BaseFetcher } from '../BaseFetcher';
 import * as ethers from 'ethers';
 import * as fs from 'fs';
-import * as Constants from '../../../utils/Constants';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import * as Sync from '../../../utils/Sync';
 import retry, { normalize } from '../../../utils/Utils';
 import { UniswapV2Factory__factory } from '../../../contracts/types/factories/uniswapv2/UniswapV2Factory__factory';
 import { UniswapV2Pair__factory } from '../../../contracts/types/factories/uniswapv2/UniswapV2Pair__factory';
 import * as Helper from '../../configuration/Helper';
-import path, { dirname } from 'path';
+import { dirname } from 'path';
 import { readLastLine } from '../../configuration/Helper';
 import {
   UniSwapV2WorkerConfiguration,

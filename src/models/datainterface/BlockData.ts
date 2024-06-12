@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js';
+
 /**
  * Represents a data for a given block
  * Should always be linked to a block number somehow
@@ -27,3 +29,18 @@ export type BlockWithTick = {
   ticks: { [tick: number]: number };
   poolAddress: string;
 };
+
+export interface MerchantMoeV2PoolData {
+  currentBin?: number;
+  blockNumber: number;
+  binStep: number;
+  lastCheckpoint: number;
+  lastDataSave: number;
+  bins: { [binId: number]: MerchantMoeBin };
+  poolAddress: string;
+}
+
+export interface MerchantMoeBin {
+  tokenX: number;
+  tokenY: number;
+}
