@@ -61,7 +61,7 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
     const promises: { tokens: string[]; addressPromise: Promise<string>; label: string }[] = [];
     for (const fetchConfig of poolsToFetch) {
       const promise = this.FetchMerchantMoeV2HistoryForPair(fetchConfig, currentBlock, minStartBlock);
-      await promise;
+      // await promise;
       promises.push({
         tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
         addressPromise: promise,
@@ -773,9 +773,9 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
   }
 }
 
-async function debug() {
-  const fetcher = new MerchantMoeV2Fetcher(60, 'mantle');
-  await fetcher.run();
-}
+// async function debug() {
+//   const fetcher = new MerchantMoeV2Fetcher(60, 'mantle');
+//   await fetcher.run();
+// }
 
-debug();
+// debug();

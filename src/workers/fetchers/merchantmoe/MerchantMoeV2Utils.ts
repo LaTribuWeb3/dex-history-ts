@@ -23,18 +23,11 @@ export async function getAllPoolsToFetch(
     const token0 = tokens[pairToFetch.token0];
     const token1 = tokens[pairToFetch.token1];
     promises.push(merchantMoeV2Factory.getAllLBPairs(token0.address, token1.address));
-    ///
-    // LBPairInformation({
-    //     binStep: binStep,
-    //     LBPair: lbPairsInfo[binStep].LBPair,
-    //     createdByOwner: lbPairsInfo[binStep].createdByOwner,
-    //     ignoredForRouting: lbPairsInfo[binStep].ignoredForRouting
-    // });
   }
+
   let promiseIndex = 0;
   const results = await Promise.all(promises);
   for (const pairToFetch of workerConfiguration.pairs) {
-    console.log(`check`, pairToFetch);
     const poolsForPair = results[promiseIndex];
     if (poolsForPair.length == 0) {
       console.log(`${workerName}[No pairs for ${pairToFetch.token0}-${pairToFetch.token1}]`);
