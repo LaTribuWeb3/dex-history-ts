@@ -46,8 +46,6 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
 
     console.log(`[${this.monitoringName}] | Getting pools to fetch`);
 
-    getAllPoolsToFetch(this.workerName, this.getConfiguration(), this.tokens);
-
     const poolsToFetch: MerchantMoeV2PairWithFeesAndPool[] = await getAllPoolsToFetch(
       this.workerName,
       this.getConfiguration(),
@@ -62,15 +60,8 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
 
     const promises: { tokens: string[]; addressPromise: Promise<string>; label: string }[] = [];
     for (const fetchConfig of poolsToFetch) {
-      // const pairAddress = await this.FetchUniswapV3HistoryForPair(fetchConfig, currentBlock, minStartBlock);
-      // if (pairAddress) {
-      //   poolsData.push({
-      //     tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
-      //     address: pairAddress,
-      //     label: `${fetchConfig.pairToFetch.token0}-${fetchConfig.pairToFetch.token1}-${fetchConfig.fee}`
-      //   });
-      // }
       const promise = this.FetchMerchantMoeV2HistoryForPair(fetchConfig, currentBlock, minStartBlock);
+      await promise;
       promises.push({
         tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
         addressPromise: promise,
@@ -494,7 +485,7 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
 
     const initBlockStep = this.getConfiguration().fixedBlockStep || 50_000;
     let blockStep = initBlockStep;
-    let fromBlock = 61786274;
+    let fromBlock = latestData.blockNumber + 1;
     let toBlock = 0;
     let cptError = 0;
     while (toBlock < currentBlock) {
@@ -782,9 +773,9 @@ export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfigu
   }
 }
 
-// async function debug() {
-//   const fetcher = new MerchantMoeV2Fetcher(60, 'mantle');
-//   await fetcher.run();
-// }
+async function debug() {
+  const fetcher = new MerchantMoeV2Fetcher(60, 'mantle');
+  await fetcher.run();
+}
 
-// debug();
+debug();

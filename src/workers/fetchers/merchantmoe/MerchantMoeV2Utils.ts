@@ -32,11 +32,16 @@ export async function getAllPoolsToFetch(
     // });
   }
   let promiseIndex = 0;
+  const results = await Promise.all(promises);
   for (const pairToFetch of workerConfiguration.pairs) {
-    const poolsForPair = await promises[promiseIndex];
-    if (!poolsForPair) {
-      console.log(`${workerName}[No pairs for ${pairToFetch.token0}-${pairToFetch.token1}`);
+    console.log(`check`, pairToFetch);
+    const poolsForPair = results[promiseIndex];
+    if (poolsForPair.length == 0) {
+      console.log(`${workerName}[No pairs for ${pairToFetch.token0}-${pairToFetch.token1}]`);
     } else {
+      if (poolsForPair.length > 1) {
+        console.log(`many pools for ${pairToFetch.token0}-${pairToFetch.token1}`);
+      }
       for (const pool of poolsForPair) {
         if (pool.LBPair == ethers.ZeroAddress) {
           console.log(`${workerName}[${pairToFetch.token0}-${pairToFetch.token1}: pool does not exist`);

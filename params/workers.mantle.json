@@ -202,10 +202,6 @@
 					{
 						"token0": "WMNT",
 						"token1": "mETH"
-					},
-					{
-						"token0": "USDC",
-						"token1": "USDT"
 					}
 				]
 			}
