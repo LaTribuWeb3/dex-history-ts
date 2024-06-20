@@ -172,10 +172,6 @@
 						"token1": "WETH"
 					},
 					{
-						"token0": "USDT",
-						"token1": "WETH"
-					},
-					{
 						"token0": "USDC",
 						"token1": "USDT"
 					},
