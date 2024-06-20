@@ -43,7 +43,13 @@ export async function getAllPoolsToFetch(
           const tokenXAddress = await merchantMoeV2PairContract.getTokenX();
           const tokenYAddress = await merchantMoeV2PairContract.getTokenY();
           const tokenXSymbol = (await getConfTokenByAddress(tokenXAddress, tokens)).symbol;
+          if (pairToFetch.token0 != tokenXSymbol) {
+            throw new Error(`config token0 ${pairToFetch.token0} != ${tokenXSymbol}`);
+          }
           const tokenYSymbol = (await getConfTokenByAddress(tokenYAddress, tokens)).symbol;
+          if (pairToFetch.token1 != tokenYSymbol) {
+            throw new Error(`config token1 ${pairToFetch.token1} != ${tokenYSymbol}`);
+          }
           poolsToFetch.push({
             pairToFetch: { token0: tokenXSymbol, token1: tokenYSymbol },
             poolAddress: pool.LBPair,
