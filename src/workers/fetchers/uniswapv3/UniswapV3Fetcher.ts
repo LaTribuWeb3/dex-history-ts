@@ -95,7 +95,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     }
 
     const fetcherResult = {
-      dataSourceName: 'uniswapv3',
+      dataSourceName: this.workerName,
       lastBlockFetched: currentBlock,
       lastRunTimestampMs: Date.now(),
       poolsFetched: poolsData
