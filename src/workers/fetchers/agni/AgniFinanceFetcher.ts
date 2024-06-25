@@ -8,7 +8,7 @@ export class AgniFinanceFetcher extends UniswapV3Fetcher {
   }
 
   override getPairContract(poolAddress: string): ethers.BaseContract {
-    console.log(`getPairContract: getting specific fusion contract for ${poolAddress}`);
+    console.log(`getPairContract: getting specific agni finance contract for ${poolAddress}`);
     return AgniPoolV3__factory.connect(poolAddress, this.web3Provider);
   }
 }

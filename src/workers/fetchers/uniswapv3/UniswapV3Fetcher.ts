@@ -435,7 +435,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
   }
 
   getPairContract(poolAddress: string): ethers.BaseContract {
-    console.log(`getPairContract: getting specific fusion contract for ${poolAddress}`);
+    console.log(`getPairContract: getting generic uniswapv3 contract for ${poolAddress}`);
     return UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
   }
 
