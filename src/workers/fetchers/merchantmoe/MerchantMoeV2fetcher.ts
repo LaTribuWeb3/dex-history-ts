@@ -1,42 +1,39 @@
-import BigNumber from 'bignumber.js';
-import * as ethers from 'ethers';
-import * as fs from 'fs';
-import { UniswapV3Pair, UniswapV3Pair__factory } from '../../../contracts/types';
-import { Uniswapv3Library } from '../../../library/Uniswapv3Library';
-import { BlockWithTick, SlippageMap } from '../../../models/datainterface/BlockData';
-import retry, { sleep } from '../../../utils/Utils';
-import * as Web3Utils from '../../../utils/Web3Utils';
-import { getBlocknumberForTimestamp } from '../../../utils/Web3Utils';
-import { BaseFetcher } from '../BaseFetcher';
-import { readLastLine } from '../../configuration/Helper';
 import {
-  UniSwapV3WorkerConfiguration,
-  Univ3PairWithFeesAndPool,
+  MerchantMoeV2PairWithFeesAndPool,
+  MerchantMoeV2WorkerConfiguration,
   generateCSVFolderPath,
   generatePreComputedForWorker,
   generateUnifiedCSVFilePath,
-  getUniswapV3BaseFolder,
-  getUniswapV3FetcherResultPath,
-  getUniswapV3PairDataPath,
-  getUniswapV3PairLatestDataPath
+  getMerchantMoeV2BaseFolder,
+  getMerchantMoeV2PairDataPath,
+  getMerchantMoeV2PairLatestDataPath,
+  getMerchantMoeV2ResultPath
 } from '../../configuration/WorkerConfiguration';
-import { UniswapV3Constants } from './UniswapV3Constants';
-import { getAllPoolsToFetch, translateTopicFilters } from './UniswapV3Utils';
+import { BaseFetcher } from '../BaseFetcher';
+import * as Web3Utils from '../../../utils/Web3Utils';
+import { MerchantMoeV2Constants } from './MerchantMoeV2Constants';
+import * as ethers from 'ethers';
+import * as fs from 'fs';
+import { MerchantMoeFactory__factory, MerchantMoeLBPair__factory } from '../../../contracts/types';
+import { translateTopicFilters } from '../uniswapv3/UniswapV3Utils';
+import { MerchantMoeV2PoolData, SlippageMap } from '../../../models/datainterface/BlockData';
+import retry, { sleep } from '../../../utils/Utils';
+import { MerchantMoeV2Library } from '../../../library/MerchantMoeV2Library';
+import { getAllPoolsToFetch } from './MerchantMoeV2Utils';
+import { readLastLine } from '../../configuration/Helper';
 
-export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
-  constructor(
-    runEveryMinutes: number,
-    configVersion: string,
-    workerName = 'uniswapv3',
-    monitoringName = 'UniswapV3 Fetcher'
-  ) {
-    super(workerName, monitoringName, runEveryMinutes, configVersion);
+export class MerchantMoeV2Fetcher extends BaseFetcher<MerchantMoeV2WorkerConfiguration> {
+  constructor(runEveryMinutes: number, configVersion: string) {
+    super('merchantmoev2', 'Merchant Moe V2 Fetcher', runEveryMinutes, configVersion);
   }
+
   async runSpecific(): Promise<void> {
     this.createDataDirForWorker();
 
-    // console.log(`[${this.monitoringName}] | config: ${JSON.stringify(this.getConfiguration(), null, 2)}`);
-    console.log(`[${this.monitoringName}] | block interval constants: ${UniswapV3Constants.CONSTANT_BLOCK_INTERVAL}`);
+    console.log(
+      `[${this.monitoringName}] | block interval constants: ${MerchantMoeV2Constants.CONSTANT_BLOCK_INTERVAL}`
+    );
+
     const poolsData = [];
     const currentBlock = await Web3Utils.getCurrentBlock();
 
@@ -49,7 +46,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
 
     console.log(`[${this.monitoringName}] | Getting pools to fetch`);
 
-    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(
+    const poolsToFetch: MerchantMoeV2PairWithFeesAndPool[] = await getAllPoolsToFetch(
       this.workerName,
       this.getConfiguration(),
       this.tokens
@@ -63,19 +60,12 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
 
     const promises: { tokens: string[]; addressPromise: Promise<string>; label: string }[] = [];
     for (const fetchConfig of poolsToFetch) {
-      // const pairAddress = await this.FetchUniswapV3HistoryForPair(fetchConfig, currentBlock, minStartBlock);
-      // if (pairAddress) {
-      //   poolsData.push({
-      //     tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
-      //     address: pairAddress,
-      //     label: `${fetchConfig.pairToFetch.token0}-${fetchConfig.pairToFetch.token1}-${fetchConfig.fee}`
-      //   });
-      // }
-      const promise = this.FetchUniswapV3HistoryForPair(fetchConfig, currentBlock, minStartBlock);
+      const promise = this.FetchMerchantMoeV2HistoryForPair(fetchConfig, currentBlock, minStartBlock);
+      // await promise;
       promises.push({
         tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
         addressPromise: promise,
-        label: `${fetchConfig.pairToFetch.token0}-${fetchConfig.pairToFetch.token1}-${fetchConfig.fee}`
+        label: `${fetchConfig.pairToFetch.token0}-${fetchConfig.pairToFetch.token1}-${fetchConfig.binStep}`
       });
 
       await sleep(1000);
@@ -95,26 +85,28 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     }
 
     const fetcherResult = {
-      dataSourceName: this.workerName,
+      dataSourceName: 'merchantmoev2',
       lastBlockFetched: currentBlock,
       lastRunTimestampMs: Date.now(),
       poolsFetched: poolsData
     };
 
-    fs.writeFileSync(getUniswapV3FetcherResultPath(this.workerName), JSON.stringify(fetcherResult, null, 2));
+    fs.writeFileSync(getMerchantMoeV2ResultPath(this.workerName), JSON.stringify(fetcherResult, null, 2));
 
     // at the end, call the concatener script
-    await this.generateUnifiedFileUniv3(currentBlock);
+    await this.generateUnifiedFileMerchantMoeV2(currentBlock);
   }
 
-  async generateUnifiedFileUniv3(endBlock: number) {
-    const available = this.getAvailableUniswapV3();
+  async generateUnifiedFileMerchantMoeV2(endBlock: number) {
+    const available = this.getAvailableMerchantMoeV2();
 
     if (!fs.existsSync(generatePreComputedForWorker(this.workerName))) {
       fs.mkdirSync(generatePreComputedForWorker(this.workerName), { recursive: true });
     }
 
-    const blockLastYear: number = await getBlocknumberForTimestamp(Math.round(Date.now() / 1000) - 365 * 24 * 60 * 60);
+    const blockLastYear: number = await Web3Utils.getBlocknumberForTimestamp(
+      Math.round(Date.now() / 1000) - 365 * 24 * 60 * 60
+    );
     for (const base of Object.keys(available)) {
       for (const quote of available[base]) {
         await this.createUnifiedFileForPair(endBlock, base, quote, blockLastYear);
@@ -180,7 +172,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       }
     }
 
-    const allData = this.getUniV3DataforBlockInterval(fromSymbol, toSymbol, sinceBlock, endBlock);
+    const allData = this.getMerchantMoeV2DataforBlockInterval(fromSymbol, toSymbol, sinceBlock, endBlock);
     const toWrite = [];
     for (const [blockNumber, data] of Object.entries(allData)) {
       if (Number(blockNumber) < sinceBlock) {
@@ -200,7 +192,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     }
   }
 
-  getUniV3DataforBlockInterval(fromSymbol: string, toSymbol: string, sinceBlock: number, toBlock: number) {
+  getMerchantMoeV2DataforBlockInterval(fromSymbol: string, toSymbol: string, sinceBlock: number, toBlock: number) {
     console.log(`[${this.monitoringName}] | Searching for ${fromSymbol}/${toSymbol} since ${sinceBlock} to ${toBlock}`);
 
     const results: {
@@ -211,10 +203,10 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       };
     } = {};
 
-    const { selectedFiles, reverse } = this.getUniV3DataFiles(fromSymbol, toSymbol);
+    const { selectedFiles, reverse } = this.getMerchantMoeV2DataFiles(fromSymbol, toSymbol);
 
     if (selectedFiles.length == 0) {
-      console.log(`[${this.monitoringName}] | Could not find univ3 files for ${fromSymbol}/${toSymbol}`);
+      console.log(`[${this.monitoringName}] | Could not find MerchantMoeV2 files for ${fromSymbol}/${toSymbol}`);
       return results;
     }
 
@@ -222,7 +214,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       [file: string]: {
         [blockNumber: string]: any;
       };
-    } = this.getUniV3DataContents(selectedFiles, sinceBlock);
+    } = this.getMerchantMoeV2DataContents(selectedFiles, sinceBlock);
 
     // get all blocks with data from all selected files
     const allBlocks: Set<number> = new Set();
@@ -280,7 +272,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
         }
 
         let slippageBps = 50;
-        while (slippageBps <= UniswapV3Constants.CONSTANT_TARGET_SLIPPAGE * 100) {
+        while (slippageBps <= MerchantMoeV2Constants.CONSTANT_TARGET_SLIPPAGE * 100) {
           let slippageObj: { base: number; quote: number } = slippageMap[slippageBps];
           if (!slippageObj) {
             // find the closest value that is < slippageBps
@@ -322,10 +314,27 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     return results;
   }
 
-  /**
-   * Instanciate a default slippage map: from 50 bps to 2000, containing only 0 volume
-   * @returns SlippageMap
-   */
+  getMerchantMoeV2DataFiles(fromSymbol: string, toSymbol: string) {
+    const allMerchantMoeV2Files = fs
+      .readdirSync(getMerchantMoeV2BaseFolder(this.workerName))
+      .filter((_) => _.endsWith('.csv'));
+
+    const searchKey = `${fromSymbol}-${toSymbol}`;
+    let reverse = false;
+    let selectedFiles = allMerchantMoeV2Files.filter((_) => _.startsWith(searchKey));
+    if (selectedFiles.length == 0) {
+      const searchKey = `${toSymbol}-${fromSymbol}`;
+      reverse = true;
+      selectedFiles = allMerchantMoeV2Files.filter((_) => _.startsWith(searchKey));
+    }
+
+    selectedFiles = selectedFiles.map(
+      (relativePath: string) => getMerchantMoeV2BaseFolder(this.workerName) + '/' + relativePath
+    );
+
+    return { selectedFiles, reverse };
+  }
+
   getDefaultSlippageMap(): SlippageMap {
     const slippageMap: SlippageMap = {};
     for (let i = 50; i <= 2000; i += 50) {
@@ -337,26 +346,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     return slippageMap;
   }
 
-  getUniV3DataFiles(fromSymbol: string, toSymbol: string) {
-    const allUniv3Files = fs.readdirSync(getUniswapV3BaseFolder(this.workerName)).filter((_) => _.endsWith('.csv'));
-
-    const searchKey = `${fromSymbol}-${toSymbol}`;
-    let reverse = false;
-    let selectedFiles = allUniv3Files.filter((_) => _.startsWith(searchKey));
-    if (selectedFiles.length == 0) {
-      const searchKey = `${toSymbol}-${fromSymbol}`;
-      reverse = true;
-      selectedFiles = allUniv3Files.filter((_) => _.startsWith(searchKey));
-    }
-
-    selectedFiles = selectedFiles.map(
-      (relativePath: string) => getUniswapV3BaseFolder(this.workerName) + '/' + relativePath
-    );
-
-    return { selectedFiles, reverse };
-  }
-
-  getUniV3DataContents(selectedFiles: string[], minBlock = 0) {
+  getMerchantMoeV2DataContents(selectedFiles: string[], minBlock = 0) {
     const dataContents: { [file: string]: { [blockNumber: string]: any } } = {};
     for (let i = 0; i < selectedFiles.length; i++) {
       const selectedFile = selectedFiles[i];
@@ -407,7 +397,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     return dataContents;
   }
 
-  getAvailableUniswapV3(): { [tokenA: string]: string[] } {
+  getAvailableMerchantMoeV2(): { [tokenA: string]: string[] } {
     const available: { [tokenA: string]: string[] } = {};
     const files = fs.readdirSync(generateCSVFolderPath(undefined, this.workerName)).filter((_) => _.endsWith('.csv'));
     for (const file of files) {
@@ -434,29 +424,27 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     return available;
   }
 
-  getPairContract(poolAddress: string): ethers.BaseContract {
-    console.log(`getPairContract: getting specific fusion contract for ${poolAddress}`);
-    return UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
-  }
-
-  async FetchUniswapV3HistoryForPair(
-    pairWithFeesAndPool: Univ3PairWithFeesAndPool,
+  async FetchMerchantMoeV2HistoryForPair(
+    pairWithFeesAndPool: MerchantMoeV2PairWithFeesAndPool,
     currentBlock: number,
     minStartBlock: number
   ) {
     const pairConfig = pairWithFeesAndPool.pairToFetch;
 
-    const logLabel = `[${this.monitoringName}] | [${pairConfig.token0}-${pairConfig.token1}-${pairWithFeesAndPool.fee}] |`;
+    const logLabel = `[${this.monitoringName}] | [${pairConfig.token0}-${pairConfig.token1}-${pairWithFeesAndPool.binStep}] |`;
     console.log(
-      `${logLabel} Start for pair ${pairConfig.token0}-${pairConfig.token1} and fees: ${pairWithFeesAndPool.fee}`
+      `${logLabel} Start for pair ${pairConfig.token0}-${pairConfig.token1} and fees: ${pairWithFeesAndPool.binStep}`
     );
 
     // try to find the json file representation of the pool latest value already fetched
-    const latestDataFilePath = getUniswapV3PairLatestDataPath(pairWithFeesAndPool, this.workerName);
+    const latestDataFilePath = getMerchantMoeV2PairLatestDataPath(pairWithFeesAndPool, this.workerName);
 
-    const univ3PairContract: any = this.getPairContract(pairWithFeesAndPool.poolAddress);
+    const merchantMoeV2PairContract = MerchantMoeLBPair__factory.connect(
+      pairWithFeesAndPool.poolAddress,
+      this.web3Provider
+    );
 
-    let latestData: BlockWithTick;
+    let latestData: MerchantMoeV2PoolData;
     const token0 = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
     const token1 = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
 
@@ -468,7 +456,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       console.log(`${logLabel} Data file not found, starting from scratch`);
 
       // verify that the token0 in config is the token0 of the pool
-      const poolToken0 = await univ3PairContract.token0();
+      const poolToken0 = await merchantMoeV2PairContract.getTokenX();
       if (poolToken0.toLowerCase() != token0.address.toLowerCase()) {
         throw new Error(
           `${logLabel} pool token0 ${poolToken0} != config token0 ${token0.address}. config must match pool order`
@@ -476,7 +464,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       }
 
       // same for token1
-      const poolToken1 = await univ3PairContract.token1();
+      const poolToken1 = await merchantMoeV2PairContract.getTokenY();
       if (poolToken1.toLowerCase() != token1.address.toLowerCase()) {
         throw new Error(
           `${logLabel} pool token0 ${poolToken1} != config token0 ${token1.address}. config must match pool order`
@@ -486,11 +474,11 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       console.log(
         `${logLabel} Pool address found: ${pairWithFeesAndPool.poolAddress} with pair ${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}`
       );
-      latestData = await this.fetchInitializeData(pairWithFeesAndPool.poolAddress, univ3PairContract);
+      latestData = await this.fetchInitializeData(pairWithFeesAndPool.poolAddress, poolToken0, poolToken1);
       latestData.poolAddress = pairWithFeesAndPool.poolAddress;
     }
 
-    const dataFileName = getUniswapV3PairDataPath(pairWithFeesAndPool, this.workerName);
+    const dataFileName = getMerchantMoeV2PairDataPath(pairWithFeesAndPool, this.workerName);
     if (!fs.existsSync(dataFileName)) {
       fs.writeFileSync(dataFileName, 'blocknumber,data\n');
     }
@@ -509,13 +497,13 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       let events = undefined;
 
       const topics: ethers.TopicFilter = await translateTopicFilters([
-        univ3PairContract.filters.Burn().getTopicFilter(),
-        univ3PairContract.filters.Mint().getTopicFilter(),
-        univ3PairContract.filters.Swap().getTopicFilter()
+        merchantMoeV2PairContract.filters.DepositedToBins().getTopicFilter(),
+        merchantMoeV2PairContract.filters.WithdrawnFromBins().getTopicFilter(),
+        merchantMoeV2PairContract.filters.Swap().getTopicFilter()
       ]);
 
       try {
-        events = await (univ3PairContract as ethers.BaseContract).queryFilter(topics, fromBlock, toBlock);
+        events = await (merchantMoeV2PairContract as ethers.BaseContract).queryFilter(topics, fromBlock, toBlock);
       } catch (e) {
         // console.log(`query filter error: ${e.toString()}`);
         blockStep = Math.round(blockStep / 2);
@@ -532,12 +520,14 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       console.log(
         `${logLabel} [${fromBlock} - ${toBlock}] found ${
           events.length
-        } Mint/Burn/Swap events after ${cptError} errors (fetched ${toBlock - fromBlock + 1} blocks)`
+        } DepositedToBins/WithdrawnFromBins/Swap events after ${cptError} errors (fetched ${
+          toBlock - fromBlock + 1
+        } blocks)`
       );
 
       if (events.length != 0) {
         this.processEvents(
-          univ3PairContract,
+          merchantMoeV2PairContract,
           events,
           latestData,
           pairWithFeesAndPool,
@@ -568,18 +558,72 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
 
     return latestData.poolAddress;
   }
+  async fetchInitializeData(poolAddress: string, tokenX: string, tokenY: string): Promise<MerchantMoeV2PoolData> {
+    // if the file does not exists, it means we start from the beginning
+    // fetch the deployed block number for the pool
+    const deployedBlock = await Web3Utils.GetContractCreationBlockNumber(poolAddress, this.workerName);
+    let fromBlock = deployedBlock;
+    let toBlock = deployedBlock + (this.getConfiguration().fixedBlockStep || 100_000);
+
+    console.log(`[${this.monitoringName}] | Searching Initialize event between blocks [${fromBlock} - ${toBlock}]`);
+
+    const merchantMoeV2FactoryContract = MerchantMoeFactory__factory.connect(
+      MerchantMoeV2Constants.CONSTANT_FACTORY_ADDRESS,
+      this.web3Provider
+    );
+
+    const initEvents = await retry(
+      () =>
+        merchantMoeV2FactoryContract.queryFilter(
+          merchantMoeV2FactoryContract.filters.LBPairCreated(tokenX, tokenY),
+          fromBlock,
+          toBlock
+        ),
+      []
+    );
+
+    let foundEvent;
+    if (initEvents.length > 0) {
+      for (const e of initEvents) {
+        if (e.args.LBPair.toLowerCase() == poolAddress.toLowerCase()) {
+          foundEvent = e;
+        }
+      }
+    }
+
+    if (foundEvent) {
+      console.log(`[${this.monitoringName}] | found Initialize event at block ${foundEvent.blockNumber}`);
+
+      const binStep = foundEvent.args.binStep;
+      return {
+        currentBin: undefined,
+        blockNumber: foundEvent.blockNumber - 1, // set to blocknumber -1 to be sure to fetch mint/burn events on same block as initialize,
+        binStep: Number(binStep),
+        lastCheckpoint: 0, // set to 0 to save liquidity check point at the begining
+        lastDataSave: 0, // set to 0 to save data at the beginning
+        bins: {},
+        poolAddress: poolAddress
+      };
+    } else {
+      console.log(`[${this.monitoringName}] | Initialize event not found between blocks [${fromBlock} - ${toBlock}]`);
+      fromBlock = toBlock + 1;
+      toBlock = fromBlock + (this.getConfiguration().fixedBlockStep || 100_000);
+    }
+
+    throw new Error(`[${this.monitoringName}] | No Initialize event found`);
+  }
 
   async processEvents(
     contract: ethers.BaseContract,
     events: (ethers.ethers.EventLog | ethers.ethers.Log)[],
-    latestData: BlockWithTick,
-    pairWithFeesAndPool: Univ3PairWithFeesAndPool,
+    latestData: MerchantMoeV2PoolData,
+    pairWithFeesAndPool: MerchantMoeV2PairWithFeesAndPool,
     latestDataFilePath: string,
     dataFileName: string,
     minStartBlock: number
   ) {
-    const token0 = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
-    const token1 = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
+    const tokenX = this.tokens[pairWithFeesAndPool.pairToFetch.token0];
+    const tokenY = this.tokens[pairWithFeesAndPool.pairToFetch.token1];
 
     const dtStart = Date.now();
     const saveData = [];
@@ -595,12 +639,13 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       // this checks that we are crossing a new block, so we will save the price and maybe checkpoint data
       if (
         lastBlock != event.blockNumber &&
-        lastBlock >= latestData.lastDataSave + UniswapV3Constants.CONSTANT_BLOCK_INTERVAL &&
-        event.blockNumber >= minStartBlock
+        lastBlock >= latestData.lastDataSave + MerchantMoeV2Constants.CONSTANT_BLOCK_INTERVAL &&
+        event.blockNumber >= minStartBlock &&
+        latestData.currentBin != undefined
       ) {
-        const newSaveData = Uniswapv3Library.getSaveDataFromLatestData(
-          token0,
-          token1,
+        const newSaveData = MerchantMoeV2Library.getSaveDataFromLatestData(
+          tokenX,
+          tokenY,
           latestData,
           pairWithFeesAndPool.pairToFetch.token0,
           pairWithFeesAndPool.pairToFetch.token1
@@ -609,34 +654,94 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       }
 
       switch (parsedEvent.name.toLowerCase()) {
-        case 'mint':
-          if (parsedEvent.args.amount > 0) {
-            const lqtyToAdd = new BigNumber(parsedEvent.args.amount.toString());
-            Uniswapv3Library.updateLatestDataLiquidity(
-              latestData,
-              event.blockNumber,
-              Number(parsedEvent.args.tickLower),
-              Number(parsedEvent.args.tickUpper),
-              lqtyToAdd
-            );
+        case 'depositedtobins':
+          // event DepositedToBins(address indexed sender,
+          // address indexed to,
+          //  uint256[] ids,
+          //   bytes32[] amounts);
+
+          for (let i = 0; i < parsedEvent.args.ids.length; i++) {
+            const binId = Number(parsedEvent.args.ids[i]);
+            const amounts = parsedEvent.args.amounts[i] as string;
+            const { tokenXNormalized, tokenYNormalized } = MerchantMoeV2Library.decodeAmounts(amounts, tokenX, tokenY);
+            if (!latestData.bins[binId]) {
+              latestData.bins[binId] = {
+                tokenX: 0,
+                tokenY: 0
+              };
+            }
+
+            latestData.bins[binId].tokenX += tokenXNormalized;
+            latestData.bins[binId].tokenY += tokenYNormalized;
+
+            // console.log(
+            //   `On bin ${binId}, deposited ${tokenXNormalized} ${tokenX.symbol} and ${tokenYNormalized} ${tokenY.symbol}`
+            // );
           }
+          latestData.blockNumber = event.blockNumber;
+
           break;
-        case 'burn':
-          if (parsedEvent.args.amount > 0) {
-            const lqtyToSub = new BigNumber(-1).times(new BigNumber(parsedEvent.args.amount.toString()));
-            Uniswapv3Library.updateLatestDataLiquidity(
-              latestData,
-              event.blockNumber,
-              parsedEvent.args.tickLower,
-              parsedEvent.args.tickUpper,
-              lqtyToSub
-            );
+        case 'withdrawnfrombins':
+          // event WithdrawnFromBins(address indexed sender, address indexed to, uint256[] ids, bytes32[] amounts);
+          for (let i = 0; i < parsedEvent.args.ids.length; i++) {
+            const binId = Number(parsedEvent.args.ids[i]);
+            const amounts = parsedEvent.args.amounts[i] as string;
+            const { tokenXNormalized, tokenYNormalized } = MerchantMoeV2Library.decodeAmounts(amounts, tokenX, tokenY);
+            if (!latestData.bins[binId]) {
+              latestData.bins[binId] = {
+                tokenX: 0,
+                tokenY: 0
+              };
+            }
+
+            latestData.bins[binId].tokenX -= tokenXNormalized;
+            latestData.bins[binId].tokenY -= tokenYNormalized;
+
+            // console.log(
+            //   `On bin ${binId}, withdrawn ${tokenXNormalized} ${tokenX.symbol} and ${tokenYNormalized} ${tokenY.symbol}`
+            // );
           }
+
+          latestData.blockNumber = event.blockNumber;
           break;
         case 'swap':
-          latestData.currentSqrtPriceX96 = parsedEvent.args.sqrtPriceX96.toString();
-          latestData.currentTick = Number(parsedEvent.args.tick);
-          latestData.blockNumber = event.blockNumber;
+          //   event Swap(
+          //     address indexed sender,
+          //     address indexed to,
+          //     uint24 id,
+          //     bytes32 amountsIn,
+          //     bytes32 amountsOut,
+          //     uint24 volatilityAccumulator,
+          //     bytes32 totalFees,
+          //     bytes32 protocolFees
+          // );
+          {
+            const tokensIn = MerchantMoeV2Library.decodeAmounts(parsedEvent.args.amountsIn, tokenX, tokenY);
+            const tokensOut = MerchantMoeV2Library.decodeAmounts(parsedEvent.args.amountsOut, tokenX, tokenY);
+            latestData.currentBin = Number(parsedEvent.args.id);
+            if (!latestData.bins[latestData.currentBin]) {
+              latestData.bins[latestData.currentBin] = {
+                tokenX: 0,
+                tokenY: 0
+              };
+            }
+
+            // if (tokensIn.tokenXNormalized > 0) {
+            //   console.log(
+            //     `On bin ${latestData.currentBin}, swapped ${tokensIn.tokenXNormalized} ${tokenX.symbol} for ${tokensOut.tokenYNormalized} ${tokenY.symbol}`
+            //   );
+            // } else {
+            //   console.log(
+            //     `On bin ${latestData.currentBin}, swapped ${tokensIn.tokenYNormalized} ${tokenY.symbol} for ${tokensOut.tokenXNormalized} ${tokenX.symbol}`
+            //   );
+            // }
+
+            latestData.bins[latestData.currentBin].tokenX += tokensIn.tokenXNormalized;
+            latestData.bins[latestData.currentBin].tokenY += tokensIn.tokenYNormalized;
+            latestData.bins[latestData.currentBin].tokenX -= tokensOut.tokenXNormalized;
+            latestData.bins[latestData.currentBin].tokenY -= tokensOut.tokenYNormalized;
+            latestData.blockNumber = event.blockNumber;
+          }
           break;
       }
 
@@ -645,12 +750,13 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
 
     if (
       latestData.blockNumber != latestData.lastDataSave &&
-      latestData.blockNumber >= latestData.lastDataSave + UniswapV3Constants.CONSTANT_BLOCK_INTERVAL &&
-      latestData.blockNumber >= minStartBlock
+      latestData.blockNumber >= latestData.lastDataSave + MerchantMoeV2Constants.CONSTANT_BLOCK_INTERVAL &&
+      latestData.blockNumber >= minStartBlock &&
+      latestData.currentBin != undefined
     ) {
-      const newSaveData = Uniswapv3Library.getSaveDataFromLatestData(
-        token0,
-        token1,
+      const newSaveData = MerchantMoeV2Library.getSaveDataFromLatestData(
+        tokenX,
+        tokenY,
         latestData,
         pairWithFeesAndPool.pairToFetch.token0,
         pairWithFeesAndPool.pairToFetch.token1
@@ -665,64 +771,11 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     fs.writeFileSync(latestDataFilePath, JSON.stringify(latestData));
     this.logFnDuration('processEvents', dtStart, events.length, 'event');
   }
-
-  /**
-   * get caller function name
-   * @returns caller name
-   */
-  fnName() {
-    return this.fnName.caller.name;
-  }
-
-  async fetchInitializeData(poolAddress: string, univ3PairContract: UniswapV3Pair): Promise<BlockWithTick> {
-    // if the file does not exists, it means we start from the beginning
-    // fetch the deployed block number for the pool
-    const deployedBlock = await Web3Utils.GetContractCreationBlockNumber(poolAddress, this.workerName);
-    let fromBlock = deployedBlock;
-    let toBlock = deployedBlock + (this.getConfiguration().fixedBlockStep || 100_000);
-
-    console.log(`[${this.monitoringName}] | Searching Initialize event between blocks [${fromBlock} - ${toBlock}]`);
-
-    const initEvents = await retry(
-      () => univ3PairContract.queryFilter(univ3PairContract.filters.Initialize, fromBlock, toBlock),
-      []
-    );
-
-    if (initEvents.length > 0) {
-      if (initEvents.length > 1) {
-        throw new Error(`[${this.monitoringName}] | More than 1 Initialize event found???`);
-      }
-
-      console.log(`[${this.monitoringName}] | found Initialize event at block ${initEvents[0].blockNumber}`);
-
-      const tickSpacing = await retry(() => univ3PairContract.tickSpacing(), []);
-
-      return {
-        currentTick: Number(initEvents[0].args.tick),
-        currentSqrtPriceX96: initEvents[0].args.sqrtPriceX96.toString(10),
-        blockNumber: initEvents[0].blockNumber - 1, // set to blocknumber -1 to be sure to fetch mint/burn events on same block as initialize,
-        tickSpacing: Number(tickSpacing),
-        lastCheckpoint: 0, // set to 0 to save liquidity check point at the begining
-        lastDataSave: 0, // set to 0 to save data at the beginning
-        ticks: {},
-        poolAddress: poolAddress
-      };
-
-      // fs.appendFileSync('logs.txt', `Initialized at ${initEvents[0].blockNumber}. base tick ${latestData.currentTick}. base price: ${latestData.currentSqrtPriceX96}\n`);
-    } else {
-      console.log(`[${this.monitoringName}] | Initialize event not found between blocks [${fromBlock} - ${toBlock}]`);
-      fromBlock = toBlock + 1;
-      toBlock = fromBlock + (this.getConfiguration().fixedBlockStep || 100_000);
-    }
-
-    throw new Error(`[${this.monitoringName}] | No Initialize event found`);
-  }
 }
 
 // async function debug() {
-//   const fetcher = new UniswapV3Fetcher(0);
-//   await fetcher.init();
-//   await fetcher.runSpecific();
+//   const fetcher = new MerchantMoeV2Fetcher(60, 'mantle');
+//   await fetcher.run();
 // }
 
 // debug();

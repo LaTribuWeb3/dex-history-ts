@@ -1,14 +1,13 @@
 import { BaseFetcher } from '../BaseFetcher';
 import * as ethers from 'ethers';
 import * as fs from 'fs';
-import * as Constants from '../../../utils/Constants';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import * as Sync from '../../../utils/Sync';
 import retry, { normalize } from '../../../utils/Utils';
 import { UniswapV2Factory__factory } from '../../../contracts/types/factories/uniswapv2/UniswapV2Factory__factory';
 import { UniswapV2Pair__factory } from '../../../contracts/types/factories/uniswapv2/UniswapV2Pair__factory';
 import * as Helper from '../../configuration/Helper';
-import path, { dirname } from 'path';
+import { dirname } from 'path';
 import { readLastLine } from '../../configuration/Helper';
 import {
   UniSwapV2WorkerConfiguration,
@@ -123,8 +122,6 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
       throw new Error(`[${this.monitoringName}] | Order mismatch between configuration and uniswapv2 pair`);
     }
 
-    const initBlockStep = 500000;
-
     let startBlock = 0;
     if (!fs.existsSync(historyFileName)) {
       // TODO Move to Utils / Writer (un autre paquet)
@@ -158,6 +155,7 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
 
     let liquidityValues = [];
 
+    const initBlockStep = this.getConfiguration().fixedBlockStep || 500000;
     let blockStep = initBlockStep;
     let fromBlock = startBlock;
     let toBlock = 0;
@@ -240,6 +238,11 @@ export class UniswapV2Fetcher extends BaseFetcher<UniSwapV2WorkerConfiguration> 
       }
 
       fromBlock = toBlock + 1;
+      cptError = 0;
+      const fixedBlockStep = this.getConfiguration().fixedBlockStep;
+      if (fixedBlockStep) {
+        blockStep = fixedBlockStep;
+      }
     }
 
     if (liquidityValues.length > 0) {

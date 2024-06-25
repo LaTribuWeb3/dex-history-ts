@@ -62,6 +62,13 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.MedianPrec
     currentBlock: number,
     pivots: string[]
   ) {
+    const platformsNotAll: string[] = [];
+    for (const platform of this.getConfiguration().platforms) {
+      if (platform != 'all') {
+        platformsNotAll.push(platform);
+      }
+    }
+
     function getMedianPriceAccordingToPlatform(workerName: string) {
       if (platform == 'all') {
         return PriceGetter.getMedianPricesAllPlatforms(
@@ -71,7 +78,8 @@ export class MedianPrecomputer extends BaseWorker<WorkerConfiguration.MedianPrec
           lastBlock,
           currentBlock,
           pivots,
-          fileAlreadyExists
+          fileAlreadyExists,
+          platformsNotAll
         );
       } else {
         return PriceGetter.getMedianPricesForPlatform(

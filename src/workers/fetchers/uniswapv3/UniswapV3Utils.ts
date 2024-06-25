@@ -2,7 +2,6 @@ import { UniswapV3Factory__factory } from '../../../contracts/types/factories/un
 import { UniSwapV3WorkerConfiguration } from '../../configuration/WorkerConfiguration';
 import * as Web3Utils from '../../../utils/Web3Utils';
 import * as ethers from 'ethers';
-import { UniswapV3Pair__factory } from '../../../contracts/types/factories/uniswapv3/UniswapV3Pair__factory';
 import { TokenList } from '../../configuration/TokenData';
 
 export async function getAllPoolsToFetch(
@@ -62,18 +61,4 @@ export async function translateTopicFilters(topicFilters: Promise<ethers.ethers.
       })
   ];
   return topics;
-}
-
-export function parseEvent(event: ethers.ethers.EventLog | ethers.ethers.Log): ethers.ethers.LogDescription {
-  const correctlyTypedEvent: { topics: Array<string>; data: string } = {
-    topics: [...event.topics],
-    data: event.data
-  };
-
-  const logParsed = new ethers.Interface(UniswapV3Pair__factory.abi).parseLog(correctlyTypedEvent);
-  if (logParsed == null) {
-    throw new Error('Could not parse logs');
-  }
-
-  return logParsed;
 }

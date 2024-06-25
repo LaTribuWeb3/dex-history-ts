@@ -1,0 +1,206 @@
+{
+	"workers": [
+		{
+			"name": "agnifinance",
+			"configuration": {
+				"configType": "uniswapv3",
+				"factoryAddress": "0x25780dc8Fc3cfBD75F33bFDAB65e969b603b2035",
+				"fixedBlockStep": 50000,
+				"fees": [
+					100,
+					500,
+					2500,
+					10000
+				],
+				"pairs": [
+					{
+						"token0": "USDT",
+						"token1": "WETH"
+					},
+					{
+						"token0": "mETH",
+						"token1": "WETH"
+					},
+					{
+						"token0": "WMNT",
+						"token1": "WETH"
+					},
+					{
+						"token0": "WMNT",
+						"token1": "mETH"
+					},
+					{
+						"token0": "USDC",
+						"token1": "USDT"
+					},
+					{
+						"token0": "USDT",
+						"token1": "mETH"
+					},
+					{
+						"token0": "USDT",
+						"token1": "USDY"
+					}
+				]
+			}
+		},
+		{
+			"name": "fusionx",
+			"configuration": {
+				"configType": "uniswapv3",
+				"factoryAddress": "0x530d2766D1988CC1c000C8b7d00334c14B69AD71",
+				"fixedBlockStep": 50000,
+				"fees": [
+					100,
+					500,
+					2500,
+					10000
+				],
+				"pairs": [
+					{
+						"token0": "USDC",
+						"token1": "USDT"
+					},
+					{
+						"token0": "USDT",
+						"token1": "WETH"
+					},
+					{
+						"token0": "mETH",
+						"token1": "WETH"
+					},
+					{
+						"token0": "USDT",
+						"token1": "WMNT"
+					},
+					{
+						"token0": "WMNT",
+						"token1": "mETH"
+					},
+					{
+						"token0": "USDT",
+						"token1": "mETH"
+					},
+					{
+						"token0": "USDT",
+						"token1": "WBTC"
+					}
+				]
+			}
+		},
+		{
+			"name": "butter",
+			"configuration": {
+				"configType": "uniswapv3",
+				"factoryAddress": "0xEECa0a86431A7B42ca2Ee5F479832c3D4a4c2644",
+				"fixedBlockStep": 50000,
+				"fees": [
+					100,
+					500
+				],
+				"pairs": [
+					{
+						"token0": "WMNT",
+						"token1": "WETH"
+					},
+					{
+						"token0": "USDT",
+						"token1": "WETH"
+					},
+					{
+						"token0": "USDC",
+						"token1": "USDT"
+					}
+				]
+			}
+		},
+		{
+			"name": "merchantmoeclassic",
+			"configuration": {
+				"configType": "XYK",
+				"factoryAddress": "0x5bEf015CA9424A7C07B68490616a4C1F094BEdEc",
+				"fixedBlockStep": 50000,
+				"pairs": [
+					{
+						"name": "USDT-mETH",
+						"startBlock": 58828481
+					},
+					{
+						"name": "mETH-WETH",
+						"startBlock": 40557406
+					},
+					{
+						"name": "USDT-WETH",
+						"startBlock": 40558308
+					},
+					{
+						"name": "WBTC-mETH",
+						"startBlock": 57829218
+					},
+					{
+						"name": "USDC-USDT",
+						"startBlock": 40255445
+					},
+					{
+						"name": "USDC-mETH",
+						"startBlock": 57828705
+					},
+					{
+						"name": "USDC-USDY",
+						"startBlock": 40560511
+					},
+					{
+						"name": "USDe-WMNT",
+						"startBlock": 61791722
+					}
+				]
+			}
+		},
+		{
+			"name": "merchantmoev2",
+			"configuration": {
+				"configType": "merchantmoev2",
+				"factoryAddress": "0xa6630671775c4EA2743840F9A5016dCf2A104054",
+				"fixedBlockStep": 50000,
+				"fees": [
+					100,
+					500
+				],
+				"pairs": [
+					{
+						"token0": "WMNT",
+						"token1": "WETH"
+					},
+					{
+						"token0": "USDC",
+						"token1": "USDT"
+					},
+					{
+						"token0": "WMNT",
+						"token1": "USDT"
+					},
+					{
+						"token0": "USDe",
+						"token1": "USDT"
+					},
+					{
+						"token0": "mETH",
+						"token1": "WETH"
+					},
+					{
+						"token0": "WETH",
+						"token1": "USDT"
+					},
+					{
+						"token0": "mETH",
+						"token1": "USDT"
+					},
+					{
+						"token0": "WMNT",
+						"token1": "mETH"
+					}
+				]
+			}
+		}
+	]
+}

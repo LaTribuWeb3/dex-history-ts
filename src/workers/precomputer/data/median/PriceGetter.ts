@@ -1,9 +1,8 @@
-import { PLATFORMS } from '../../../../utils/Constants';
+import { MEDIAN_OVER_BLOCK } from '../../../../utils/Constants';
 import { DataPairUtils } from '../../../../utils/DataPairUtils';
 import { FileReaderUtils } from '../../../../utils/FileReaderUtils';
 import { logFnDuration, logFnDurationWithLabel } from '../../../../utils/MonitoringHelper';
 import { generatePriceCSVFilePath } from '../../../configuration/WorkerConfiguration';
-import { MEDIAN_OVER_BLOCK } from '../DataInterfaceConstants';
 import { DataMedianer } from './DataMedianer';
 
 export class PriceGetter {
@@ -14,13 +13,14 @@ export class PriceGetter {
     lastBlock: number,
     currentBlock: number,
     pivots: string[],
-    fileAlreadyExists: boolean
+    fileAlreadyExists: boolean,
+    platforms: string[]
   ) {
     let allPrices: {
       block: number;
       price: number;
     }[] = [];
-    for (const subPlatform of PLATFORMS) {
+    for (const subPlatform of platforms) {
       if (
         subPlatform == 'uniswapv3' &&
         ((base == 'stETH' && quote == 'WETH') || (base == 'WETH' && quote == 'stETH'))

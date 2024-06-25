@@ -1,38 +1,34 @@
-import { BaseFetcher } from '../BaseFetcher';
-import * as Constants from '../../../utils/Constants';
-
+import { AgniPoolV3__factory, MerchantMoeLBPair, MerchantMoeLBPair__factory } from '../../../contracts/types';
+import { MerchantMoeV2Library } from '../../../library/MerchantMoeV2Library';
+import { normalize, sleep } from '../../../utils/Utils';
+import { GetContractCreationBlockNumber, getCurrentBlock } from '../../../utils/Web3Utils';
+import { TokenData } from '../../configuration/TokenData';
 import {
-  UniSwapV3WorkerConfiguration,
-  UniswapV3PairConfiguration,
-  Univ3PairWithFeesAndPool,
-  generatePreComputedForWorker,
+  MerchantMoeV2PairConfiguration,
+  MerchantMoeV2PairWithFeesAndPool,
+  MerchantMoeV2WorkerConfiguration,
   generatePreComputedPriceForWorker,
   generatePriceCSVFilePath
 } from '../../configuration/WorkerConfiguration';
-import * as ethers from 'ethers';
-import * as Web3Utils from '../../../utils/Web3Utils';
-import { UniswapV3Factory__factory } from '../../../contracts/types/factories/uniswapv3/UniswapV3Factory__factory';
-import { getAllPoolsToFetch, translateTopicFilters } from './UniswapV3Utils';
-import { normalize, sleep } from '../../../utils/Utils';
+import { BaseFetcher } from '../BaseFetcher';
+import { UniswapV3PriceFetcher } from '../uniswapv3/UniswapV3PriceFetcher';
+import ethers from 'ethers';
+import { getAllPoolsToFetch } from './MerchantMoeV2Utils';
 import * as fs from 'fs';
 import { readLastLine } from '../../configuration/Helper';
-import { GetContractCreationBlockNumber } from '../../../utils/Web3Utils';
-import { UniswapV3Pair, UniswapV3Pair__factory } from '../../../contracts/types';
-import { TokenData } from '../../configuration/TokenData';
-import path from 'path';
 
-export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> {
+export class MerchantMoeV2PriceFetcher extends BaseFetcher<MerchantMoeV2WorkerConfiguration> {
   constructor(
     runEveryMinutes: number,
     configVersion: string,
-    workerName = 'uniswapv3',
-    monitoringName = 'UniswapV3 Price Fetcher'
+    workerName = 'merchantmoev2',
+    monitoringName = 'Merchant Moe V2 Price Fetcher'
   ) {
     super(workerName, monitoringName, runEveryMinutes, configVersion);
   }
 
   async runSpecific(): Promise<void> {
-    const currentBlock = await Web3Utils.getCurrentBlock();
+    const currentBlock = await getCurrentBlock();
 
     if (!fs.existsSync(generatePreComputedPriceForWorker(this.workerName))) {
       fs.mkdirSync(generatePreComputedPriceForWorker(this.workerName), { recursive: true });
@@ -40,14 +36,15 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
 
     console.log(`${this.workerName}: getting pools to fetch`);
 
-    const poolsToFetch: Univ3PairWithFeesAndPool[] = await getAllPoolsToFetch(
+    const poolsToFetch: MerchantMoeV2PairWithFeesAndPool[] = await getAllPoolsToFetch(
       this.workerName,
       this.getConfiguration(),
       this.tokens
     );
 
-    const poolsToFetchGroupedByPair: { [pair: string]: { pairToFetch: UniswapV3PairConfiguration; pools: string[] } } =
-      {};
+    const poolsToFetchGroupedByPair: {
+      [pair: string]: { pairToFetch: MerchantMoeV2PairConfiguration; pools: string[] };
+    } = {};
     for (const fetchConfig of poolsToFetch) {
       const pairKey = `${fetchConfig.pairToFetch.token0}-${fetchConfig.pairToFetch.token1}`;
       if (!poolsToFetchGroupedByPair[pairKey]) {
@@ -62,9 +59,13 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
     const stalePairs = [];
     let promises = [];
     for (const groupedFetchConfig of Object.values(poolsToFetchGroupedByPair)) {
-      promises.push(
-        this.FetchUniswapV3PriceHistoryForPair(groupedFetchConfig.pairToFetch, groupedFetchConfig.pools, currentBlock)
+      const promise = this.FetchMerchantMoeV2PriceHistoryForPair(
+        groupedFetchConfig.pairToFetch,
+        groupedFetchConfig.pools,
+        currentBlock
       );
+      await promise;
+      promises.push(promise);
 
       // await Promise.all(promises);
 
@@ -90,8 +91,8 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
     }
   }
 
-  async FetchUniswapV3PriceHistoryForPair(
-    pairToFetch: UniswapV3PairConfiguration,
+  async FetchMerchantMoeV2PriceHistoryForPair(
+    pairToFetch: MerchantMoeV2PairConfiguration,
     pools: string[],
     currentBlock: number
   ): Promise<{ lastBlockWithData: number; token0: string; token1: string }> {
@@ -145,7 +146,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
     let lastBlockWithData = sinceBlock;
 
     // initializes the pools contracts
-    const contracts: { [address: string]: ethers.BaseContract } = {};
+    const contracts: { [address: string]: MerchantMoeLBPair } = {};
     for (const poolAddress of pools) {
       contracts[poolAddress] = this.getPairContract(poolAddress);
     }
@@ -226,23 +227,25 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
     return { lastBlockWithData, token0: token0Conf.symbol, token1: token1Conf.symbol };
   }
 
-  getPairContract(poolAddress: string): ethers.BaseContract {
-    return UniswapV3Pair__factory.connect(poolAddress, this.web3Provider);
+  getPairContract(poolAddress: string): MerchantMoeLBPair {
+    console.log(`getPairContract: getting specific Merchant Moe v2 contract for ${poolAddress}`);
+    return MerchantMoeLBPair__factory.connect(poolAddress, this.web3Provider);
   }
 
   async fetchEvents(
     startBlock: number,
     endBlock: number,
-    contract: ethers.ethers.BaseContract,
+    contract: MerchantMoeLBPair,
     token0Conf: TokenData,
     token1Conf: TokenData,
     fixedBlockStep: number | undefined
   ): Promise<{ block: number; price: number }[]> {
     const initBlockStep = fixedBlockStep || 100_000;
+    const binStep = await contract.getBinStep();
     let blockStep = initBlockStep;
     let fromBlock = startBlock;
     let toBlock = 0;
-    const swapResults: { block: number; price: number }[] = [];
+    const swapResults: { [block: number]: number } = [];
     while (toBlock < endBlock) {
       toBlock = fromBlock + blockStep - 1;
       if (toBlock > endBlock) {
@@ -251,7 +254,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
 
       let events = undefined;
       try {
-        events = await contract.queryFilter('Swap', fromBlock, toBlock);
+        events = await (contract as ethers.BaseContract).queryFilter('Swap', fromBlock, toBlock);
       } catch (e) {
         // console.log(`query filter error: ${e.toString()}`);
         blockStep = Math.round(blockStep / 2);
@@ -271,24 +274,15 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
             throw new Error(`Could not parse event ${JSON.stringify(e)}`);
           }
 
-          // for the wstETH/WETH pool, ignore block 15952167 because of 1.28 price that is an outlier
-          if (e.blockNumber == 15952167 && token0Conf.symbol == 'wstETH' && token1Conf.symbol == 'WETH') {
-            continue;
-          }
+          const binId = parsedEvent.args.id as bigint;
+          const binPrice = MerchantMoeV2Library.getPriceNormalized(
+            Number(binId),
+            Number(binStep),
+            token0Conf.decimals,
+            token1Conf.decimals
+          );
 
-          const token0Amount = Math.abs(normalize(parsedEvent.args.amount0, token0Conf.decimals));
-          if (token0Amount < token0Conf.dustAmount) {
-            continue;
-          }
-          const token1Amount = Math.abs(normalize(parsedEvent.args.amount1, token1Conf.decimals));
-          if (token1Amount < token1Conf.dustAmount) {
-            continue;
-          }
-
-          swapResults.push({
-            block: e.blockNumber,
-            price: token1Amount / token0Amount
-          });
+          swapResults[e.blockNumber] = binPrice;
         }
 
         // try to find the blockstep to reach 9000 events per call as the RPC limit is 10 000,
@@ -306,6 +300,20 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
       }
     }
 
-    return swapResults;
+    const arrayResult: { block: number; price: number }[] = [];
+    for (const [block, price] of Object.entries(swapResults)) {
+      arrayResult.push({
+        block: Number(block),
+        price: price
+      });
+    }
+
+    return arrayResult;
   }
 }
+// async function debug() {
+//   const fetcher = new MerchantMoeV2PriceFetcher(60, 'mantle');
+//   await fetcher.run();
+// }
+
+// debug();

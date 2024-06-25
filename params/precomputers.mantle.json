@@ -1,0 +1,174 @@
+{
+	"precomputers": [
+		{
+			"name": "median",
+			"configuration": {
+				"platforms": [
+					"agnifinance",
+					"butter",
+					"fusionx",
+					"merchantmoeclassic",
+					"merchantmoev2",
+					"all"
+				],
+				"watchedPairs": [
+					{
+						"base": "USDT",
+						"quotes": [
+							{
+								"quote": "USDC"
+							},
+							{
+								"quote": "WMNT",
+								"pivots": [
+									"WETH"
+								]
+							},
+							{
+								"quote": "mETH",
+								"pivots": [
+									"WETH"
+								]
+							},
+							{
+								"quote": "WETH"
+							},
+							{
+								"quote": "WBTC"
+							},
+							{
+								"quote": "USDe"
+							},
+							{
+								"quote": "USDY"
+							}
+						]
+					},
+					{
+						"base": "USDC",
+						"quotes": [
+							{
+								"quote": "WMNT",
+								"pivots": [
+									"USDT"
+								]
+							},
+							{
+								"quote": "mETH",
+								"pivots": [
+									"USDT"
+								]
+							},
+							{
+								"quote": "WETH",
+								"pivots": [
+									"USDT"
+								]
+							},
+							{
+								"quote": "WBTC",
+								"pivots": [
+									"USDT"
+								]
+							},
+							{
+								"quote": "USDe",
+								"pivots": [
+									"USDT"
+								]
+							},
+							{
+								"quote": "USDY",
+								"pivots": [
+									"USDT"
+								]
+							}
+						]
+					},
+					{
+						"base": "WMNT",
+						"quotes": [
+							{
+								"quote": "mETH"
+							},
+							{
+								"quote": "WETH"
+							},
+							{
+								"quote": "WBTC",
+								"pivots": ["USDT"]
+							},
+							{
+								"quote": "USDe",
+								"pivots": ["USDT"]
+							},
+							{
+								"quote": "USDY",
+								"pivots": ["WETH", "USDT"]
+							}
+						]
+					},
+					{
+						"base": "mETH",
+						"quotes": [
+							{
+								"quote": "WETH"
+							},
+							{
+								"quote": "WBTC",
+								"pivots": ["USDT"]
+							},
+							{
+								"quote": "USDe",
+								"pivots": ["USDT"]
+							},
+							{
+								"quote": "USDY",
+								"pivots": ["WETH", "USDT"]
+							}
+						]
+					},
+					{
+						"base": "WETH",
+						"quotes": [
+							{
+								"quote": "WBTC",
+								"pivots": ["USDT"]
+							},
+							{
+								"quote": "USDe",
+								"pivots": ["USDT"]
+							},
+							{
+								"quote": "USDY",
+								"pivots": ["USDT"]
+							}
+						]
+					},
+					{
+						"base": "WBTC",
+						"quotes": [
+							{
+								"quote": "USDe",
+								"pivots": ["USDT"]
+							},
+							{
+								"quote": "USDY",
+								"pivots": ["mETH", "USDC"]
+							}
+						]
+					},
+					{
+						"base": "USDe",
+						"quotes": [
+							{
+								"quote": "USDY",
+								"pivots": ["USDT"]
+							}
+						]
+					}
+				]
+			}
+		}
+	]
+}
