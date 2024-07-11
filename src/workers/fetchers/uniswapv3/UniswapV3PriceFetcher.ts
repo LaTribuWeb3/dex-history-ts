@@ -66,7 +66,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
         this.FetchUniswapV3PriceHistoryForPair(groupedFetchConfig.pairToFetch, groupedFetchConfig.pools, currentBlock)
       );
 
-      // await Promise.all(promises);
+      await Promise.all(promises);
 
       await sleep(1000);
     }
@@ -309,3 +309,4 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
     return swapResults;
   }
 }
+

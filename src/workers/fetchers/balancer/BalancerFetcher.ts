@@ -54,6 +54,7 @@ export class BalancerFetcher extends BaseFetcher<BalancerWorkerConfiguration> {
         tokens: balancerPoolConfig.tokenSymbols,
         label: balancerPoolConfig.name
       });
+      await promise;
       promises.push(promise);
     }
 
