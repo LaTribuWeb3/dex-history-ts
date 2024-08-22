@@ -3,18 +3,18 @@ import * as Web3Utils from '../../../utils/Web3Utils';
 import { MerchantMoeFactory__factory, MerchantMoeLBPair__factory } from '../../../contracts/types';
 import * as ethers from 'ethers';
 import { MerchantMoeV2WorkerConfiguration } from '../../configuration/WorkerConfiguration';
-import { getConfTokenByAddress } from '../../../utils/Utils';
+import retry, { getConfTokenByAddress, sleep } from '../../../utils/Utils';
 
 export async function getAllPoolsToFetch(
   workerName: string,
   workerConfiguration: MerchantMoeV2WorkerConfiguration,
   tokens: TokenList
 ) {
+  const multicallProvider = Web3Utils.getMulticallProvider();
   const merchantMoeV2Factory = MerchantMoeFactory__factory.connect(
     workerConfiguration.factoryAddress,
-    Web3Utils.getMulticallProvider()
+    multicallProvider
   );
-  const web3Provider = Web3Utils.getJsonRPCProvider();
 
   const poolsToFetch = [];
   // find existing pools via multicall
@@ -39,9 +39,11 @@ export async function getAllPoolsToFetch(
         if (pool.LBPair == ethers.ZeroAddress) {
           console.log(`${workerName}[${pairToFetch.token0}-${pairToFetch.token1}: pool does not exist`);
         } else {
-          const merchantMoeV2PairContract = MerchantMoeLBPair__factory.connect(pool.LBPair, web3Provider);
-          const tokenXAddress = await merchantMoeV2PairContract.getTokenX();
-          const tokenYAddress = await merchantMoeV2PairContract.getTokenY();
+          const merchantMoeV2PairContract = MerchantMoeLBPair__factory.connect(pool.LBPair, multicallProvider);
+          const [tokenXAddress, tokenYAddress] = await Promise.all([
+            merchantMoeV2PairContract.getTokenX(),
+            merchantMoeV2PairContract.getTokenY()
+          ]);
           const tokenXSymbol = (await getConfTokenByAddress(tokenXAddress, tokens)).symbol;
           if (pairToFetch.token0 != tokenXSymbol) {
             throw new Error(`config token0 ${pairToFetch.token0} != ${tokenXSymbol}`);
@@ -55,6 +57,7 @@ export async function getAllPoolsToFetch(
             poolAddress: pool.LBPair,
             binStep: Number(pool.binStep)
           });
+          await sleep(200);
         }
       }
     }
