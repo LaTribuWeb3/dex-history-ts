@@ -12,7 +12,7 @@ import { AbstractRunner } from '../AbstractRunner';
 
 export class EthereumDataFetch extends AbstractRunner {
   constructor() {
-    const mutex = true;
+    const mutex = false;
     const shouldWait = true;
     const shouldLoop = true;
     const configVersion = 'ethereum';
