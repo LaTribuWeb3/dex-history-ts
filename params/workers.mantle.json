@@ -40,6 +40,10 @@
 					{
 						"token0": "USDT",
 						"token1": "USDY"
+					},
+					{
+						"token0": "FBTC",
+						"token1": "mETH"
 					}
 				]
 			}
@@ -198,6 +202,10 @@
 					{
 						"token0": "WMNT",
 						"token1": "mETH"
+					},
+					{
+						"token0": "FBTC",
+						"token1": "WBTC"
 					}
 				]
 			}
