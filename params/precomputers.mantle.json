@@ -127,8 +127,7 @@
 								"pivots": ["WETH", "USDT"]
 							},
 							{
-								"quote": "FBTC",
-								"pivots": ["WBTC"]
+								"quote": "FBTC"
 							}
 						]
 					},
@@ -146,6 +145,10 @@
 							{
 								"quote": "USDY",
 								"pivots": ["USDT"]
+							},
+							{
+								"quote": "FBTC",
+								"pivots": ["WBTC"]
 							}
 						]
 					},
@@ -159,6 +162,9 @@
 							{
 								"quote": "USDY",
 								"pivots": ["mETH", "USDC"]
+							},
+							{
+								"quote": "FBTC"
 							}
 						]
 					},
