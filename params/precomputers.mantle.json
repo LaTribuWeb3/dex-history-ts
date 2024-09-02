@@ -125,6 +125,10 @@
 							{
 								"quote": "USDY",
 								"pivots": ["WETH", "USDT"]
+							},
+							{
+								"quote": "FBTC",
+								"pivots": ["WBTC"]
 							}
 						]
 					},
