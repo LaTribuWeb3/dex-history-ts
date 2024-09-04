@@ -41,10 +41,6 @@
 							},
 							{
 								"quote": "USDY"
-							},
-							{
-								"quote": "FBTC",
-								"pivots": ["mETH, WBTC"]
 							}
 						]
 					},
@@ -86,10 +82,6 @@
 								"pivots": [
 									"USDT"
 								]
-							},
-							{
-								"quote": "FBTC",
-								"pivots": ["mETH, WBTC"]
 							}
 						]
 					},
@@ -113,10 +105,6 @@
 							{
 								"quote": "USDY",
 								"pivots": ["WETH", "USDT"]
-							},
-							{
-								"quote": "FBTC",
-								"pivots": ["mETH, WBTC"]
 							}
 						]
 					},
@@ -137,9 +125,6 @@
 							{
 								"quote": "USDY",
 								"pivots": ["WETH", "USDT"]
-							},
-							{
-								"quote": "FBTC"
 							}
 						]
 					},
@@ -157,10 +142,6 @@
 							{
 								"quote": "USDY",
 								"pivots": ["USDT"]
-							},
-							{
-								"quote": "FBTC",
-								"pivots": ["mETH, WBTC"]
 							}
 						]
 					},
@@ -186,6 +167,27 @@
 							{
 								"quote": "USDY",
 								"pivots": ["USDT"]
+							}
+						]
+					},
+					{
+						"base": "FBTC",
+						"quotes": [
+							{
+								"quote": "USDC",
+								"pivots": ["mETH"]
+							},
+							{
+								"quote": "USDT",
+								"pivots": ["mETH"]
+							},
+							{
+								"quote": "WETH",
+								"pivots": ["mETH"]
+							},
+							{
+								"quote": "WMNT",
+								"pivots": ["mETH"]
 							}
 						]
 					}
