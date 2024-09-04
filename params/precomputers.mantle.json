@@ -175,7 +175,7 @@
 						"quotes": [
 							{
 								"quote": "USDC",
-								"pivots": ["mETH"]
+								"pivots": ["mETH", "USDT"]
 							},
 							{
 								"quote": "USDT",
