@@ -374,6 +374,18 @@
                     {
                         "token0": "WETH",
                         "token1": "weETH"
+                    },
+                    {
+                        "token0": "USDC",
+                        "token1": "cbBTC"
+                    },
+                    {
+                        "token0": "WBTC",
+                        "token1": "cbETH"
+                    },
+                    {
+                        "token0": "WETH",
+                        "token1": "cbETH"
                     }
                 ]
             }
