@@ -385,7 +385,7 @@
                     },
                     {
                         "token0": "WETH",
-                        "token1": "cbETH"
+                        "token1": "cbBTC"
                     }
                 ]
             }
