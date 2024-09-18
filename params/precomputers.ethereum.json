@@ -102,6 +102,10 @@
 							{
 								"quote": "pufETH",
 								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "cbBTC",
+								"exportToInternalDashboard": true
 							}
 						]
 					},
@@ -293,6 +297,10 @@
 								"pivots": [
 									"WETH"
 								],
+								"exportToInternalDashboard": false
+							},
+							{
+								"quote": "cbBTC",
 								"exportToInternalDashboard": false
 							}
 						]
