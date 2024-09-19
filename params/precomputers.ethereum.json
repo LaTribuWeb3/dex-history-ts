@@ -301,7 +301,7 @@
 							},
 							{
 								"quote": "cbBTC",
-								"exportToInternalDashboard": false
+								"exportToInternalDashboard": true
 							}
 						]
 					},
