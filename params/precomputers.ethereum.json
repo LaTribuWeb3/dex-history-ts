@@ -377,6 +377,10 @@
 									"WETH"
 								],
 								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "cbBTC",
+								"exportToInternalDashboard": true
 							}
 						]
 					},
