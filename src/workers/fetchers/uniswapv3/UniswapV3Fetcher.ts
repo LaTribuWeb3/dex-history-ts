@@ -72,7 +72,6 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       //   });
       // }
       const promise = this.FetchUniswapV3HistoryForPair(fetchConfig, currentBlock, minStartBlock);
-      await promise;
       promises.push({
         tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
         addressPromise: promise,
