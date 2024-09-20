@@ -732,10 +732,10 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
   }
 }
 
-async function debug() {
-  const fetcher = new UniswapV3Fetcher(0, 'ethereum');
-  await fetcher.init();
-  await fetcher.runSpecific();
-}
+// async function debug() {
+//   const fetcher = new UniswapV3Fetcher(0, 'ethereum');
+//   await fetcher.init();
+//   await fetcher.runSpecific();
+// }
 
-debug();
+// debug();
