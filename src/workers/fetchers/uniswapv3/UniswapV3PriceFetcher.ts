@@ -66,7 +66,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
         this.FetchUniswapV3PriceHistoryForPair(groupedFetchConfig.pairToFetch, groupedFetchConfig.pools, currentBlock)
       );
 
-      await Promise.all(promises);
+      // await Promise.all(promises);
 
       await sleep(1000);
     }
@@ -138,7 +138,7 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
       // find the oldest pool
       for (const poolAddress of pools) {
         const startBlock = await GetContractCreationBlockNumber(poolAddress, this.workerName);
-        sinceBlock = sinceBlock == 0 ? startBlock + 100_000 : Math.min(sinceBlock, startBlock + 100_000); // leave 100k blocks ~2 weeks after pool creation because many pools starts with weird data
+        sinceBlock = sinceBlock == 0 ? startBlock + 50_000 : Math.min(sinceBlock, startBlock + 50_000); // leave 50k blocks ~1 weeks after pool creation because many pools starts with weird data
       }
     }
 
@@ -310,3 +310,10 @@ export class UniswapV3PriceFetcher extends BaseFetcher<UniSwapV3WorkerConfigurat
   }
 }
 
+// async function debug() {
+//   const fetcher = new UniswapV3PriceFetcher(0, 'ethereum');
+//   await fetcher.init();
+//   await fetcher.runSpecific();
+// }
+
+// debug();
