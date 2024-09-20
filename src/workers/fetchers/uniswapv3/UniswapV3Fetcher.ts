@@ -72,6 +72,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       //   });
       // }
       const promise = this.FetchUniswapV3HistoryForPair(fetchConfig, currentBlock, minStartBlock);
+      await promise;
       promises.push({
         tokens: [fetchConfig.pairToFetch.token0, fetchConfig.pairToFetch.token1],
         addressPromise: promise,
@@ -443,7 +444,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     pairWithFeesAndPool: Univ3PairWithFeesAndPool,
     currentBlock: number,
     minStartBlock: number
-  ) {
+  ): Promise<string> {
     const pairConfig = pairWithFeesAndPool.pairToFetch;
 
     const logLabel = `[${this.monitoringName}] | [${pairConfig.token0}-${pairConfig.token1}-${pairWithFeesAndPool.fee}] |`;
@@ -486,7 +487,16 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       console.log(
         `${logLabel} Pool address found: ${pairWithFeesAndPool.poolAddress} with pair ${pairWithFeesAndPool.pairToFetch.token0}-${pairWithFeesAndPool.pairToFetch.token1}`
       );
-      latestData = await this.fetchInitializeData(pairWithFeesAndPool.poolAddress, univ3PairContract);
+      const latestDataFromInitialize = await this.fetchInitializeData(
+        pairWithFeesAndPool.poolAddress,
+        univ3PairContract
+      );
+      if (!latestDataFromInitialize) {
+        console.log(`${logLabel} No Initialize event found for pool ${pairWithFeesAndPool.poolAddress}, ignoring`);
+        return pairWithFeesAndPool.poolAddress;
+      }
+
+      latestData = latestDataFromInitialize;
       latestData.poolAddress = pairWithFeesAndPool.poolAddress;
     }
 
@@ -674,7 +684,7 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
     return this.fnName.caller.name;
   }
 
-  async fetchInitializeData(poolAddress: string, univ3PairContract: UniswapV3Pair): Promise<BlockWithTick> {
+  async fetchInitializeData(poolAddress: string, univ3PairContract: UniswapV3Pair): Promise<BlockWithTick | null> {
     // if the file does not exists, it means we start from the beginning
     // fetch the deployed block number for the pool
     const deployedBlock = await Web3Utils.GetContractCreationBlockNumber(poolAddress, this.workerName);
@@ -715,14 +725,18 @@ export class UniswapV3Fetcher extends BaseFetcher<UniSwapV3WorkerConfiguration> 
       toBlock = fromBlock + (this.getConfiguration().fixedBlockStep || 100_000);
     }
 
-    throw new Error(`[${this.monitoringName}] | No Initialize event found`);
+    // here, sometime we can have a pool that exists but no Initialize event found
+    // in this case, we will just ignore the pool
+
+    console.log(`[${this.monitoringName}] | No Initialize event found for pool ${poolAddress}`);
+    return null;
   }
 }
 
-// async function debug() {
-//   const fetcher = new UniswapV3Fetcher(0);
-//   await fetcher.init();
-//   await fetcher.runSpecific();
-// }
+async function debug() {
+  const fetcher = new UniswapV3Fetcher(0, 'ethereum');
+  await fetcher.init();
+  await fetcher.runSpecific();
+}
 
-// debug();
+debug();
