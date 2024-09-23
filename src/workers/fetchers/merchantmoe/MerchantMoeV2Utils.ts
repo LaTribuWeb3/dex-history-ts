@@ -45,12 +45,12 @@ export async function getAllPoolsToFetch(
             merchantMoeV2PairContract.getTokenY()
           ]);
           const tokenXSymbol = (await getConfTokenByAddress(tokenXAddress, tokens)).symbol;
-          if (pairToFetch.token0 != tokenXSymbol) {
-            throw new Error(`config token0 ${pairToFetch.token0} != ${tokenXSymbol}`);
-          }
           const tokenYSymbol = (await getConfTokenByAddress(tokenYAddress, tokens)).symbol;
-          if (pairToFetch.token1 != tokenYSymbol) {
-            throw new Error(`config token1 ${pairToFetch.token1} != ${tokenYSymbol}`);
+          if (pairToFetch.token0 != tokenXSymbol || pairToFetch.token1 != tokenYSymbol) {
+            console.warn(
+              `token mismatch between config and pair ${pairToFetch.token0} != ${tokenXSymbol} or ${pairToFetch.token1} != ${tokenYSymbol}`
+            );
+            continue;
           }
           poolsToFetch.push({
             pairToFetch: { token0: tokenXSymbol, token1: tokenYSymbol },
