@@ -302,6 +302,13 @@
 							{
 								"quote": "cbBTC",
 								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "USDS",
+								"pivots": [
+									"DAI"
+								],
+								"exportToInternalDashboard": true
 							}
 						]
 					},
@@ -480,6 +487,10 @@
 								"pivots": [
 									"WETH"
 								],
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "USDS",
 								"exportToInternalDashboard": true
 							}
 						]

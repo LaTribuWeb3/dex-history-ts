@@ -390,6 +390,10 @@
                     {
                         "token0": "WBTC",
                         "token1": "cbBTC"
+                    },
+                    {
+                        "token0": "USDS",
+                        "token1": "DAI"
                     }
                 ]
             }

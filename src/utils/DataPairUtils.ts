@@ -12,6 +12,12 @@ export class DataPairUtils {
     if (to == 'sDAI') {
       actualTo = 'DAI';
     }
+    if (from == 'sUSDS') {
+      actualFrom = 'USDS';
+    }
+    if (to == 'sUSDS') {
+      actualTo = 'USDS';
+    }
 
     return { actualFrom, actualTo };
   }
