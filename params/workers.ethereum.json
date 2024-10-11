@@ -392,8 +392,8 @@
                         "token1": "cbBTC"
                     },
                     {
-                        "token0": "USDS",
-                        "token1": "DAI"
+                        "token0": "DAI",
+                        "token1": "USDS"
                     }
                 ]
             }
