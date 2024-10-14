@@ -318,7 +318,7 @@
         "dustAmount": 0.001
     },
     "USDS": {
-        "symbol": "sUSDS",
+        "symbol": "USDS",
         "decimals": 18,
         "address": "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
         "dustAmount": 0.001
