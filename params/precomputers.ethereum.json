@@ -447,14 +447,14 @@
 							{
 								"quote": "USDS",
 								"pivots": [
-									"DAI"
+									"USDC", "DAI"
 								],
 								"exportToInternalDashboard": true
 							},
 							{
 								"quote": "sUSDS",
 								"pivots": [
-									"DAI"
+									"USDC", "DAI"
 								],
 								"exportToInternalDashboard": true
 							}
