@@ -106,6 +106,20 @@
 							{
 								"quote": "cbBTC",
 								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "USDS",
+								"pivots": [
+									"DAI"
+								],
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "sUSDS",
+								"pivots": [
+									"DAI"
+								],
+								"exportToInternalDashboard": true
 							}
 						]
 					},
@@ -309,6 +323,13 @@
 									"DAI"
 								],
 								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "sUSDS",
+								"pivots": [
+									"DAI"
+								],
+								"exportToInternalDashboard": true
 							}
 						]
 					},
@@ -422,6 +443,20 @@
 									"WETH"
 								],
 								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "USDS",
+								"pivots": [
+									"DAI"
+								],
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "sUSDS",
+								"pivots": [
+									"DAI"
+								],
+								"exportToInternalDashboard": true
 							}
 						]
 					},
@@ -491,6 +526,10 @@
 							},
 							{
 								"quote": "USDS",
+								"exportToInternalDashboard": true
+							},
+							{
+								"quote": "sUSDS",
 								"exportToInternalDashboard": true
 							}
 						]
