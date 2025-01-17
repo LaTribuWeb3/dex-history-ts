@@ -67,8 +67,17 @@ export function getJsonRPCProvider(): ethers.JsonRpcProvider {
   if (!process.env.RPC_URL) {
     throw new Error('Cannot find RPC_URL in env');
   }
+  if (!process.env.RPC_URL_ALTERNATE) {
+    console.log('Cannot find RPC_URL_ALTERNATE in env');
+    console.log('using RPC_URL: ', process.env.RPC_URL);
+    return new ethers.JsonRpcProvider(process.env.RPC_URL);
+  }
 
-  return new ethers.JsonRpcProvider(process.env.RPC_URL);
+  const currentHour = new Date().getHours();
+  const rpcUrl = currentHour % 2 === 0 ? process.env.RPC_URL : process.env.RPC_URL_ALTERNATE;
+  console.log(`Using RPC URL: ${rpcUrl}`);
+
+  return new ethers.JsonRpcProvider(rpcUrl);
 }
 
 export function getMulticallProvider(): MulticallProvider {
